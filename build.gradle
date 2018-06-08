@@ -1,8 +1,24 @@
+/*
 buildscript {
     ext {
         springBootVersion = '1.5.10.RELEASE'
     }
     repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+*/
+
+buildscript {
+    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.2.0/dependencies.gradle'
+    ext {
+        springBootVersion = springBootVersion
+    }
+    repositories {
+        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -38,6 +54,8 @@ dependencies {
     compile('com.fasterxml.jackson.core:jackson-databind')
     compile('org.springframework:spring-web')
     compile('org.springframework.hateoas:spring-hateoas')
+    compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
+
 
     compileOnly('org.projectlombok:lombok')
 
