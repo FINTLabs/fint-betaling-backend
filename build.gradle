@@ -1,19 +1,5 @@
-/*
 buildscript {
-    ext {
-        springBootVersion = '1.5.10.RELEASE'
-    }
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-    }
-}
-*/
-
-buildscript {
-    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.2.0/dependencies.gradle'
+    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.3.0/dependencies.gradle'
     ext {
         springBootVersion = springBootVersion
     }
@@ -23,12 +9,15 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("com.github.ben-manes:gradle-versions-plugin:0.17.0")
     }
 }
 
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.github.ben-manes.versions'
 
 group = 'no.fint'
 version = '0.0.1-SNAPSHOT'
@@ -47,19 +36,29 @@ repositories {
 
 
 dependencies {
+    compile('no.fint:fint-utdanning-model-java:2.8.0')
+
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.plugin:spring-plugin-core')
-    compile('no.fint:fint-utdanning-model-java:2.8.0')
     compile('com.fasterxml.jackson.core:jackson-databind')
-    compile('org.springframework:spring-web')
-    compile('org.springframework.hateoas:spring-hateoas')
+    compile('org.springframework.hateoas:spring-hateoas:0.24.0.RELEASE')
     compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
+    compileOnly("org.projectlombok:lombok:${lombokVersion}")
 
-
-    compileOnly('org.projectlombok:lombok')
-
-
-
+    testCompile('no.fint:fint-test-utils:0.0.4')
+    testCompile("cglib:cglib-nodep:${cglibVersion}")
+    testCompile("org.spockframework:spock-spring:${spockSpringVersion}")
+    testCompile("org.spockframework:spock-core:${spockSpringVersion}")
     testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = gradleVersion
+}
+
+test {
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
