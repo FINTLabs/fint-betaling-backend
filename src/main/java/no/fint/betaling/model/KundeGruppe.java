@@ -9,5 +9,4 @@ public class KundeGruppe {
     private String navn;
     private String beskrivelse;
     private List<Kunde> kundeliste;
-
 }

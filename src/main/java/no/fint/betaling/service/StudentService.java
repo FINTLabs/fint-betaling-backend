@@ -39,7 +39,7 @@ public class StudentService {
 
         List<Kunde> customerList = new ArrayList<>();
 
-        response.getBody().getContent().stream().forEach(elev -> {
+        response.getBody().getContent().forEach(elev -> {
             Kunde customer = kundeFactory.getKunde(elev);
             customerList.add(customer);
         });

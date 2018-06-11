@@ -1,32 +1,21 @@
 package no.fint.betaling.model;
 
+import no.fint.betaling.service.PersonService;
 import no.fint.model.felles.Person;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 public class KundeFactory {
 
     @Autowired
-    RestTemplate restTemplate;
+    private PersonService personService;
 
     public Kunde getKunde(Resource elev) {
-        String personUrl = elev.getLinks().get(0).getHref();
+        String personUrl = elev.getLinks().get(0).getHref(); // TODO finn linken basert på "person"
 
-        ResponseEntity<Resource<Person>> responsePerson = restTemplate.exchange(
-                personUrl,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<Resource<Person>>() {
-                }
-        );
-
-        Person person = responsePerson.getBody().getContent();
+        Person person = personService.getPerson(personUrl);
 
         Kunde customer = new Kunde();
         customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());
