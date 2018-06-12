@@ -1,27 +1,15 @@
+
 package no.fint.betaling.service;
 
-import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
-import no.fint.model.utdanning.elev.Basisgruppe;
-import no.fint.model.utdanning.elev.Elev;
-import no.fint.model.utdanning.elev.Elevforhold;
-import no.fint.model.utdanning.elev.Medlemskap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.Resources;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GroupService {
@@ -36,6 +24,9 @@ public class GroupService {
     private String groupEndpoint;
 
     public List<KundeGruppe> getCustomerGroups() {
+        return new ArrayList<>();
+    }
+     /*
         ResponseEntity<Resources<Resource<Basisgruppe>>> response = restTemplate.exchange(
                 groupEndpoint + "basisgruppe",
                 HttpMethod.GET,
@@ -65,20 +56,23 @@ public class GroupService {
                         studentMembershipUrl,
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<Resources<Resource<Elevforhold>>>() {
+                        new ParameterizedTypeReference<Resources<Resource<Elxevforhold>>>() {
                         }
                 );
-                String studentUrl = studentMembershipResponse.getBody().getLink("elev").getHref();
+                Link elevLink=studentMembershipResponse.getBody().getLink("elev");
+                if(elevLink != null) {
+                    String studentUrl = elevLink.getHref();
 
-                ResponseEntity<Resource<Elev>> studentResponse = restTemplate.exchange(
-                        studentUrl,
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<Resource<Elev>>() {
-                        }
-                );
-                Kunde customer = kundeFactory.getKunde(studentResponse.getBody());
-                customerlist.add(customer);
+                    ResponseEntity<Resource<Elev>> studentResponse = restTemplate.exchange(
+                            studentUrl,
+                            HttpMethod.GET,
+                            null,
+                            new ParameterizedTypeReference<Resource<Elev>>() {
+                            }
+                    );
+                    Kunde customer = kundeFactory.getKunde(studentResponse.getBody());
+                    customerlist.add(customer);
+                }
             }
 
             Basisgruppe basisgruppe = basisgruppeResource.getContent();
@@ -91,5 +85,5 @@ public class GroupService {
 
 
         return customerGroupList;
-    }
+    }*/
 }

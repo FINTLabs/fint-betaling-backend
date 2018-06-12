@@ -1,43 +1,57 @@
 package no.fint.betaling.service
 
+import no.fint.betaling.model.InvalidResponseException
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.KundeFactory
-import no.fint.model.felles.kompleksedatatyper.Adresse
-import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.utdanning.elev.Elev
-import org.springframework.hateoas.Link
-import org.springframework.hateoas.Resource
-import org.springframework.hateoas.Resources
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import no.fint.model.felles.kompleksedatatyper.Identifikator
+import no.fint.model.resource.utdanning.elev.ElevResource
+import no.fint.model.resource.utdanning.elev.ElevResources
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 
 class StudentServiceSpec extends Specification {
 
+    private RestTemplate restTemplate
+    private KundeFactory kundeFactory
+    private StudentService studentService
+
+    void setup() {
+        restTemplate = Mock(RestTemplate)
+        kundeFactory = Mock(KundeFactory)
+        studentService = new StudentService(studentEndpoint: 'http://localhost', restTemplate: restTemplate, kundeFactory: kundeFactory)
+    }
+
+    def "Get customers given invalid response throws InvalidResponseException"() {
+        when:
+        studentService.getCustomers()
+
+        then:
+        1 * restTemplate.getForObject(_, _) >> { throw new RestClientException('test exception') }
+        thrown(InvalidResponseException)
+    }
+
 
     def "Get customers returns list"() {
         given:
-        def restTemplate = Mock(RestTemplate)
-        def kundeFactory = Mock(KundeFactory)
-        def studentService = new StudentService(restTemplate: restTemplate, kundeFactory: kundeFactory)
-        def response = createResponseResourcesResourceElev()
+        def response = createElevResources()
 
         when:
         List<Kunde> listCustomers = studentService.getCustomers()
 
         then:
-        1 * restTemplate.exchange(_, _, _, _) >> response
+        1 * restTemplate.getForObject(_, _) >> response
         1 * kundeFactory.getKunde(_) >> new Kunde()
-        listCustomers
+        listCustomers.size() == 1
     }
 
-    private static ResponseEntity<Resources<Resource<Elev>>> createResponseResourcesResourceElev() {
-        def student = new Elev()
-        def resource = new Resource(student)
-        def listStudent = new ArrayList()
-        listStudent.add(resource)
-        def resources = new Resources(listStudent, new Link())
-        return ResponseEntity.ok(resources)
+    private static ElevResources createElevResources() {
+        def elevResources = new ElevResources()
+        def identifikator = new Identifikator()
+        identifikator.setIdentifikatorverdi('123')
+        def elevResource = new ElevResource()
+        elevResource.setSystemId(identifikator)
+        elevResources.addResource()
+        elevResources
     }
 }

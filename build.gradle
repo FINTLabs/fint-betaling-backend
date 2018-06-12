@@ -36,13 +36,12 @@ repositories {
 
 
 dependencies {
-    compile('no.fint:fint-utdanning-model-java:2.8.0')
+    compile('no.fint:fint-utdanning-resource-model-java:3.0.0')
 
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.plugin:spring-plugin-core')
     compile('com.fasterxml.jackson.core:jackson-databind')
-    compile('org.springframework.hateoas:spring-hateoas:0.24.0.RELEASE')
     compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
 
