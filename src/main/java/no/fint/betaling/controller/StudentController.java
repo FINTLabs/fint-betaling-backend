@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api/customers")
+@RequestMapping(value = "/api")
 public class StudentController {
 
     @Autowired

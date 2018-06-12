@@ -32,7 +32,7 @@ public class GroupService {
     @Autowired
     private KundeFactory kundeFactory;
 
-    @Value("https://play-with-fint.felleskomponent.no/utdanning/elev/}")
+    @Value("https://play-with-fint.felleskomponent.no/utdanning/elev/")
     private String groupEndpoint;
 
     public List<KundeGruppe> getCustomerGroups() {

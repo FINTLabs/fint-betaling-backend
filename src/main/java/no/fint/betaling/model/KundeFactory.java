@@ -13,10 +13,8 @@ public class KundeFactory {
     private PersonService personService;
 
     public Kunde getKunde(Resource elev) {
-        String personUrl = elev.getLinks().get(0).getHref(); // TODO finn linken basert på "person"
-
+        String personUrl = elev.getLink("person").getHref();
         Person person = personService.getPerson(personUrl);
-
         Kunde customer = new Kunde();
         customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());
         customer.setNavn(person.getNavn());

@@ -38,6 +38,6 @@ class StudentServiceSpec extends Specification {
         def listStudent = new ArrayList()
         listStudent.add(resource)
         def resources = new Resources(listStudent, new Link())
-        return new ResponseEntity<Resources<Resource<Elev>>>(resources, HttpStatus.OK)
+        return ResponseEntity.ok(resources)
     }
 }
