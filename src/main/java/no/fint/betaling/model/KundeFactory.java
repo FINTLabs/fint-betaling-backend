@@ -1,7 +1,6 @@
 package no.fint.betaling.model;
 
 import no.fint.betaling.service.PersonService;
-import no.fint.model.felles.Person;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.felles.PersonResource;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,6 +6,8 @@ import no.fint.betaling.model.KundeFactory;
 import no.fint.model.resource.utdanning.elev.ElevResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -34,7 +36,14 @@ public class StudentService {
 
     private ElevResources getElevResources() {
         try {
-            return restTemplate.getForObject(studentEndpoint, ElevResources.class);
+            ResponseEntity<ElevResources> response = restTemplate.exchange(
+                    studentEndpoint,
+                    HttpMethod.GET,
+                    null,
+                    ElevResources.class
+            );
+
+            return response.getBody();
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to get elev resource url: %s", studentEndpoint), e);
         }

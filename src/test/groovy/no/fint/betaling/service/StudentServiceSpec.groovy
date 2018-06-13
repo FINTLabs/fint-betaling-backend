@@ -6,6 +6,7 @@ import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.utdanning.elev.ElevResource
 import no.fint.model.resource.utdanning.elev.ElevResources
+import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
@@ -40,7 +41,7 @@ class StudentServiceSpec extends Specification {
         List<Kunde> listCustomers = studentService.getCustomers()
 
         then:
-        1 * restTemplate.getForObject(_, _) >> response
+        1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok(response)
         1 * kundeFactory.getKunde(_) >> new Kunde()
         listCustomers.size() == 1
     }

@@ -3,6 +3,8 @@ package no.fint.betaling.service;
 import no.fint.betaling.model.InvalidResponseException;
 import no.fint.model.resource.felles.PersonResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -15,7 +17,13 @@ public class PersonService {
 
     public PersonResource getPerson(String personUrl) {
         try {
-            return restTemplate.getForObject(personUrl, PersonResource.class);
+            ResponseEntity<PersonResource> response = restTemplate.exchange(
+                    personUrl,
+                    HttpMethod.GET,
+                    null,
+                    PersonResource.class
+            );
+            return response.getBody();
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to get person resource url: %s", personUrl), e);
         }
