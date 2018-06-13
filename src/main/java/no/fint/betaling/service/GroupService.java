@@ -1,15 +1,21 @@
 
 package no.fint.betaling.service;
 
+import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
+import no.fint.model.resource.Link;
+import no.fint.model.resource.utdanning.elev.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GroupService {
@@ -24,66 +30,68 @@ public class GroupService {
     private String groupEndpoint;
 
     public List<KundeGruppe> getCustomerGroups() {
-        return new ArrayList<>();
+        List<KundeGruppe> customerGroupListBasisgruppe = getCustomerGroupListFromBasisgruppe();
+
+
+        List<KundeGruppe> customerGroupListAll = customerGroupListBasisgruppe.stream().collect(Collectors.toList());
+
+        return customerGroupListAll;
     }
-     /*
-        ResponseEntity<Resources<Resource<Basisgruppe>>> response = restTemplate.exchange(
+
+    private List<KundeGruppe> getCustomerGroupListFromBasisgruppe() {
+        ResponseEntity<BasisgruppeResources> responseBasisgruppeResources = restTemplate.exchange(
                 groupEndpoint + "basisgruppe",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<Resources<Resource<Basisgruppe>>>() {
-                }
+                BasisgruppeResources.class
         );
 
-        Collection<Resource<Basisgruppe>> customerGroupCollection = response.getBody().getContent();
+        List<BasisgruppeResource> basisgruppeResourceList = responseBasisgruppeResources.getBody().getContent();
+
+        List<Kunde> customerList = new ArrayList<>();
         List<KundeGruppe> customerGroupList = new ArrayList<>();
-        for (Resource<Basisgruppe> basisgruppeResource : customerGroupCollection) {
-            List<Kunde> customerlist = new ArrayList<>();
-            List<Link> linkList = basisgruppeResource.getLinks();
-            List<Link> filteredLinks = linkList.stream().filter(link -> link.getRel().equals("medlemskap")).collect(Collectors.toList());
 
-            for (Link link : filteredLinks) {
-                ResponseEntity<Resources<Resource<Medlemskap>>> membershipResponse = restTemplate.exchange(
-                        link.getHref(),
+        for (BasisgruppeResource basisgruppeResource : basisgruppeResourceList) {
+
+            for (Link linkMedlemskap : basisgruppeResource.getMedlemskap()) {
+                ResponseEntity<MedlemskapResource> responseMedlemskap = restTemplate.exchange(
+                        linkMedlemskap.getHref(),
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<Resources<Resource<Medlemskap>>>() {
-                        }
+                        MedlemskapResource.class
                 );
-                String studentMembershipUrl = membershipResponse.getBody().getLink("medlem").getHref();
 
-                ResponseEntity<Resources<Resource<Elevforhold>>> studentMembershipResponse = restTemplate.exchange(
-                        studentMembershipUrl,
+                Link studentRelation = responseMedlemskap.getBody().getMedlem().get(0);
+
+                ResponseEntity<ElevforholdResource> responseElevforhold = restTemplate.exchange(
+                        studentRelation.getHref(),
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<Resources<Resource<Elxevforhold>>>() {
-                        }
+                        ElevforholdResource.class
                 );
-                Link elevLink=studentMembershipResponse.getBody().getLink("elev");
-                if(elevLink != null) {
-                    String studentUrl = elevLink.getHref();
 
-                    ResponseEntity<Resource<Elev>> studentResponse = restTemplate.exchange(
-                            studentUrl,
+                List<Link> studentLinkList = responseElevforhold.getBody().getElev();
+
+                if (studentLinkList.size() > 0) {
+                    Link studentLink = studentLinkList.get(0);
+                    ResponseEntity<ElevResource> responseElevResource = restTemplate.exchange(
+                            studentLink.getHref(),
                             HttpMethod.GET,
                             null,
-                            new ParameterizedTypeReference<Resource<Elev>>() {
-                            }
+                            ElevResource.class
                     );
-                    Kunde customer = kundeFactory.getKunde(studentResponse.getBody());
-                    customerlist.add(customer);
+
+                    ElevResource student = responseElevResource.getBody();
+                    customerList.add(kundeFactory.getKunde(student));
                 }
             }
-
-            Basisgruppe basisgruppe = basisgruppeResource.getContent();
             KundeGruppe customerGroup = new KundeGruppe();
-            customerGroup.setNavn(basisgruppe.getNavn());
-            customerGroup.setBeskrivelse(basisgruppe.getBeskrivelse());
-            customerGroup.setKundeliste(customerlist);
+            customerGroup.setNavn(basisgruppeResource.getNavn());
+            customerGroup.setBeskrivelse(basisgruppeResource.getBeskrivelse());
+            customerGroup.setKundeliste(customerList);
             customerGroupList.add(customerGroup);
         }
 
-
         return customerGroupList;
-    }*/
+    }
 }

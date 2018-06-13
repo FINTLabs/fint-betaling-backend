@@ -1,7 +1,6 @@
 package no.fint.betaling.controller
 
 import no.fint.betaling.model.Kunde
-import no.fint.betaling.service.GroupService
 import no.fint.betaling.service.StudentService
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
@@ -11,12 +10,10 @@ class StudentControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
     private StudentController studentController
     private StudentService studentService
-    private GroupService groupService
 
     void setup() {
-        groupService = Mock(GroupService)
         studentService = Mock(StudentService)
-        studentController = new StudentController(studentService: studentService, groupService: groupService)
+        studentController = new StudentController(studentService: studentService)
         mockMvc = standaloneSetup(studentController)
     }
 
@@ -28,6 +25,19 @@ class StudentControllerSpec extends MockMvcSpecification {
         1 * studentService.getCustomers() >> [new Kunde(navn: new Personnavn(etternavn: 'Testesen'))]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].navn.etternavn','Testesen'))
+                .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Testesen'))
+    }
+
+    def "Get customers given filter keyword"() {
+        when:
+        def response = mockMvc.perform(get('/api/customers').param('etternavn', 'r'))
+
+        then:
+        1 * studentService.getCustomers() >> [new Kunde(navn: new Personnavn(etternavn: 'Rettsen')),
+                                              new Kunde(navn: new Personnavn(etternavn: 'Feilsen')),
+                                              new Kunde(navn: new Personnavn(etternavn: 'Testesen'))]
+        response.andExpect(status().isOk())
+                .andExpect(jsonPathSize('$', 1))
+                .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Rettsen'))
     }
 }
