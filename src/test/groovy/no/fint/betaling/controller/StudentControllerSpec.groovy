@@ -28,7 +28,7 @@ class StudentControllerSpec extends MockMvcSpecification {
                 .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Testesen'))
     }
 
-    def "Get customers given filter keyword"() {
+    def "Get customers given filter keyword returns filtered list"() {
         when:
         def response = mockMvc.perform(get('/api/customers').param('etternavn', 'r'))
 

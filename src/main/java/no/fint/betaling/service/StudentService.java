@@ -1,16 +1,10 @@
 package no.fint.betaling.service;
 
-import no.fint.betaling.model.InvalidResponseException;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.model.resource.utdanning.elev.ElevResources;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,40 +13,29 @@ import java.util.stream.Collectors;
 public class StudentService {
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private KundeFactory kundeFactory;
 
-    @Value("${fint.betaling.endpoints.students:https://play-with-fint.felleskomponent.no/utdanning/elev/elev}")
-    private String studentEndpoint;
+    @Autowired
+    private RestService restService;
+
+    public List<Kunde> getCustomers() {
+        ElevResources elevResources = restService.getElevResources();
+
+        return elevResources.getContent().stream()
+                .map(elev -> kundeFactory.getKunde(elev))
+                .collect(Collectors.toList());
+    }
 
     public List<Kunde> getCustomers(String filter) {
-        ElevResources elevResources = getElevResources();
+        ElevResources elevResources = restService.getElevResources();
+
         List<Kunde> allCustomers = elevResources.getContent().stream()
                 .map(elev -> kundeFactory.getKunde(elev))
                 .collect(Collectors.toList());
 
-        if (filter != null && !filter.isEmpty()) {
-            return allCustomers.stream().filter(customer ->
-                    customer.getNavn().getEtternavn().toLowerCase().contains(filter.toLowerCase())
-            ).collect(Collectors.toList());
-        }
-        return allCustomers;
-    }
-
-    private ElevResources getElevResources() {
-        try {
-            ResponseEntity<ElevResources> response = restTemplate.exchange(
-                    studentEndpoint,
-                    HttpMethod.GET,
-                    null,
-                    ElevResources.class
-            );
-
-            return response.getBody();
-        } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to get elev resource url: %s", studentEndpoint), e);
-        }
+        return allCustomers.stream().filter(customer ->
+                customer.getNavn().getEtternavn().toLowerCase()
+                        .contains(filter.toLowerCase()))
+                        .collect(Collectors.toList());
     }
 }

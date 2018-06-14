@@ -1,120 +1,93 @@
-
 package no.fint.betaling.service;
 
-import no.fint.betaling.model.InvalidResponseException;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.utdanning.elev.*;
+import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
+import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GroupService {
 
     @Autowired
-    RestTemplate restTemplate;
+    RestService restService;
 
     @Autowired
     private KundeFactory kundeFactory;
 
-    @Value("https://play-with-fint.felleskomponent.no/utdanning/elev/")
-    private String groupEndpoint;
 
-    public List<KundeGruppe> getCustomerGroups() {
-        List<KundeGruppe> customerGroupListBasisgruppe = getCustomerGroupListFromBasisgruppe();
-
-
-        List<KundeGruppe> customerGroupListAll = customerGroupListBasisgruppe.stream().collect(Collectors.toList());
-
-        return customerGroupListAll;
+    public List<KundeGruppe> getAllCustomerGroups() {
+        List<KundeGruppe> allCustomerGroups = new ArrayList<>();
+        allCustomerGroups.addAll(getCustomerGroupListFromBasisgruppe());
+        allCustomerGroups.addAll(getCustomerGroupListFromUndervisningsgruppe());
+        allCustomerGroups.addAll(getCustomerGroupListFromKontaktlarergruppe());
+        return allCustomerGroups;
     }
 
-    private List<KundeGruppe> getCustomerGroupListFromBasisgruppe() {
-        ResponseEntity<BasisgruppeResources> responseBasisgruppeResources = null;
-        String basisgruppeEndpoint = groupEndpoint + "basisgruppe";
-        try {
-            responseBasisgruppeResources = restTemplate.exchange(
-                    basisgruppeEndpoint,
-                    HttpMethod.GET,
-                    null,
-                    BasisgruppeResources.class
-            );
-        } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to get BasisgruppeResources url: %s", basisgruppeEndpoint), e);
-        }
-
-        List<BasisgruppeResource> basisgruppeResourceList = responseBasisgruppeResources.getBody().getContent();
-
-        List<Kunde> customerList = new ArrayList<>();
+    public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe() {
+        KontaktlarergruppeResources kontaktlarergruppeResources = restService.getKontaktlarergruppeResources();
+        List<KontaktlarergruppeResource> kontaktlarergruppeResourceList = kontaktlarergruppeResources.getContent();
         List<KundeGruppe> customerGroupList = new ArrayList<>();
-
-        for (BasisgruppeResource basisgruppeResource : basisgruppeResourceList) {
-
-            for (Link linkMedlemskap : basisgruppeResource.getMedlemskap()) {
-                ResponseEntity<MedlemskapResource> responseMedlemskap = null;
-                try {
-                    responseMedlemskap = restTemplate.exchange(
-                            linkMedlemskap.getHref(),
-                            HttpMethod.GET,
-                            null,
-                            MedlemskapResource.class
-                    );
-                } catch (RestClientException e) {
-                    throw new InvalidResponseException(String.format("Unable to get MedlemskapResource url: %s", linkMedlemskap.getHref()), e);
-                }
-
-                Link studentRelation = responseMedlemskap.getBody().getMedlem().get(0);
-
-                ResponseEntity<ElevforholdResource> responseElevforhold = null;
-                try {
-                    responseElevforhold = restTemplate.exchange(
-                            studentRelation.getHref(),
-                            HttpMethod.GET,
-                            null,
-                            ElevforholdResource.class
-                    );
-                } catch (RestClientException e) {
-                    throw new InvalidResponseException(String.format("Unable to get ElevforholdResource url: %s", studentRelation.getHref()), e);
-                }
-
-                List<Link> studentLinkList = responseElevforhold.getBody().getElev();
-
-                if (studentLinkList.size() > 0) {
-                    Link studentLink = studentLinkList.get(0);
-                    ResponseEntity<ElevResource> responseElevResource = null;
-                    try {
-                        responseElevResource = restTemplate.exchange(
-                                studentLink.getHref(),
-                                HttpMethod.GET,
-                                null,
-                                ElevResource.class
-                        );
-                    } catch (RestClientException e) {
-                        throw new InvalidResponseException(String.format("Unable to get ElevResource url: %s", studentLink.getHref()), e);
-                    }
-
-                    ElevResource student = responseElevResource.getBody();
-                    customerList.add(kundeFactory.getKunde(student));
-                }
-            }
-            KundeGruppe customerGroup = new KundeGruppe();
-            customerGroup.setNavn(basisgruppeResource.getNavn());
-            customerGroup.setBeskrivelse(basisgruppeResource.getBeskrivelse());
-            customerGroup.setKundeliste(customerList);
+        for (KontaktlarergruppeResource group : kontaktlarergruppeResourceList) {
+            List<Kunde> customerList = getCustomerList(group.getMedlemskap());
+            KundeGruppe customerGroup = createCustomerGroup(group.getNavn(), group.getBeskrivelse(), customerList);
             customerGroupList.add(customerGroup);
         }
-
         return customerGroupList;
+    }
+
+    public List<KundeGruppe> getCustomerGroupListFromUndervisningsgruppe() {
+        UndervisningsgruppeResources undervisningsgruppeResources = restService.getUndervisningsgruppeResources();
+        List<UndervisningsgruppeResource> undervisningsgruppeResourceList = undervisningsgruppeResources.getContent();
+        List<KundeGruppe> customerGroupList = new ArrayList<>();
+        for (UndervisningsgruppeResource group : undervisningsgruppeResourceList) {
+            List<Kunde> customerList = getCustomerList(group.getMedlemskap());
+            KundeGruppe customerGroup = createCustomerGroup(group.getNavn(), group.getBeskrivelse(), customerList);
+            customerGroupList.add(customerGroup);
+        }
+        return customerGroupList;
+    }
+
+    public List<KundeGruppe> getCustomerGroupListFromBasisgruppe() {
+        BasisgruppeResources basisgruppeResources = restService.getBasisgruppeResources();
+        List<BasisgruppeResource> basisgruppeResourceList = basisgruppeResources.getContent();
+        List<KundeGruppe> customerGroupList = new ArrayList<>();
+        for (BasisgruppeResource group : basisgruppeResourceList) {
+            List<Kunde> customerList = getCustomerList(group.getMedlemskap());
+            KundeGruppe customerGroup = createCustomerGroup(group.getNavn(), group.getBeskrivelse(), customerList);
+            customerGroupList.add(customerGroup);
+        }
+        return customerGroupList;
+    }
+
+    private List<Kunde> getCustomerList(List<Link> listMedlemskap) {
+        List<Kunde> customerList = new ArrayList<>();
+        for (Link linkMedlemskap : listMedlemskap) {
+            MedlemskapResource resourceMeldemskap = restService.getMedlemskapResource(linkMedlemskap.getHref());
+            Link studentRelation = resourceMeldemskap.getMedlem().get(0);
+            ElevforholdResource elevforholdResource = restService.getElevforholdResource(studentRelation.getHref());
+            List<Link> studentLinkList = elevforholdResource.getElev();
+            if (studentLinkList.size() > 0) {
+                Link studentLink = studentLinkList.get(0);
+                ElevResource elevResource = restService.getElevResource(studentLink.getHref());
+                customerList.add(kundeFactory.getKunde(elevResource));
+            }
+        }
+        return customerList;
+    }
+
+    private KundeGruppe createCustomerGroup(String name, String description, List<Kunde> customerlist) {
+        KundeGruppe kundeGruppe = new KundeGruppe();
+        kundeGruppe.setNavn(name);
+        kundeGruppe.setBeskrivelse(description);
+        kundeGruppe.setKundeliste(customerlist);
+        return kundeGruppe;
     }
 }

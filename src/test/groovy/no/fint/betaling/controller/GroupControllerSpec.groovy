@@ -26,7 +26,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/group'))
 
         then:
-        1 * groupService.getCustomerGroups() >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+        1 * groupService.getAllCustomerGroups() >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
 
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))

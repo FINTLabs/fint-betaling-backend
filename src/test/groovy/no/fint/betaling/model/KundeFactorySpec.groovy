@@ -1,6 +1,6 @@
 package no.fint.betaling.model
 
-import no.fint.betaling.service.PersonService
+import no.fint.betaling.service.RestService
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
@@ -12,12 +12,12 @@ import spock.lang.Specification
 
 class KundeFactorySpec extends Specification {
 
-    private PersonService personService
+    private RestService restService
     private KundeFactory factory
 
     void setup() {
-        personService = Mock(PersonService)
-        factory = new KundeFactory(personService: personService)
+        restService = Mock(RestService)
+        factory = new KundeFactory(restService: restService)
     }
 
     def "Get kunde given resource with links"() {
@@ -31,7 +31,7 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(resource)
 
         then:
-        1 * personService.getPerson(validUrl) >> person
+        1 * restService.getPersonResource(validUrl) >> person
         kunde.kundenummer == '12345678901'
         kunde.postadresse.poststed == 'Oslo'
         kunde.kontaktinformasjon.epostadresse == 'test@test.com'
@@ -47,7 +47,7 @@ class KundeFactorySpec extends Specification {
         factory.getKunde(invalidResource)
 
         then:
-        1 * personService.getPerson(invalidUrl) >> {
+        1 * restService.getPersonResource(invalidUrl) >> {
             throw new InvalidResponseException('test exception', new Exception())
         }
         thrown(InvalidResponseException)
