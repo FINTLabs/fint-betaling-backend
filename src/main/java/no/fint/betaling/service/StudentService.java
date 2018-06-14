@@ -27,11 +27,18 @@ public class StudentService {
     @Value("${fint.betaling.endpoints.students:https://play-with-fint.felleskomponent.no/utdanning/elev/elev}")
     private String studentEndpoint;
 
-    public List<Kunde> getCustomers() {
+    public List<Kunde> getCustomers(String filter) {
         ElevResources elevResources = getElevResources();
-        return elevResources.getContent().stream()
+        List<Kunde> allCustomers = elevResources.getContent().stream()
                 .map(elev -> kundeFactory.getKunde(elev))
                 .collect(Collectors.toList());
+
+        if (filter != null && !filter.isEmpty()) {
+            return allCustomers.stream().filter(customer ->
+                    customer.getNavn().getEtternavn().toLowerCase().contains(filter.toLowerCase())
+            ).collect(Collectors.toList());
+        }
+        return allCustomers;
     }
 
     private ElevResources getElevResources() {

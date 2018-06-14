@@ -22,7 +22,7 @@ class StudentControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/customers'))
 
         then:
-        1 * studentService.getCustomers() >> [new Kunde(navn: new Personnavn(etternavn: 'Testesen'))]
+        1 * studentService.getCustomers(_) >> [new Kunde(navn: new Personnavn(etternavn: 'Testesen'))]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Testesen'))
@@ -33,9 +33,7 @@ class StudentControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/customers').param('etternavn', 'r'))
 
         then:
-        1 * studentService.getCustomers() >> [new Kunde(navn: new Personnavn(etternavn: 'Rettsen')),
-                                              new Kunde(navn: new Personnavn(etternavn: 'Feilsen')),
-                                              new Kunde(navn: new Personnavn(etternavn: 'Testesen'))]
+        1 * studentService.getCustomers(_) >> [new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Rettsen'))

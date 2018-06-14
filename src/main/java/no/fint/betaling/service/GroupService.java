@@ -1,6 +1,7 @@
 
 package no.fint.betaling.service;
 
+import no.fint.betaling.model.InvalidResponseException;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -39,12 +41,18 @@ public class GroupService {
     }
 
     private List<KundeGruppe> getCustomerGroupListFromBasisgruppe() {
-        ResponseEntity<BasisgruppeResources> responseBasisgruppeResources = restTemplate.exchange(
-                groupEndpoint + "basisgruppe",
-                HttpMethod.GET,
-                null,
-                BasisgruppeResources.class
-        );
+        ResponseEntity<BasisgruppeResources> responseBasisgruppeResources = null;
+        String basisgruppeEndpoint = groupEndpoint + "basisgruppe";
+        try {
+            responseBasisgruppeResources = restTemplate.exchange(
+                    basisgruppeEndpoint,
+                    HttpMethod.GET,
+                    null,
+                    BasisgruppeResources.class
+            );
+        } catch (RestClientException e) {
+            throw new InvalidResponseException(String.format("Unable to get BasisgruppeResources url: %s", basisgruppeEndpoint), e);
+        }
 
         List<BasisgruppeResource> basisgruppeResourceList = responseBasisgruppeResources.getBody().getContent();
 
@@ -54,32 +62,47 @@ public class GroupService {
         for (BasisgruppeResource basisgruppeResource : basisgruppeResourceList) {
 
             for (Link linkMedlemskap : basisgruppeResource.getMedlemskap()) {
-                ResponseEntity<MedlemskapResource> responseMedlemskap = restTemplate.exchange(
-                        linkMedlemskap.getHref(),
-                        HttpMethod.GET,
-                        null,
-                        MedlemskapResource.class
-                );
+                ResponseEntity<MedlemskapResource> responseMedlemskap = null;
+                try {
+                    responseMedlemskap = restTemplate.exchange(
+                            linkMedlemskap.getHref(),
+                            HttpMethod.GET,
+                            null,
+                            MedlemskapResource.class
+                    );
+                } catch (RestClientException e) {
+                    throw new InvalidResponseException(String.format("Unable to get MedlemskapResource url: %s", linkMedlemskap.getHref()), e);
+                }
 
                 Link studentRelation = responseMedlemskap.getBody().getMedlem().get(0);
 
-                ResponseEntity<ElevforholdResource> responseElevforhold = restTemplate.exchange(
-                        studentRelation.getHref(),
-                        HttpMethod.GET,
-                        null,
-                        ElevforholdResource.class
-                );
+                ResponseEntity<ElevforholdResource> responseElevforhold = null;
+                try {
+                    responseElevforhold = restTemplate.exchange(
+                            studentRelation.getHref(),
+                            HttpMethod.GET,
+                            null,
+                            ElevforholdResource.class
+                    );
+                } catch (RestClientException e) {
+                    throw new InvalidResponseException(String.format("Unable to get ElevforholdResource url: %s", studentRelation.getHref()), e);
+                }
 
                 List<Link> studentLinkList = responseElevforhold.getBody().getElev();
 
                 if (studentLinkList.size() > 0) {
                     Link studentLink = studentLinkList.get(0);
-                    ResponseEntity<ElevResource> responseElevResource = restTemplate.exchange(
-                            studentLink.getHref(),
-                            HttpMethod.GET,
-                            null,
-                            ElevResource.class
-                    );
+                    ResponseEntity<ElevResource> responseElevResource = null;
+                    try {
+                        responseElevResource = restTemplate.exchange(
+                                studentLink.getHref(),
+                                HttpMethod.GET,
+                                null,
+                                ElevResource.class
+                        );
+                    } catch (RestClientException e) {
+                        throw new InvalidResponseException(String.format("Unable to get ElevResource url: %s", studentLink.getHref()), e);
+                    }
 
                     ElevResource student = responseElevResource.getBody();
                     customerList.add(kundeFactory.getKunde(student));

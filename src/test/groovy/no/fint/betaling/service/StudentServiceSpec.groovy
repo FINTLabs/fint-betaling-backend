@@ -25,10 +25,10 @@ class StudentServiceSpec extends Specification {
 
     def "Get customers given invalid response throws InvalidResponseException"() {
         when:
-        studentService.getCustomers()
+        studentService.getCustomers('')
 
         then:
-        1 * restTemplate.getForObject(_, _) >> { throw new RestClientException('test exception') }
+        1 * restTemplate.exchange(_, _, _, _) >> { throw new RestClientException('test exception') }
         thrown(InvalidResponseException)
     }
 
@@ -38,7 +38,7 @@ class StudentServiceSpec extends Specification {
         def response = createElevResources()
 
         when:
-        List<Kunde> listCustomers = studentService.getCustomers()
+        List<Kunde> listCustomers = studentService.getCustomers('')
 
         then:
         1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok(response)

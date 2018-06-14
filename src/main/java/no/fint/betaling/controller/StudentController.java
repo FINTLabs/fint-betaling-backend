@@ -20,13 +20,7 @@ public class StudentController {
 
     @GetMapping("/customers")
     public ResponseEntity getCustomers(@RequestParam(value = "etternavn", required = false) String lastName) {
-        List<Kunde> allCustomers = studentService.getCustomers();
-        if (lastName != null && !lastName.isEmpty()) { // TODO: flytt denne inn i StudentService
-            return ResponseEntity.ok(allCustomers.stream().filter(customer ->
-                    customer.getNavn().getEtternavn().toLowerCase().contains(lastName.toLowerCase())
-            ).collect(Collectors.toList()));
-        }
-
+        List<Kunde> allCustomers = studentService.getCustomers(lastName);
         return ResponseEntity.ok(allCustomers);
     }
 }

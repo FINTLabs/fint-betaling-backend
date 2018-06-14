@@ -1,5 +1,6 @@
 package no.fint.betaling.service
 
+import no.fint.betaling.model.InvalidResponseException
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
@@ -7,6 +8,7 @@ import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
 import no.fint.model.resource.utdanning.elev.*
 import org.springframework.http.ResponseEntity
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 
@@ -50,6 +52,17 @@ class GroupServiceSpec extends Specification {
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
         customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+    }
+
+    def "Get customers given invalid response throws InvalidResponseException"() {
+        when:
+        groupService.getCustomerGroups()
+
+        then:
+        1 * restTemplate.exchange(_, _, _, BasisgruppeResources) >> {
+            throw new RestClientException('test', new Exception())
+        }
+        thrown(InvalidResponseException)
     }
 
     private static BasisgruppeResource createBasisgruppeResource() {
