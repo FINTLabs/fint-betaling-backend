@@ -40,6 +40,7 @@ dependencies {
 
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
+    compile("org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}")
     compile('org.springframework.plugin:spring-plugin-core')
     compile('com.fasterxml.jackson.core:jackson-databind')
     compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
