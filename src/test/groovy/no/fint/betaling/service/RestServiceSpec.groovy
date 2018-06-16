@@ -29,7 +29,7 @@ class RestServiceSpec extends Specification {
 
     def "Get ElevResource given valid url returns ElevResource"() {
         when:
-        def resource = restService.getElevResource('valid.url')
+        def resource = restService.getElevResource('valid.url',)
 
         then:
         1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok(new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))

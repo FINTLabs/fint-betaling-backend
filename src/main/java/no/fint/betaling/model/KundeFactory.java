@@ -12,9 +12,9 @@ public class KundeFactory {
     @Autowired
     private RestService restService;
 
-    public Kunde getKunde(FintLinks links) {
+    public Kunde getKunde(String orgId, FintLinks links) {
         String personUrl = links.getLinks().get("person").get(0).getHref();
-        PersonResource person = restService.getPersonResource(personUrl);
+        PersonResource person = restService.getPersonResource(orgId, personUrl);
 
         Kunde customer = new Kunde();
         customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());

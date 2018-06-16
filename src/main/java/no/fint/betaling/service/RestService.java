@@ -21,7 +21,7 @@ public class RestService {
     private static final String UNDERVISNINGSGRUPPE_ENDPOINT = "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe";
     private static final String KONTAKTLARERGRUPPE_ENDPOINT = "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe";
 
-    public BasisgruppeResources getBasisgruppeResources() {
+    public BasisgruppeResources getBasisgruppeResources(String orgId) {
         try {
             return restTemplate.exchange(
                     BASISGRUPPE_ENDPOINT,
@@ -34,7 +34,7 @@ public class RestService {
         }
     }
 
-    public UndervisningsgruppeResources getUndervisningsgruppeResources() {
+    public UndervisningsgruppeResources getUndervisningsgruppeResources(String orgId) {
         try {
             return restTemplate.exchange(
                     UNDERVISNINGSGRUPPE_ENDPOINT,
@@ -47,7 +47,7 @@ public class RestService {
         }
     }
 
-    public KontaktlarergruppeResources getKontaktlarergruppeResources() {
+    public KontaktlarergruppeResources getKontaktlarergruppeResources(String orgId) {
         try {
             return restTemplate.exchange(
                     KONTAKTLARERGRUPPE_ENDPOINT,
@@ -60,7 +60,7 @@ public class RestService {
         }
     }
 
-    public MedlemskapResource getMedlemskapResource(String url) {
+    public MedlemskapResource getMedlemskapResource(String orgId, String url) {
         try {
             return restTemplate.exchange(
                     url,
@@ -73,7 +73,7 @@ public class RestService {
         }
     }
 
-    public ElevforholdResource getElevforholdResource(String url) {
+    public ElevforholdResource getElevforholdResource(String orgId, String url) {
         try {
             return restTemplate.exchange(
                     url,
@@ -86,7 +86,7 @@ public class RestService {
         }
     }
 
-    public ElevResources getElevResources() {
+    public ElevResources getElevResources(String orgId) {
         try {
             return restTemplate.exchange(
                     ELEV_ENDPOINT,
@@ -99,7 +99,7 @@ public class RestService {
         }
     }
 
-    public ElevResource getElevResource(String url) {
+    public ElevResource getElevResource(String orgId, String url) {
         try {
             return restTemplate.exchange(
                     url,
@@ -112,7 +112,7 @@ public class RestService {
         }
     }
 
-    public PersonResource getPersonResource(String url) {
+    public PersonResource getPersonResource(String orgId, String url) {
         try {
             return restTemplate.exchange(
                     url,

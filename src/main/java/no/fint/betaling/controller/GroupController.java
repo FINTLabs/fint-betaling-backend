@@ -1,12 +1,10 @@
 package no.fint.betaling.controller;
 
+import no.fint.betaling.config.HeaderConstants;
 import no.fint.betaling.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -18,23 +16,23 @@ public class GroupController {
     private GroupService groupService;
 
     @GetMapping
-    public ResponseEntity getAllCustomerGroups() {
-        return ResponseEntity.ok(groupService.getAllCustomerGroups());
+    public ResponseEntity getAllCustomerGroups(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+        return ResponseEntity.ok(groupService.getAllCustomerGroups(orgId));
     }
 
     @GetMapping("/basisgruppe")
-    public ResponseEntity getCustomerGroupsFromBasisgruppe() {
-        return ResponseEntity.ok(groupService.getCustomerGroupListFromBasisgruppe());
+    public ResponseEntity getCustomerGroupsFromBasisgruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+        return ResponseEntity.ok(groupService.getCustomerGroupListFromBasisgruppe(orgId));
     }
 
     @GetMapping("/undervisningsgruppe")
-    public ResponseEntity getCustomerGroupsFromFag() {
-        return ResponseEntity.ok(groupService.getCustomerGroupListFromUndervisningsgruppe());
+    public ResponseEntity getCustomerGroupsFromFag(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+        return ResponseEntity.ok(groupService.getCustomerGroupListFromUndervisningsgruppe(orgId));
     }
 
     @GetMapping("/kontaktlarergruppe")
-    public ResponseEntity getCustomerGroupListFromKontaktlarergruppe() {
-        return ResponseEntity.ok(groupService.getCustomerGroupListFromKontaktlarergruppe());
+    public ResponseEntity getCustomerGroupListFromKontaktlarergruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+        return ResponseEntity.ok(groupService.getCustomerGroupListFromKontaktlarergruppe(orgId));
     }
 
 }

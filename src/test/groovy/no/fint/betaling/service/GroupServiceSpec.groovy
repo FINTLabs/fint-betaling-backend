@@ -42,7 +42,7 @@ class GroupServiceSpec extends Specification {
         1 * restService.getBasisgruppeResources() >> basisgruppeResources
         1 * restService.getMedlemskapResource(_) >> medlemskapResource
         1 * restService.getElevforholdResource(_) >> elevforholdResource
-        1 * restService.getElevResource(_) >> new ElevResource()
+        1 * restService.getElevResource(_,) >> new ElevResource()
         1 * kundeFactory.getKunde(_) >> kunde
 
         customerList.size() == 1

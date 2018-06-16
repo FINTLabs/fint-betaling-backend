@@ -18,24 +18,20 @@ public class StudentService {
     @Autowired
     private RestService restService;
 
-    public List<Kunde> getCustomers() {
-        ElevResources elevResources = restService.getElevResources();
-
-        return elevResources.getContent().stream()
-                .map(elev -> kundeFactory.getKunde(elev))
-                .collect(Collectors.toList());
+    public List<Kunde> getCustomers(String orgId) {
+        return getCustomers(orgId, "");
     }
 
-    public List<Kunde> getCustomers(String filter) {
-        ElevResources elevResources = restService.getElevResources();
+    public List<Kunde> getCustomers(String orgId, String filter) {
+        ElevResources elevResources = restService.getElevResources(orgId);
 
         List<Kunde> allCustomers = elevResources.getContent().stream()
-                .map(elev -> kundeFactory.getKunde(elev))
+                .map(elev -> kundeFactory.getKunde(orgId, elev))
                 .collect(Collectors.toList());
 
         return allCustomers.stream().filter(customer ->
                 customer.getNavn().getEtternavn().toLowerCase()
                         .contains(filter.toLowerCase()))
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 }

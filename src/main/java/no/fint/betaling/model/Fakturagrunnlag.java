@@ -4,6 +4,7 @@ package no.fint.betaling.model;
 import lombok.*;
 import no.fint.model.FintMainObject;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
+@Document
 public class Fakturagrunnlag implements FintMainObject {
 
     public enum Relasjonsnavn {

@@ -1,5 +1,6 @@
 package no.fint.betaling.controller;
 
+import no.fint.betaling.config.HeaderConstants;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -18,9 +18,9 @@ public class StudentController {
     private StudentService studentService;
 
 
-    @GetMapping("/customers")
-    public ResponseEntity getCustomers(@RequestParam(value = "etternavn", required = false) String lastName) {
-        List<Kunde> allCustomers = studentService.getCustomers(lastName);
+    @GetMapping("/customer")
+    public ResponseEntity getCustomers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId, @RequestParam(value = "etternavn", required = false) String lastName) {
+        List<Kunde> allCustomers = studentService.getCustomers(orgId, lastName);
         return ResponseEntity.ok(allCustomers);
     }
 }

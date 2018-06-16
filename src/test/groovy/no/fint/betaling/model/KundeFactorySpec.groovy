@@ -31,7 +31,7 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(resource)
 
         then:
-        1 * restService.getPersonResource(validUrl) >> person
+        1 * restService.getPersonResource(validUrl,) >> person
         kunde.kundenummer == '12345678901'
         kunde.postadresse.poststed == 'Oslo'
         kunde.kontaktinformasjon.epostadresse == 'test@test.com'
@@ -47,7 +47,7 @@ class KundeFactorySpec extends Specification {
         factory.getKunde(invalidResource)
 
         then:
-        1 * restService.getPersonResource(invalidUrl) >> {
+        1 * restService.getPersonResource(invalidUrl,) >> {
             throw new InvalidResponseException('test exception', new Exception())
         }
         thrown(InvalidResponseException)
