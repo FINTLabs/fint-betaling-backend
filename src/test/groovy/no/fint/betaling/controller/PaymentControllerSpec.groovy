@@ -28,7 +28,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: finn ut hvorda
 
     def "Get all payments"() {
         when:
-        def response = mockMvc.perform(get('/api/betaling'))
+        def response = mockMvc.perform(get('/api/payment'))
 
         then:
         1 * paymentService.getAllPayments('test.no') >> [createPayment('123', 'Testesen')]
@@ -46,7 +46,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: finn ut hvorda
         def jsonPayment = objectMapper.writeValueAsString(new Payment())
 
         when:
-        def response = mockMvc.perform(post('/api/betaling/save').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
+        def response = mockMvc.perform(post('/api/payment/save').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
 
         then:
         1 * mongoService.saveFakturagrunnlag('test.no', _, _) >> new Betaling(kunde: kunde, fakturagrunnlag: fakturagrunnlag)
@@ -56,7 +56,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: finn ut hvorda
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {
         when:
-        def response = mockMvc.perform(get('/api/betaling/navn').param('etternavn', 'Testesen'))
+        def response = mockMvc.perform(get('/api/payment/navn').param('etternavn', 'Testesen'))
 
         then:
         1 * paymentService.getPaymentsByLastname(_, 'Testesen') >> [createPayment('123', 'Testesen')]
@@ -67,7 +67,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: finn ut hvorda
 
     def "Get payment by ordernumber given valid ordernumber returns list of payments with matching ordernumber"(){
         when:
-        def response = mockMvc.perform(get('/api/betaling/ordrenummer').param('ordrenummer','validOrdernumber'))
+        def response = mockMvc.perform(get('/api/payment/ordrenummer').param('ordrenummer','validOrdernumber'))
 
         then:
         1 * paymentService.getPaymentsByOrdernumber(_,'validOrdernumber') >> [createPayment('validOrdernumber','Testesen')]
