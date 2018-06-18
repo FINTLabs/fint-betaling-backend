@@ -22,18 +22,16 @@ class MongoServiceSpec extends Specification {
         mongoService = new MongoService(mongoTemplate: mongoTemplate)
     }
 
-    def "Save fakturagrunnlag given valid data returns Betaling"() {
+    def "Save fakturagrunnlag given valid data sends Betaling and orgId to mongotemplate"() {
         given:
         def fakturagrunnlag = new Fakturagrunnlag(systemId: new Identifikator(identifikatorverdi: 'test'), total: 1000)
         def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
 
         when:
-        def betaling = mongoService.saveFakturagrunnlag(orgId, fakturagrunnlag, kunde)
+        mongoService.setPayment(orgId, new Betaling(fakturagrunnlag: fakturagrunnlag, kunde: kunde))
 
         then:
         1 * mongoTemplate.save(_, 'test.no')
-        betaling.fakturagrunnlag.total == 1000
-        betaling.kunde.navn.etternavn == 'Testesen'
     }
 
     def "Get fakturagrunnlag returns list"() {
@@ -42,7 +40,7 @@ class MongoServiceSpec extends Specification {
         query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
 
         when:
-        def listBetaling = mongoService.getFakturagrunnlag(orgId, query)
+        def listBetaling = mongoService.getPayments(orgId, query)
 
         then:
         1 * mongoTemplate.find(_, Betaling.class, 'test.no') >> [new Betaling()]

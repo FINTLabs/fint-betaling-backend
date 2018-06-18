@@ -14,15 +14,12 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     @Autowired
-    private MongoService mongoService;
-
-    @Autowired
     private PaymentService paymentService;
 
     @PostMapping("/save")
     public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
                                              @RequestBody Payment payment) {
-        return ResponseEntity.ok(mongoService.saveFakturagrunnlag(orgId, payment.getFakturagrunnlag(), payment.getKunde()));
+        return ResponseEntity.ok(paymentService.setPayment(orgId, payment.getFakturagrunnlag(), payment.getKunde()));
     }
 
     @GetMapping

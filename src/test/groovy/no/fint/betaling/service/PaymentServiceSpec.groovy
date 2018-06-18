@@ -1,19 +1,23 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.Betaling
+import no.fint.betaling.model.Fakturagrunnlag
 import no.fint.betaling.model.Kunde
+import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import spock.lang.Specification
 
 class PaymentServiceSpec extends Specification {
     private String orgId
     private MongoService mongoService
+    private OrdernumberService ordernumberService
     private PaymentService paymentService
 
     void setup() {
         orgId = 'test.no'
         mongoService = Mock(MongoService)
-        paymentService = new PaymentService(mongoService: mongoService)
+        ordernumberService = Mock(OrdernumberService)
+        paymentService = new PaymentService(mongoService: mongoService, ordernumberService: ordernumberService)
     }
 
     def "Get all payments given valid orgId returns list"() {
@@ -21,7 +25,7 @@ class PaymentServiceSpec extends Specification {
         def listBetaling = paymentService.getAllPayments(orgId)
 
         then:
-        1 * mongoService.getFakturagrunnlag('test.no', _) >> [new Betaling(), new Betaling()]
+        1 * mongoService.getPayments('test.no', _) >> [new Betaling(), new Betaling()]
         listBetaling.size() == 2
     }
 
@@ -30,7 +34,7 @@ class PaymentServiceSpec extends Specification {
         def listBetaling = paymentService.getPaymentsByLastname(orgId, 'Correctlastname')
 
         then:
-        1 * mongoService.getFakturagrunnlag('test.no', _) >> [createPayment('123', 'Correctlastname')]
+        1 * mongoService.getPayments('test.no', _) >> [createPayment('123', 'Correctlastname')]
         listBetaling.size() == 1
         listBetaling.get(0).kunde.navn.etternavn == 'Correctlastname'
     }
@@ -40,9 +44,25 @@ class PaymentServiceSpec extends Specification {
         def listBetaling = paymentService.getPaymentsByOrdernumber(orgId, 'validOrdernumber')
 
         then:
-        1 * mongoService.getFakturagrunnlag('test.no', _) >> [createPayment('validOrdernumber', 'Testesen')]
+        1 * mongoService.getPayments('test.no', _) >> [createPayment('validOrdernumber', 'Testesen')]
         listBetaling.size() == 1
         listBetaling.get(0).ordrenummer == 'validOrdernumber'
+    }
+
+    def "Save payment given valid data sends Betaling and orgId to mongotemplate"() {
+        given:
+        def fakturagrunnlag = new Fakturagrunnlag(systemId: new Identifikator(identifikatorverdi: 'test'), total: 1000)
+        def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
+
+        when:
+        def payment = paymentService.setPayment(orgId, fakturagrunnlag, kunde)
+
+        then:
+        1 * ordernumberService.getOrdernumber() >> 'testNummer'
+        1 * mongoService.setPayment('test.no', _)
+        payment.ordrenummer == 'testNummer'
+        payment.kunde.navn.etternavn == 'Testesen'
+        payment.fakturagrunnlag.total == 1000
     }
 
     private static Betaling createPayment(String ordernumber, String lastname) {

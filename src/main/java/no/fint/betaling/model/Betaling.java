@@ -9,5 +9,5 @@ public class Betaling {
     private String restBelop;
     private Kunde kunde;
     private Fakturagrunnlag fakturagrunnlag;
-    private boolean sendt = false;
+    private boolean sentToExternalSystem = false;
 }
