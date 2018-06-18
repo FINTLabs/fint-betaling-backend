@@ -7,7 +7,7 @@ import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
 
-class GroupControllerSpec extends MockMvcSpecification {
+class GroupControllerSpec extends MockMvcSpecification {//TODO: finn ut hvordan man legger til HTTP headere
     private MockMvc mockMvc
     private GroupController groupController
     private GroupService groupService
@@ -26,7 +26,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/group'))
 
         then:
-        1 * groupService.getAllCustomerGroups() >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+        1 * groupService.getAllCustomerGroups(_) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
 
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))

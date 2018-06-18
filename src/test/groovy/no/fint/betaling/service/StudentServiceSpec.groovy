@@ -13,11 +13,13 @@ class StudentServiceSpec extends Specification {
     private KundeFactory kundeFactory
     private StudentService studentService
     private RestService restService
+    private String orgId
 
     void setup() {
         restService = Mock(RestService)
         kundeFactory = Mock(KundeFactory)
         studentService = new StudentService(restService: restService, kundeFactory: kundeFactory)
+        orgId = 'test.no'
     }
 
     def "Get customers returns list"() {
@@ -25,23 +27,23 @@ class StudentServiceSpec extends Specification {
         def elevResources = createElevResources(1)
 
         when:
-        List<Kunde> listCustomers = studentService.getCustomers()
+        List<Kunde> listCustomers = studentService.getCustomers(orgId, "")
 
         then:
-        1 * restService.getElevResources() >> elevResources
-        1 * kundeFactory.getKunde(_) >> new Kunde()
+        1 * restService.getElevResources('test.no') >> elevResources
+        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
         listCustomers.size() == 1
     }
 
     def "Get customers given filter keyword returns filtered list"() {
         when:
-        def listStudents = studentService.getCustomers('r')
+        def listStudents = studentService.getCustomers(orgId,'r')
 
         then:
-        1 * restService.getElevResources() >> createElevResources(3)
-        1 * kundeFactory.getKunde(_) >> new Kunde(navn: new Personnavn(etternavn: 'Feilsen'))
-        1 * kundeFactory.getKunde(_) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
-        1 * kundeFactory.getKunde(_) >> new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))
+        1 * restService.getElevResources('test.no') >> createElevResources(3)
+        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Feilsen'))
+        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
+        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))
 
         listStudents.size() == 1
         listStudents.get(0).navn.etternavn == 'Rettsen'

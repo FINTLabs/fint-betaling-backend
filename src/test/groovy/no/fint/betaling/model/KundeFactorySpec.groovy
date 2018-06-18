@@ -14,10 +14,12 @@ class KundeFactorySpec extends Specification {
 
     private RestService restService
     private KundeFactory factory
+    private String orgId
 
     void setup() {
         restService = Mock(RestService)
         factory = new KundeFactory(restService: restService)
+        orgId = 'test.no'
     }
 
     def "Get kunde given resource with links"() {
@@ -28,10 +30,10 @@ class KundeFactorySpec extends Specification {
         resource.addPerson(Link.with(validUrl))
 
         when:
-        def kunde = factory.getKunde(resource)
+        def kunde = factory.getKunde(orgId, resource)
 
         then:
-        1 * restService.getPersonResource(validUrl,) >> person
+        1 * restService.getPersonResource('test.no', validUrl) >> person
         kunde.kundenummer == '12345678901'
         kunde.postadresse.poststed == 'Oslo'
         kunde.kontaktinformasjon.epostadresse == 'test@test.com'
@@ -44,10 +46,10 @@ class KundeFactorySpec extends Specification {
         invalidResource.addPerson(Link.with(invalidUrl))
 
         when:
-        factory.getKunde(invalidResource)
+        factory.getKunde(orgId, invalidResource)
 
         then:
-        1 * restService.getPersonResource(invalidUrl,) >> {
+        1 * restService.getPersonResource('test.no', invalidUrl) >> {
             throw new InvalidResponseException('test exception', new Exception())
         }
         thrown(InvalidResponseException)

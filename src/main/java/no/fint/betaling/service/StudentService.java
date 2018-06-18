@@ -23,15 +23,19 @@ public class StudentService {
     }
 
     public List<Kunde> getCustomers(String orgId, String filter) {
+        if (filter == null) {
+            filter = "";
+        }
         ElevResources elevResources = restService.getElevResources(orgId);
 
         List<Kunde> allCustomers = elevResources.getContent().stream()
                 .map(elev -> kundeFactory.getKunde(orgId, elev))
                 .collect(Collectors.toList());
 
+        String finalFilter = filter;
         return allCustomers.stream().filter(customer ->
                 customer.getNavn().getEtternavn().toLowerCase()
-                        .contains(filter.toLowerCase()))
-                .collect(Collectors.toList());
+                        .contains(finalFilter.toLowerCase()))
+                        .collect(Collectors.toList());
     }
 }

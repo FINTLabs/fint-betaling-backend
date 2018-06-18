@@ -39,11 +39,11 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromBasisgruppe()
 
         then:
-        1 * restService.getBasisgruppeResources() >> basisgruppeResources
-        1 * restService.getMedlemskapResource(_) >> medlemskapResource
-        1 * restService.getElevforholdResource(_) >> elevforholdResource
-        1 * restService.getElevResource(_,) >> new ElevResource()
-        1 * kundeFactory.getKunde(_) >> kunde
+        1 * restService.getBasisgruppeResources(_) >> basisgruppeResources
+        1 * restService.getMedlemskapResource(_, _) >> medlemskapResource
+        1 * restService.getElevforholdResource(_, _) >> elevforholdResource
+        1 * restService.getElevResource(_, _) >> new ElevResource()
+        1 * kundeFactory.getKunde(_, _) >> kunde
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'

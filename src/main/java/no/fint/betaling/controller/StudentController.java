@@ -19,7 +19,8 @@ public class StudentController {
 
 
     @GetMapping("/customer")
-    public ResponseEntity getCustomers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId, @RequestParam(value = "etternavn", required = false) String lastName) {
+    public ResponseEntity getCustomers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+                                       @RequestParam(value = "etternavn", required = false) String lastName) {
         List<Kunde> allCustomers = studentService.getCustomers(orgId, lastName);
         return ResponseEntity.ok(allCustomers);
     }
