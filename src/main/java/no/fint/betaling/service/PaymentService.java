@@ -41,7 +41,7 @@ public class PaymentService {
         Betaling betaling = new Betaling();
         betaling.setFakturagrunnlag(fakturagrunnlag);
         betaling.setKunde(kunde);
-        betaling.setOrdrenummer(ordernumberService.getOrdernumber());
+        betaling.setOrdrenummer(ordernumberService.getOrdernumber(orgId));
         mongoService.setPayment(orgId,betaling);
         return betaling;
     }

@@ -1,6 +1,8 @@
 package no.fint.betaling.model
 
 import no.fint.betaling.service.RestService
+import no.fint.model.felles.Person
+import no.fint.model.felles.kompleksedatatyper.Adresse
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
@@ -25,7 +27,7 @@ class KundeFactorySpec extends Specification {
     def "Get kunde given resource with links"() {
         given:
         def validUrl = 'http://localhost/person'
-        def person = createPersonResource('12345678901', 'Oslo', 'test@test.com')
+        def person = createPerson('12345678901', 'Oslo', 'test@test.com')
         def resource = new ElevResource()
         resource.addPerson(Link.with(validUrl))
 
@@ -33,7 +35,7 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(orgId, resource)
 
         then:
-        1 * restService.getPersonResource('test.no', validUrl) >> person
+        1 * restService.getPerson('test.no', validUrl) >> person
         kunde.kundenummer == '12345678901'
         kunde.postadresse.poststed == 'Oslo'
         kunde.kontaktinformasjon.epostadresse == 'test@test.com'
@@ -49,13 +51,13 @@ class KundeFactorySpec extends Specification {
         factory.getKunde(orgId, invalidResource)
 
         then:
-        1 * restService.getPersonResource('test.no', invalidUrl) >> {
+        1 * restService.getPerson('test.no', invalidUrl) >> {
             throw new InvalidResponseException('test exception', new Exception())
         }
         thrown(InvalidResponseException)
     }
 
-    private static PersonResource createPersonResource(String kundenummer, String poststed, String epostadresse) {
+    private static Person createPerson(String kundenummer, String poststed, String epostadresse) {
 
         def fodselsnummer = new Identifikator()
         fodselsnummer.setIdentifikatorverdi(kundenummer)
@@ -67,10 +69,10 @@ class KundeFactorySpec extends Specification {
         def kontaktinformasjon = new Kontaktinformasjon()
         kontaktinformasjon.setEpostadresse(epostadresse)
 
-        def adresse = new AdresseResource()
+        def adresse = new Adresse()
         adresse.setPoststed(poststed)
 
-        def person = new PersonResource()
+        def person = new Person()
         person.setFodselsnummer(fodselsnummer)
         person.setNavn(personnavn)
         person.setKontaktinformasjon(kontaktinformasjon)

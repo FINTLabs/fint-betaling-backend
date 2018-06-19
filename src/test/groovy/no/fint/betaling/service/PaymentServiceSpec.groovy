@@ -58,7 +58,7 @@ class PaymentServiceSpec extends Specification {
         def payment = paymentService.setPayment(orgId, fakturagrunnlag, kunde)
 
         then:
-        1 * ordernumberService.getOrdernumber() >> 'testNummer'
+        1 * ordernumberService.getOrdernumber(_) >> 'testNummer'
         1 * mongoService.setPayment('test.no', _)
         payment.ordrenummer == 'testNummer'
         payment.kunde.navn.etternavn == 'Testesen'

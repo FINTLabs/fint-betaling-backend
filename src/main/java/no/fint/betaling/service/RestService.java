@@ -1,6 +1,7 @@
 package no.fint.betaling.service;
 
 import no.fint.betaling.model.InvalidResponseException;
+import no.fint.model.felles.Person;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.*;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
@@ -122,6 +123,19 @@ public class RestService {
             ).getBody();
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to get PersonResource url: %s", url), e);
+        }
+    }
+
+    public Person getPerson(String orgId, String url){
+        try {
+            return restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    Person.class
+            ).getBody();
+        } catch (RestClientException e) {
+            throw new InvalidResponseException(String.format("Unable to get Person url: %s", url), e);
         }
     }
 }
