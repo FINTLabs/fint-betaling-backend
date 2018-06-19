@@ -24,20 +24,19 @@ public class OrdernumberService {
     private String getAndUpdateLastOrdernumber(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("orgId").is(orgId));
-        query.addCriteria(Criteria.where("sisteOrdrenummer").is(""));
+        query.addCriteria(Criteria.where("sisteOrdrenummer").exists(true));
 
-        List<OrgConfig> orgConfig = mongoTemplate.find(query, OrgConfig.class, orgId);
+        List<OrgConfig> orgConfigList = mongoTemplate.find(query, OrgConfig.class, orgId);
         Long ordernumber = null;
 
-        if (orgConfig.size() == 0) {
-            OrgConfig orgConfigNew = new OrgConfig();
-            orgConfigNew.setOrgId(orgId);
-            orgConfigNew.setSisteOrdrenummer(0L);
-
+        if (orgConfigList.size() == 0) {
+            OrgConfig orgConfig = new OrgConfig();
+            orgConfig.setOrgId(orgId);
+            orgConfig.setSisteOrdrenummer(0L);
             ordernumber = 0L;
-            mongoTemplate.save(orgConfigNew, orgId);
+            mongoTemplate.save(orgConfig, orgId);
         } else {
-            ordernumber = orgConfig.get(0).getSisteOrdrenummer() + 1;
+            ordernumber = orgConfigList.get(0).getSisteOrdrenummer() + 1;
             Update update = new Update();
             update.set("sisteOrdrenummer", ordernumber);
 
@@ -45,5 +44,9 @@ public class OrdernumberService {
         }
 
         return String.format("%s", ordernumber);
+    }
+
+    public String getOrdernumberFromNumber(String orgId, String number){
+        return String.format("%s%s", orgId.replace(".",""), number);
     }
 }

@@ -19,7 +19,7 @@ public class PaymentService {
     @Autowired
     private OrdernumberService ordernumberService;
 
-    public List<Betaling> getAllPayments(String orgId){
+    public List<Betaling> getAllPayments(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where(""));
         return mongoService.getPayments(orgId, query);
@@ -33,7 +33,10 @@ public class PaymentService {
 
     public List<Betaling> getPaymentsByOrdernumber(String orgId, String ordernumber) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("ordrenummer").regex(ordernumber, "i"));
+        query.addCriteria(Criteria.where("ordrenummer").regex(
+                ordernumberService.getOrdernumberFromNumber(orgId, ordernumber),
+                "i")
+        );
         return mongoService.getPayments(orgId, query);
     }
 
@@ -42,7 +45,7 @@ public class PaymentService {
         betaling.setFakturagrunnlag(fakturagrunnlag);
         betaling.setKunde(kunde);
         betaling.setOrdrenummer(ordernumberService.getOrdernumber(orgId));
-        mongoService.setPayment(orgId,betaling);
+        mongoService.setPayment(orgId, betaling);
         return betaling;
     }
 }
