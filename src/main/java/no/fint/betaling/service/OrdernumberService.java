@@ -26,17 +26,17 @@ public class OrdernumberService {
         query.addCriteria(Criteria.where("orgId").is(orgId));
         query.addCriteria(Criteria.where("sisteOrdrenummer").exists(true));
 
-        List<OrgConfig> orgConfigList = mongoTemplate.find(query, OrgConfig.class, orgId);
+        OrgConfig orgConfig = mongoTemplate.findOne(query, OrgConfig.class, orgId);
         Long ordernumber = null;
 
-        if (orgConfigList.size() == 0) {
-            OrgConfig orgConfig = new OrgConfig();
+        if (orgConfig == null) {
+            orgConfig = new OrgConfig();
             orgConfig.setOrgId(orgId);
             orgConfig.setSisteOrdrenummer(0L);
             ordernumber = 0L;
             mongoTemplate.save(orgConfig, orgId);
         } else {
-            ordernumber = orgConfigList.get(0).getSisteOrdrenummer() + 1;
+            ordernumber = orgConfig.getSisteOrdrenummer() + 1;
             Update update = new Update();
             update.set("sisteOrdrenummer", ordernumber);
 

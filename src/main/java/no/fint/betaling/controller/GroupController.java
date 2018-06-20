@@ -1,6 +1,5 @@
 package no.fint.betaling.controller;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import no.fint.betaling.config.HeaderConstants;
 import no.fint.betaling.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;

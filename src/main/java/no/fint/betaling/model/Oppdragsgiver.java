@@ -13,7 +13,7 @@ public class Oppdragsgiver {
         FAKRUTAGRUNNLAG,
         VARELINJE
     }
-
+    private String navn;
     @NonNull
     private Identifikator systemId;
 }

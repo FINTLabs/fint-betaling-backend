@@ -19,7 +19,7 @@ class OrdernumberServiceSpec extends Specification {
         def ordernumber = ordernumberService.getOrdernumber('existing.org')
 
         then:
-        1 * mongoTemplate.find(_, _, _) >> [new OrgConfig(orgId: 'existing.org', sisteOrdrenummer: 1000)]
+        1 * mongoTemplate.findOne(_, _, _) >> new OrgConfig(orgId: 'existing.org', sisteOrdrenummer: 1000)
         1 * mongoTemplate.updateFirst(_, _, _)
         ordernumber == 'existingorg1001'
     }
@@ -29,8 +29,16 @@ class OrdernumberServiceSpec extends Specification {
         def ordernumber = ordernumberService.getOrdernumber('notexisting.org')
 
         then:
-        1 * mongoTemplate.find(_, _, _) >> []
+        1 * mongoTemplate.findOne(_, _, _) >> null
         1 * mongoTemplate.save(_,_)
         ordernumber == 'notexistingorg0'
+    }
+
+    def "Get ordernumber from number given number and orgId returns valid ordernumber"(){
+        when:
+        def ordernumber = ordernumberService.getOrdernumberFromNumber('valid.org', '5')
+
+        then:
+        ordernumber == 'validorg5'
     }
 }

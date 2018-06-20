@@ -41,12 +41,13 @@ class PaymentServiceSpec extends Specification {
 
     def "Get payment given valid ordernumber returns list with payments matching given ordernumber"(){
         when:
-        def listBetaling = paymentService.getPaymentsByOrdernumber(orgId, 'validOrdernumber')
+        def listBetaling = paymentService.getPaymentsByOrdernumber(orgId, '5')
 
         then:
-        1 * mongoService.getPayments('test.no', _) >> [createPayment('validOrdernumber', 'Testesen')]
+        1 * ordernumberService.getOrdernumberFromNumber(orgId, _) >> 'testno5'
+        1 * mongoService.getPayments('test.no', _) >> [createPayment('testno5', 'Testesen')]
         listBetaling.size() == 1
-        listBetaling.get(0).ordrenummer == 'validOrdernumber'
+        listBetaling.get(0).ordrenummer == 'testno5'
     }
 
     def "Save payment given valid data sends Betaling and orgId to mongotemplate"() {
