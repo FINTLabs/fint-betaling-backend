@@ -1,10 +1,16 @@
 package no.fint.betaling.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
 public class Config {
@@ -21,6 +27,16 @@ public class Config {
 
     @Bean
     public MongoTemplate getMongoTemplate() {
-        return new MongoTemplate(new MongoClient(MONGOHOST, MONGOPORT), MONGODATABASENAME);
+        String connectionString = String.format("mongodb://%s:%s/%s", MONGOHOST, MONGOPORT, MONGODATABASENAME);
+        return new MongoTemplate(new MongoClient(new MongoClientURI(connectionString)), MONGODATABASENAME);
+    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @PostConstruct
+    public void init() {
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 }
+

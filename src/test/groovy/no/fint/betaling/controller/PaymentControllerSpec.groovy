@@ -2,10 +2,11 @@ package no.fint.betaling.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.fint.betaling.model.Betaling
-import no.fint.betaling.model.Fakturagrunnlag
+
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.Payment
 import no.fint.betaling.service.PaymentService
+import no.fint.model.administrasjon.okonomi.Fakturagrunnlag
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
@@ -37,7 +38,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
     def "Set payment given payment returns Betaling"() {
         given:
         def kunde = new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
-        def fakturagrunnlag = new Fakturagrunnlag(total: 1000, systemId: new Identifikator(identifikatorverdi: 'test'))
+        def fakturagrunnlag = new Fakturagrunnlag(total: 1000)
 
         def objectMapper = new ObjectMapper()
         def jsonPayment = objectMapper.writeValueAsString(new Payment())

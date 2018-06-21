@@ -1,6 +1,6 @@
 package no.fint.betaling.service;
 
-import no.fint.betaling.model.Varelinje;
+import no.fint.model.administrasjon.okonomi.Varelinje;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -16,9 +16,7 @@ public class OrderLineService {
 
     public List<Varelinje> getOrderLines(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("mvakode").exists(true));
-        query.addCriteria(Criteria.where("oppdragsgiver").exists(true));
-        query.addCriteria(Criteria.where("pris").exists(true));
+        query.addCriteria(Criteria.where("_class").is("no.fint.model.administrasjon.okonomi.Varelinje"));
 
         return mongoService.getOrderLine(orgId, query);
     }

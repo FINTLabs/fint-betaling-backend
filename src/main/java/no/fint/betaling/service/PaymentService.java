@@ -1,8 +1,8 @@
 package no.fint.betaling.service;
 
 import no.fint.betaling.model.Betaling;
-import no.fint.betaling.model.Fakturagrunnlag;
 import no.fint.betaling.model.Kunde;
+import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -21,7 +21,7 @@ public class PaymentService {
 
     public List<Betaling> getAllPayments(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where(""));
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         return mongoService.getPayments(orgId, query);
     }
 

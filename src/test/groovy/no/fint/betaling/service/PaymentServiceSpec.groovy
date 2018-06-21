@@ -1,8 +1,9 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.Betaling
-import no.fint.betaling.model.Fakturagrunnlag
+
 import no.fint.betaling.model.Kunde
+import no.fint.model.administrasjon.okonomi.Fakturagrunnlag
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import spock.lang.Specification
@@ -52,7 +53,7 @@ class PaymentServiceSpec extends Specification {
 
     def "Save payment given valid data sends Betaling and orgId to mongotemplate"() {
         given:
-        def fakturagrunnlag = new Fakturagrunnlag(systemId: new Identifikator(identifikatorverdi: 'test'), total: 1000)
+        def fakturagrunnlag = new Fakturagrunnlag(total: 1000)
         def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
 
         when:

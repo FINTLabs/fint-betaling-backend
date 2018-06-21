@@ -1,8 +1,7 @@
 package no.fint.betaling.service;
 
-import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Betaling;
-import no.fint.betaling.model.Varelinje;
+import no.fint.model.administrasjon.okonomi.Varelinje;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
 @Service
 public class MongoService {
 
@@ -30,11 +28,11 @@ public class MongoService {
         mongoTemplate.upsert(query, update, orgId);
     }
 
-    public void setOrderLine(String orgId, Varelinje varelinje){
+    public void setOrderLine(String orgId, Varelinje varelinje) {
         mongoTemplate.save(varelinje, orgId);
     }
 
-    public List<Varelinje> getOrderLine(String orgId, Query query){
+    public List<Varelinje> getOrderLine(String orgId, Query query) {
         return mongoTemplate.find(query, Varelinje.class, orgId);
     }
 
