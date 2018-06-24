@@ -26,7 +26,7 @@ public class StudentService {
         if (filter == null) {
             filter = "";
         }
-        ElevResources elevResources = restService.getElevResources(orgId);
+        ElevResources elevResources = restService.getResource(ElevResources.class, RestService.ELEV_ENDPOINT, orgId);
 
         List<Kunde> allCustomers = elevResources.getContent().stream()
                 .map(elev -> kundeFactory.getKunde(orgId, elev))
@@ -36,6 +36,6 @@ public class StudentService {
         return allCustomers.stream().filter(customer ->
                 customer.getNavn().getEtternavn().toLowerCase()
                         .contains(finalFilter.toLowerCase()))
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 }
