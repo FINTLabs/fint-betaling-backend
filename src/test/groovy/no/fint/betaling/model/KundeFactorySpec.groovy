@@ -7,8 +7,6 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
 import no.fint.model.resource.utdanning.elev.ElevResource
 import spock.lang.Specification
 
@@ -35,7 +33,7 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(orgId, resource)
 
         then:
-        1 * restService.getPerson('test.no', validUrl) >> person
+        1 * restService.getResource(Person, validUrl, 'test.no') >> person
         kunde.kundenummer == '12345678901'
         kunde.postadresse.poststed == 'Oslo'
         kunde.kontaktinformasjon.epostadresse == 'test@test.com'
@@ -51,7 +49,7 @@ class KundeFactorySpec extends Specification {
         factory.getKunde(orgId, invalidResource)
 
         then:
-        1 * restService.getPerson('test.no', invalidUrl) >> {
+        1 * restService.getResource(Person, invalidUrl, 'test.no') >> {
             throw new InvalidResponseException('test exception', new Exception())
         }
         thrown(InvalidResponseException)

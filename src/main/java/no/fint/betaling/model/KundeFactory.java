@@ -14,7 +14,7 @@ public class KundeFactory {
 
     public Kunde getKunde(String orgId, FintLinks links) {
         String personUrl = links.getLinks().get("person").get(0).getHref();
-        Person person = restService.getPerson(orgId, personUrl);
+        Person person = restService.getResource(Person.class, personUrl, orgId);
 
         Kunde customer = new Kunde();
         customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());

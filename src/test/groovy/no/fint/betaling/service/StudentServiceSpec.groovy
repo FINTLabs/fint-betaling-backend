@@ -30,17 +30,17 @@ class StudentServiceSpec extends Specification {
         List<Kunde> listCustomers = studentService.getCustomers(orgId, "")
 
         then:
-        1 * restService.getElevResources('test.no') >> elevResources
+        1 * restService.getResource(ElevResources, _ as String, _ as String) >> elevResources
         1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
         listCustomers.size() == 1
     }
 
     def "Get customers given filter keyword returns filtered list"() {
         when:
-        def listStudents = studentService.getCustomers(orgId,'r')
+        def listStudents = studentService.getCustomers(orgId, 'r')
 
         then:
-        1 * restService.getElevResources('test.no') >> createElevResources(3)
+        1 * restService.getResource(ElevResources, _ as String, _ as String) >> createElevResources(3)
         1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Feilsen'))
         1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
         1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))
