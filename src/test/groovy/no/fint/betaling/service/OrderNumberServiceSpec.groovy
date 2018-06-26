@@ -1,6 +1,7 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.OrgConfig
+import org.springframework.data.mongodb.core.FindAndModifyOptions
 import org.springframework.data.mongodb.core.MongoTemplate
 import spock.lang.Specification
 
@@ -19,8 +20,7 @@ class OrderNumberServiceSpec extends Specification {
         def ordernumber = ordernumberService.getOrderNumber('existing.org')
 
         then:
-        1 * mongoTemplate.findOne(_, _, _) >> new OrgConfig(orgId: 'existing.org', sisteOrdrenummer: 1000)
-        1 * mongoTemplate.updateFirst(_, _, _)
+        1 * mongoTemplate.findAndModify(_, _, _, _) >> new OrgConfig(orgId: 'existing.org', sisteOrdrenummer: 1001)
         ordernumber == 'existingorg1001'
     }
 
@@ -29,12 +29,12 @@ class OrderNumberServiceSpec extends Specification {
         def ordernumber = ordernumberService.getOrderNumber('notexisting.org')
 
         then:
-        1 * mongoTemplate.findOne(_, _, _) >> null
-        1 * mongoTemplate.save(_,_)
+        1 * mongoTemplate.findAndModify(_, _, _, _) >> null
+        1 * mongoTemplate.save(_, _)
         ordernumber == 'notexistingorg0'
     }
 
-    def "Get ordernumber from number given number and orgId returns valid ordernumber"(){
+    def "Get ordernumber from number given number and orgId returns valid ordernumber"() {
         when:
         def ordernumber = ordernumberService.getOrderNumberFromNumber('valid.org', '5')
 
