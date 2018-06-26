@@ -4,19 +4,19 @@ import no.fint.betaling.model.OrgConfig
 import org.springframework.data.mongodb.core.MongoTemplate
 import spock.lang.Specification
 
-class OrdernumberServiceSpec extends Specification {
+class OrderNumberServiceSpec extends Specification {
 
     private MongoTemplate mongoTemplate
-    private OrdernumberService ordernumberService
+    private OrderNumberService ordernumberService
 
     void setup() {
         mongoTemplate = Mock(MongoTemplate)
-        ordernumberService = new OrdernumberService(mongoTemplate: mongoTemplate)
+        ordernumberService = new OrderNumberService(mongoTemplate: mongoTemplate)
     }
 
     def "Get ordernumber given existing orgId returns valid ordernumber"() {
         when:
-        def ordernumber = ordernumberService.getOrdernumber('existing.org')
+        def ordernumber = ordernumberService.getOrderNumber('existing.org')
 
         then:
         1 * mongoTemplate.findOne(_, _, _) >> new OrgConfig(orgId: 'existing.org', sisteOrdrenummer: 1000)
@@ -26,7 +26,7 @@ class OrdernumberServiceSpec extends Specification {
 
     def "Get ordernumber given nonexisting orgId returns valid ordernumber"() {
         when:
-        def ordernumber = ordernumberService.getOrdernumber('notexisting.org')
+        def ordernumber = ordernumberService.getOrderNumber('notexisting.org')
 
         then:
         1 * mongoTemplate.findOne(_, _, _) >> null
@@ -36,7 +36,7 @@ class OrdernumberServiceSpec extends Specification {
 
     def "Get ordernumber from number given number and orgId returns valid ordernumber"(){
         when:
-        def ordernumber = ordernumberService.getOrdernumberFromNumber('valid.org', '5')
+        def ordernumber = ordernumberService.getOrderNumberFromNumber('valid.org', '5')
 
         then:
         ordernumber == 'validorg5'

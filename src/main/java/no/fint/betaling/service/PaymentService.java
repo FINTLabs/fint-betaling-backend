@@ -17,7 +17,7 @@ public class PaymentService {
     private MongoService mongoService;
 
     @Autowired
-    private OrdernumberService ordernumberService;
+    private OrderNumberService orderNumberService;
 
     public List<Betaling> getAllPayments(String orgId) {
         Query query = new Query();
@@ -27,14 +27,16 @@ public class PaymentService {
 
     public List<Betaling> getPaymentsByLastname(String orgId, String lastName) {
         Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         query.addCriteria(Criteria.where("kunde.navn.etternavn").regex(lastName, "i"));
         return mongoService.getPayments(orgId, query);
     }
 
     public List<Betaling> getPaymentsByOrdernumber(String orgId, String ordernumber) {
         Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         query.addCriteria(Criteria.where("ordrenummer").regex(
-                ordernumberService.getOrdernumberFromNumber(orgId, ordernumber),
+                orderNumberService.getOrderNumberFromNumber(orgId, ordernumber),
                 "i")
         );
         return mongoService.getPayments(orgId, query);
@@ -44,7 +46,7 @@ public class PaymentService {
         Betaling betaling = new Betaling();
         betaling.setFakturagrunnlag(fakturagrunnlag);
         betaling.setKunde(kunde);
-        betaling.setOrdrenummer(ordernumberService.getOrdernumber(orgId));
+        betaling.setOrdrenummer(orderNumberService.getOrderNumber(orgId));
         mongoService.setPayment(orgId, betaling);
         return betaling;
     }

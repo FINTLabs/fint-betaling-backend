@@ -16,7 +16,7 @@ import javax.annotation.PostConstruct;
 public class Config {
 
     private static final String MONGOHOST = "localhost";
-    private static final int MONGOPORT = 27017;
+    private static final String MONGOPORT = "27017";
     private static final String MONGODATABASENAME = "Fint-Betaling";
 
 

@@ -4,21 +4,20 @@ import no.fint.betaling.model.Betaling
 
 import no.fint.betaling.model.Kunde
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag
-import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import spock.lang.Specification
 
 class PaymentServiceSpec extends Specification {
     private String orgId
     private MongoService mongoService
-    private OrdernumberService ordernumberService
+    private OrderNumberService ordernumberService
     private PaymentService paymentService
 
     void setup() {
         orgId = 'test.no'
         mongoService = Mock(MongoService)
-        ordernumberService = Mock(OrdernumberService)
-        paymentService = new PaymentService(mongoService: mongoService, ordernumberService: ordernumberService)
+        ordernumberService = Mock(OrderNumberService)
+        paymentService = new PaymentService(mongoService: mongoService, orderNumberService: ordernumberService)
     }
 
     def "Get all payments given valid orgId returns list"() {
@@ -45,7 +44,7 @@ class PaymentServiceSpec extends Specification {
         def listBetaling = paymentService.getPaymentsByOrdernumber(orgId, '5')
 
         then:
-        1 * ordernumberService.getOrdernumberFromNumber(orgId, _) >> 'testno5'
+        1 * ordernumberService.getOrderNumberFromNumber(orgId, _) >> 'testno5'
         1 * mongoService.getPayments('test.no', _) >> [createPayment('testno5', 'Testesen')]
         listBetaling.size() == 1
         listBetaling.get(0).ordrenummer == 'testno5'
@@ -60,7 +59,7 @@ class PaymentServiceSpec extends Specification {
         def payment = paymentService.setPayment(orgId, fakturagrunnlag, kunde)
 
         then:
-        1 * ordernumberService.getOrdernumber(_) >> 'testNummer'
+        1 * ordernumberService.getOrderNumber(_) >> 'testNummer'
         1 * mongoService.setPayment('test.no', _)
         payment.ordrenummer == 'testNummer'
         payment.kunde.navn.etternavn == 'Testesen'

@@ -1,3 +1,7 @@
+spring:
+  mvc:
+    dispatch-options-request: true
+
 springfox:
   title: 'FINT-Betaling'
   version: '0.0.1-SNAPSHOT'
