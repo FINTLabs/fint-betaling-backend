@@ -1,6 +1,9 @@
 spring:
   mvc:
     dispatch-options-request: true
+  data:
+    mongodb:
+     uri: mongodb://localhost:27017/betaling
 
 springfox:
   title: 'FINT-Betaling'
