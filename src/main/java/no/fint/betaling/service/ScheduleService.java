@@ -17,7 +17,7 @@ public class ScheduleService {
 
     private List<Betaling> getUnsentPayments(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("sentToExternalSystem").is(false));
+        query.addCriteria(Criteria.where("sentTilEksterntSystem").is(false));
         return mongoService.getPayments(orgId, query);
     }
 
@@ -29,11 +29,11 @@ public class ScheduleService {
         Update update = new Update();
         update.set("fakturanummer", payment.getFakturanummer());
         update.set("restbelop", payment.getRestBelop());
-        update.set("sentToExternalSystem", payment.isSentToExternalSystem());
+        update.set("sentTilEksterntSystem", true);
 
         Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         query.addCriteria(Criteria.where("ordrenummer").is(payment.getOrdrenummer()));
-
         mongoService.updatePayment(orgId, query, update);
     }
 }

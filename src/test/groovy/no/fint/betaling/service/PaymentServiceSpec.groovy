@@ -3,7 +3,9 @@ package no.fint.betaling.service
 import no.fint.betaling.model.Betaling
 
 import no.fint.betaling.model.Kunde
+import no.fint.model.administrasjon.kompleksedatatyper.Kontostreng
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag
+import no.fint.model.administrasjon.okonomi.Varelinje
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import spock.lang.Specification
 
@@ -50,20 +52,18 @@ class PaymentServiceSpec extends Specification {
         listBetaling.get(0).ordrenummer == 'testno5'
     }
 
-    def "Save payment given valid data sends Betaling and orgId to mongotemplate"() {
+    def "Save payment given valid data returns void"() {
         given:
-        def fakturagrunnlag = new Fakturagrunnlag(total: 1000)
-        def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
+        def orderLine = new Varelinje(pris: 100L, enhet: "enhet", kontering: new Kontostreng())
+        def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
 
         when:
-        def payment = paymentService.setPayment(orgId, fakturagrunnlag, kunde)
+        def response = paymentService.setPayment(orgId, [orderLine], [customer])
 
         then:
         1 * ordernumberService.getOrderNumber(_) >> 'testNummer'
         1 * mongoService.setPayment('test.no', _)
-        payment.ordrenummer == 'testNummer'
-        payment.kunde.navn.etternavn == 'Testesen'
-        payment.fakturagrunnlag.total == 1000
+        response == null
     }
 
     private static Betaling createPayment(String ordernumber, String lastname) {

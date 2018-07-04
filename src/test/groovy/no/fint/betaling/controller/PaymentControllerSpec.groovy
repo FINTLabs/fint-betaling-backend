@@ -2,12 +2,9 @@ package no.fint.betaling.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.fint.betaling.model.Betaling
-
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.Payment
 import no.fint.betaling.service.PaymentService
-import no.fint.model.administrasjon.okonomi.Fakturagrunnlag
-import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.http.MediaType
@@ -35,11 +32,8 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
                 .andExpect(jsonPathEquals('$[0].kunde.navn.etternavn', 'Testesen'))
     }
 
-    def "Set payment given payment returns Betaling"() {
+    def "Set payment given valid payment returns status ok"() {
         given:
-        def kunde = new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
-        def fakturagrunnlag = new Fakturagrunnlag(total: 1000)
-
         def objectMapper = new ObjectMapper()
         def jsonPayment = objectMapper.writeValueAsString(new Payment())
 
@@ -47,15 +41,13 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
         def response = mockMvc.perform(post('/api/payment/save').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
 
         then:
-        1 * paymentService.setPayment('test.no', _, _) >> new Betaling(kunde: kunde, fakturagrunnlag: fakturagrunnlag)
+        1 * paymentService.setPayment('test.no', _, _)
         response.andExpect(status().isOk())
-                .andExpect(jsonPathEquals('$.kunde.navn.etternavn', 'Testesen'))
-                //TODO: test på total-verdi i fakturagrunnlag
     }
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {
         when:
-        def response = mockMvc.perform(get('/api/payment/navn').param('etternavn', 'Testesen'))
+        def response = mockMvc.perform(get('/api/payment/navn/{etternavn}', 'Testesen'))
 
         then:
         1 * paymentService.getPaymentsByLastname(_, 'Testesen') >> [createPayment('123', 'Testesen')]
@@ -64,18 +56,18 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
                 .andExpect(jsonPathEquals('$[0].kunde.navn.etternavn', 'Testesen'))
     }
 
-    def "Get payment by ordernumber given valid ordernumber returns list of payments with matching ordernumber"() {
+    def "Get payment by orderNumber given valid orderNumber returns list of payments with matching orderNumber"() {
         when:
-        def response = mockMvc.perform(get('/api/payment/ordrenummer').param('ordrenummer', 'validOrdernumber'))
+        def response = mockMvc.perform(get('/api/payment/ordrenummer/{ordrenummer}', 'validOrderNumber'))
 
         then:
-        1 * paymentService.getPaymentsByOrdernumber(_, 'validOrdernumber') >> [createPayment('validOrdernumber', 'Testesen')]
+        1 * paymentService.getPaymentsByOrdernumber(_, 'validOrderNumber') >> [createPayment('validOrderNumber', 'Testesen')]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].ordrenummer', 'validOrdernumber'))
+                .andExpect(jsonPathEquals('$[0].ordrenummer', 'validOrderNumber'))
     }
 
-    private static Betaling createPayment(String ordernumber, String lastname) {
-        return new Betaling(kunde: new Kunde(navn: new Personnavn(etternavn: lastname)), ordrenummer: ordernumber)
+    private static Betaling createPayment(String orderNumber, String lastname) {
+        return new Betaling(kunde: new Kunde(navn: new Personnavn(etternavn: lastname)), ordrenummer: orderNumber)
     }
 }

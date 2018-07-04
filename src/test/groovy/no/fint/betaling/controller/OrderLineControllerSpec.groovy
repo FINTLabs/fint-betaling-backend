@@ -61,8 +61,7 @@ class OrderLineControllerSpec extends MockMvcSpecification {
 
 
         then:
-        1 * orderLineService.setOrderLine('test.org', _) >> orderLine
+        1 * orderLineService.setOrderLine('test.org', _) >> true
         response.andExpect(status().isOk())
-                .andExpect(jsonPathEquals('$.navn', 'testOrder'))
     }
 }

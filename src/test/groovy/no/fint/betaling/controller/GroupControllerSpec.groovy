@@ -7,7 +7,7 @@ import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
 
-class GroupControllerSpec extends MockMvcSpecification {//TODO: finn ut hvordan man legger til HTTP headere
+class GroupControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
     private GroupController groupController
     private GroupService groupService

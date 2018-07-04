@@ -3,12 +3,10 @@ package no.fint.betaling.controller;
 import no.fint.betaling.config.HeaderConstants;
 import no.fint.betaling.model.Payment;
 import no.fint.betaling.service.PaymentService;
-import no.fint.betaling.service.MongoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -20,8 +18,9 @@ public class PaymentController {
 
     @PostMapping("/save")
     public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
-                                             @RequestBody Payment payment) {
-        return ResponseEntity.ok(paymentService.setPayment(orgId, payment.getFakturagrunnlag(), payment.getKunde()));
+                                     @RequestBody Payment payment) {
+        paymentService.setPayment(orgId, payment.getOrderLines(), payment.getCustomers());
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping
@@ -29,15 +28,15 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getAllPayments(orgId));
     }
 
-    @GetMapping("/navn")
+    @GetMapping("/navn/{etternavn}")
     public ResponseEntity getPaymentByName(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
-                                           @RequestParam(value = "etternavn") String lastName) {
+                                           @PathVariable(value = "etternavn") String lastName) {
         return ResponseEntity.ok(paymentService.getPaymentsByLastname(orgId, lastName));
     }
 
-    @GetMapping("/ordrenummer")
-    public ResponseEntity getPaymentByOrdernumber(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
-                                                  @RequestParam(value = "ordrenummer") String ordernumber) {
-        return ResponseEntity.ok(paymentService.getPaymentsByOrdernumber(orgId, ordernumber));
+    @GetMapping("/ordrenummer/{ordrenummer}")
+    public ResponseEntity getPaymentByOrderNumber(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+                                                  @PathVariable(value = "ordrenummer") String orderNumber) {
+        return ResponseEntity.ok(paymentService.getPaymentsByOrdernumber(orgId, orderNumber));
     }
 }

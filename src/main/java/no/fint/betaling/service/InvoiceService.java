@@ -1,6 +1,6 @@
 package no.fint.betaling.service;
 
-import no.fint.model.administrasjon.okonomi.Varelinje;
+import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,35 +13,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class OrderLineService {
+public class InvoiceService {
 
-    private String ORDERLINEURL = "https://beta1.felleskomponent.no/administrasjon/okonomi";
+    private String FAKTURAGRUNNLAG_URL = "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag";
 
     @Autowired
     private RestTemplate restTemplate;
 
-    public List<Varelinje> getOrderLines(String orgId) {
+    public List<Fakturagrunnlag> getFakturagrunnlag(String orgId) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-org-id", orgId);
-        ResponseEntity responseEntity = restTemplate.exchange(
-                ORDERLINEURL + "/varelinje",
+        /*
+        return restTemplate.exchange(
+            FAKTURAGRUNNLAG_URL,
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                Varelinje.class
-        );
+                Fakturagrunnlag.class
+        )
+        */
         return new ArrayList<>();
     }
 
-    public boolean setOrderLine(String orgId, Varelinje orderLine) {
+    public boolean setFakturagrunnlag(String orgId, Fakturagrunnlag payment) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-org-id", orgId);
-        HttpEntity<Varelinje> httpEntity = new HttpEntity<>(orderLine,headers);
-        ResponseEntity responseEntity = restTemplate.exchange(
-                ORDERLINEURL + "/varelinje",
+        HttpEntity<Fakturagrunnlag> entity = new HttpEntity<>(payment, headers);
+        ResponseEntity response = restTemplate.exchange(
+                FAKTURAGRUNNLAG_URL,
                 HttpMethod.POST,
-                httpEntity,
-                Varelinje.class
+                entity,
+                Fakturagrunnlag.class
         );
-        return responseEntity.getStatusCode().is2xxSuccessful();
+        return response.getStatusCode().is2xxSuccessful();
     }
 }

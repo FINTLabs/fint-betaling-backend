@@ -2,10 +2,12 @@ package no.fint.betaling.model;
 
 
 import lombok.Data;
-import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
+import no.fint.model.administrasjon.okonomi.Varelinje;
+
+import java.util.List;
 
 @Data
 public class Payment {
-    private Fakturagrunnlag fakturagrunnlag;
-    private Kunde kunde;
+    private List<Varelinje> orderLines;
+    private List<Kunde> customers;
 }
