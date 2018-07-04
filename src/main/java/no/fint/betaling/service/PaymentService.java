@@ -5,6 +5,8 @@ import no.fint.betaling.model.Kunde;
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
 import no.fint.model.administrasjon.okonomi.Fakturalinje;
 import no.fint.model.administrasjon.okonomi.Varelinje;
+import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
+import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -54,23 +56,5 @@ public class PaymentService {
             payment.setVarelinjer(orderLines);
             mongoService.setPayment(orgId, payment);
         });
-    }
-
-    public Fakturagrunnlag createFakturagrunnlag(Betaling payment) {
-        List<Fakturalinje> paymentLines = payment.getVarelinjer().stream().map(orderLine -> {
-            Fakturalinje paymentLine = new Fakturalinje();
-            paymentLine.setPris(orderLine.getPris());
-            List<String> description = new ArrayList<>();
-            description.add(orderLine.getNavn());
-            description.add(orderLine.getEnhet());
-            description.add(orderLine.getKode());
-            paymentLine.setFritekst(description);
-            return paymentLine;
-        }).collect(Collectors.toList());
-
-        Fakturagrunnlag invoice = new Fakturagrunnlag();
-        invoice.setFakturalinjer(paymentLines);
-
-        return invoice;
     }
 }

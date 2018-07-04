@@ -1,6 +1,7 @@
 package no.fint.betaling.service;
 
 import no.fint.model.administrasjon.okonomi.Varelinje;
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +28,7 @@ public class OrderLineService {
                 ORDERLINEURL + "/varelinje",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
-                Varelinje.class
+                VarelinjeResources.class
         );
         return new ArrayList<>();
     }
