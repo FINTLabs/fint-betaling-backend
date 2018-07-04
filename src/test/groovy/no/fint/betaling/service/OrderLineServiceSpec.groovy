@@ -1,6 +1,10 @@
 package no.fint.betaling.service
 
 import no.fint.model.administrasjon.okonomi.Varelinje
+import no.fint.model.felles.kompleksedatatyper.Identifikator
+import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
@@ -17,13 +21,24 @@ class OrderLineServiceSpec extends Specification {
     }
 
     def "Get order lines given valid orgId returns list of Varelinje"() {
+        given:
+        def orderLineResources = new VarelinjeResources()
+        orderLineResources.addResource(new VarelinjeResource(
+                enhet: 'test',
+                kontering: new KontostrengResource(),
+                pris: 1000L,
+                kode: 'code',
+                navn: 'Test',
+                systemId: new Identifikator(identifikatorverdi: 'test')
+        ))
+
         when:
         def orderLines = orderLineService.getOrderLines('valid.org')
 
         then:
-        1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok([new Varelinje()])
+        1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok(orderLineResources)
         orderLines.size() == 1
-        orderLines.get(0) instanceof Varelinje
+        orderLines.get(0) instanceof VarelinjeResource
     }
 
     def "Set order line given valid ordId and valid order line returns true"() {
@@ -40,7 +55,7 @@ class OrderLineServiceSpec extends Specification {
         def orderLines = orderLineService.getOrderLines('invalid.org')
 
         then:
-        1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok([])
+        1 * restTemplate.exchange(_, _, _, _) >> ResponseEntity.ok(new VarelinjeResources())
         orderLines.size() == 0
     }
 }

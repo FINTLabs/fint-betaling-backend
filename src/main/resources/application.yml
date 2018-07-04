@@ -8,3 +8,8 @@ spring:
 springfox:
   title: 'FINT-Betaling'
   version: '0.0.1-SNAPSHOT'
+
+fint:
+  betaling:
+    endpoints:
+      invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"

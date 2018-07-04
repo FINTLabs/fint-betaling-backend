@@ -1,6 +1,7 @@
 package no.fint.betaling.service;
 
 import no.fint.model.administrasjon.okonomi.Varelinje;
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -21,16 +22,15 @@ public class OrderLineService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public List<Varelinje> getOrderLines(String orgId) {
+    public List<VarelinjeResource> getOrderLines(String orgId) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-org-id", orgId);
-        ResponseEntity responseEntity = restTemplate.exchange(
+        return restTemplate.exchange(
                 ORDERLINEURL + "/varelinje",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 VarelinjeResources.class
-        );
-        return new ArrayList<>();
+        ).getBody().getContent();
     }
 
     public boolean setOrderLine(String orgId, Varelinje orderLine) {

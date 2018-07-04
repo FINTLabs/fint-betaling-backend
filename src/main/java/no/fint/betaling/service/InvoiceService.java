@@ -5,6 +5,7 @@ import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,7 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class InvoiceService {
 
-    private String FAKTURAGRUNNLAG_URL = "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag";
+    @Value("${fint.betaling.endpoints.invoice}")
+    private String invoiceEndpoint;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -28,7 +30,7 @@ public class InvoiceService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-org-id", orgId);
         return restTemplate.exchange(
-                FAKTURAGRUNNLAG_URL,
+                invoiceEndpoint,
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 FakturagrunnlagResources.class
@@ -40,7 +42,7 @@ public class InvoiceService {
         headers.set("x-org-id", orgId);
         HttpEntity<FakturagrunnlagResource> entity = new HttpEntity<>(payment, headers);
         ResponseEntity response = restTemplate.exchange(
-                FAKTURAGRUNNLAG_URL,
+                invoiceEndpoint,
                 HttpMethod.POST,
                 entity,
                 FakturagrunnlagResource.class
