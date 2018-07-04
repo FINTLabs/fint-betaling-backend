@@ -7,13 +7,14 @@ pipeline {
             }
         }
         stage('Publish') {
-            when {
-                branch 'master'
-            }
+            when { branch 'master' }
             steps {
                 sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:latest"
                 withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
                     sh "docker push 'dtr.fintlabs.no/beta/betaling:latest'"
+                }
+                withDockerServer([credentialsId: "ucp-fintlabs-jenkins-bundle", uri: "tcp://ucp.fintlabs.no:443"]) {
+                    sh "docker service update betaling-beta_betaling --image dtr.fintlabs.no/beta/betaling:latest --detach=false"
                 }
             }
         }
