@@ -29,15 +29,14 @@ public class RestService {
         }
     }
 
-    public <T> boolean setResource(Class<T> type, String url, T content, String orgId) {
+    public <T> ResponseEntity setResource(Class<T> type, String url, T content, String orgId) {
         HttpEntity<T> httpEntity = new HttpEntity<>(content, getHeaders(orgId));
-        ResponseEntity responseEntity = restTemplate.exchange(
+        return restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 httpEntity,
                 type
         );
-        return responseEntity.getStatusCode().is2xxSuccessful();
     }
 
     private HttpHeaders getHeaders(String orgId){

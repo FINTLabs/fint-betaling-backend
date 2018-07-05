@@ -41,8 +41,8 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
         def response = mockMvc.perform(post('/api/payment').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
 
         then:
-        1 * paymentService.setPayment('test.no', _, _)
-        response.andExpect(status().isOk())
+        1 * paymentService.setPayment('test.no', _ as Payment)
+        response.andExpect(status().is(201))
     }
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {

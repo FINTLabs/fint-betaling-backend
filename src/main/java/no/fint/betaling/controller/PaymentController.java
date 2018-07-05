@@ -22,8 +22,7 @@ public class PaymentController {
     @RequestMapping(method = POST)
     public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
                                      @RequestBody Payment payment) {
-        paymentService.setPayment(orgId, payment.getOrderLines(), payment.getCustomers());
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.setPayment(orgId, payment));
     }
 
     @RequestMapping(method = GET)

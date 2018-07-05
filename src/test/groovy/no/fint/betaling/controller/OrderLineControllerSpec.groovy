@@ -9,6 +9,7 @@ import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -58,7 +59,7 @@ class OrderLineControllerSpec extends MockMvcSpecification {
 
 
         then:
-        1 * restService.setResource(_, _, _, 'test.org') >> true
+        1 * restService.setResource(_, _, _, 'test.org') >> ResponseEntity.ok().build()
         response.andExpect(status().isOk())
     }
 

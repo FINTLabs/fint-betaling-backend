@@ -4,6 +4,7 @@ import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class InvoiceService {
         return restService.getResource(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
     }
 
-    public boolean setInvoice(String orgId, FakturagrunnlagResource invoice) {
+    public ResponseEntity setInvoice(String orgId, FakturagrunnlagResource invoice) {
         return restService.setResource(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
     }
 }

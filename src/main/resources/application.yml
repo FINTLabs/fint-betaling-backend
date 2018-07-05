@@ -21,3 +21,8 @@ fint:
       basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
       undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
       kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
+    invoice:
+      days:
+        - 7
+        - 14
+        - 30
