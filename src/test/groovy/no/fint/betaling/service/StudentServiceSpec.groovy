@@ -18,7 +18,7 @@ class StudentServiceSpec extends Specification {
     void setup() {
         restService = Mock(RestService)
         kundeFactory = Mock(KundeFactory)
-        studentService = new StudentService(restService: restService, kundeFactory: kundeFactory)
+        studentService = new StudentService(restService: restService, kundeFactory: kundeFactory, elevEndpoint: "endpoints/elev")
         orgId = 'test.no'
     }
 

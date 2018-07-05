@@ -33,7 +33,12 @@ class GroupServiceSpec extends Specification {
         kundeFactory = Mock(KundeFactory) {
             getKunde(_ as String, _ as FintLinks) >> kunde
         }
-        groupService = new GroupService(restService: restService, kundeFactory: kundeFactory)
+        groupService = new GroupService(
+                restService: restService,
+                kundeFactory: kundeFactory,
+                basisgruppeEndpoint: "endpoints/basisgruppe",
+                undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
+                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe")
     }
 
 
