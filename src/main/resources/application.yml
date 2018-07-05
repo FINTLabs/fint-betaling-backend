@@ -3,7 +3,8 @@ spring:
     dispatch-options-request: true
   data:
     mongodb:
-     uri:
+      uri: "mongodb://localhost:27017/fintBetaling"
+
 
 springfox:
   title: 'FINT-Betaling'
@@ -13,3 +14,8 @@ fint:
   betaling:
     endpoints:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
+      student: "https://play-with-fint.felleskomponent.no/utdanning/elev/elev"
+      basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
+      undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
+      kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
+      orderLine: "https://beta1.felleskomponent.no/administrasjon/okonomi"

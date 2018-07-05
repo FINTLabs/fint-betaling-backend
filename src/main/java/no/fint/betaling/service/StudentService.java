@@ -4,6 +4,7 @@ import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.model.resource.utdanning.elev.ElevResources;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public class StudentService {
     @Autowired
     private RestService restService;
 
+    @Value("${fint.betaling.endpoints.student}")
+    private String elevEndpoint;
+
     public List<Kunde> getCustomers(String orgId) {
         return getCustomers(orgId, "");
     }
@@ -26,7 +30,7 @@ public class StudentService {
         if (filter == null) {
             filter = "";
         }
-        ElevResources elevResources = restService.getResource(ElevResources.class, RestService.ELEV_ENDPOINT, orgId);
+        ElevResources elevResources = restService.getResource(ElevResources.class, elevEndpoint, orgId);
 
         List<Kunde> allCustomers = elevResources.getContent().stream()
                 .map(elev -> kundeFactory.getKunde(orgId, elev))

@@ -2,6 +2,7 @@ package no.fint.betaling.service;
 
 import no.fint.betaling.model.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -12,11 +13,6 @@ public class RestService {
 
     @Autowired
     private RestTemplate restTemplate;
-
-    static final String ELEV_ENDPOINT = "https://play-with-fint.felleskomponent.no/utdanning/elev/elev";
-    static final String BASISGRUPPE_ENDPOINT = "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe";
-    static final String UNDERVISNINGSGRUPPE_ENDPOINT = "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe";
-    static final String KONTAKTLARERGRUPPE_ENDPOINT = "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe";
 
     public <T> T getResource(Class<T> type, String url, String orgId) {
         try {

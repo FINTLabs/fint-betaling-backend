@@ -4,6 +4,7 @@ import no.fint.model.administrasjon.okonomi.Varelinje;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -11,13 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class OrderLineService {
 
-    private String ORDERLINEURL = "https://beta1.felleskomponent.no/administrasjon/okonomi";
+    @Value("${fint.betaling.endpoints.orderLine}")
+    private String orderLineUrl;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -26,7 +27,7 @@ public class OrderLineService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-org-id", orgId);
         return restTemplate.exchange(
-                ORDERLINEURL + "/varelinje",
+                orderLineUrl + "/varelinje",
                 HttpMethod.GET,
                 new HttpEntity<>(headers),
                 VarelinjeResources.class
@@ -38,7 +39,7 @@ public class OrderLineService {
         headers.set("x-org-id", orgId);
         HttpEntity<Varelinje> httpEntity = new HttpEntity<>(orderLine,headers);
         ResponseEntity responseEntity = restTemplate.exchange(
-                ORDERLINEURL + "/varelinje",
+                orderLineUrl + "/varelinje",
                 HttpMethod.POST,
                 httpEntity,
                 Varelinje.class

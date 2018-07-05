@@ -9,6 +9,7 @@ import no.fint.model.resource.utdanning.elev.*;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import no.fint.model.utdanning.basisklasser.Gruppe;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,6 +25,15 @@ public class GroupService {
     @Autowired
     private KundeFactory kundeFactory;
 
+    @Value(("${fint.betaling.endpoints.basisgruppe}"))
+    private String basisgruppeEndpoint;
+
+    @Value("${fint.betaling.endpoints.undervisningsgruppe}")
+    private String undervisningsgruppeEndpoint;
+
+    @Value("${fint.betaling.endpoints.kontaktlarergruppe}")
+    private String kontaktlarergruppeEndpoint;
+
     public List<KundeGruppe> getAllCustomerGroups(String orgId) {
         List<KundeGruppe> allCustomerGroups = new ArrayList<>();
         allCustomerGroups.addAll(getCustomerGroupListFromBasisgruppe(orgId));
@@ -33,17 +43,17 @@ public class GroupService {
     }
 
     public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe(String orgId) {
-        KontaktlarergruppeResources kontaktlarergruppeResources = restService.getResource(KontaktlarergruppeResources.class, RestService.KONTAKTLARERGRUPPE_ENDPOINT, orgId);
+        KontaktlarergruppeResources kontaktlarergruppeResources = restService.getResource(KontaktlarergruppeResources.class, kontaktlarergruppeEndpoint, orgId);
         return getCustomerGroup(orgId, kontaktlarergruppeResources.getContent());
     }
 
     public List<KundeGruppe> getCustomerGroupListFromUndervisningsgruppe(String orgId) {
-        UndervisningsgruppeResources undervisningsgruppeResources = restService.getResource(UndervisningsgruppeResources.class, RestService.UNDERVISNINGSGRUPPE_ENDPOINT, orgId);
+        UndervisningsgruppeResources undervisningsgruppeResources = restService.getResource(UndervisningsgruppeResources.class, undervisningsgruppeEndpoint, orgId);
         return getCustomerGroup(orgId, undervisningsgruppeResources.getContent());
     }
 
     public List<KundeGruppe> getCustomerGroupListFromBasisgruppe(String orgId) {
-        BasisgruppeResources basisgruppeResources = restService.getResource(BasisgruppeResources.class, RestService.BASISGRUPPE_ENDPOINT, orgId);
+        BasisgruppeResources basisgruppeResources = restService.getResource(BasisgruppeResources.class, basisgruppeEndpoint, orgId);
         return getCustomerGroup(orgId, basisgruppeResources.getContent());
     }
 

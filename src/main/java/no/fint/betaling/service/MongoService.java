@@ -2,6 +2,7 @@ package no.fint.betaling.service;
 
 import no.fint.betaling.model.Betaling;
 import no.fint.model.administrasjon.okonomi.Varelinje;
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -28,7 +29,7 @@ public class MongoService {
         mongoTemplate.upsert(query, update, orgId);
     }
 
-    public void setOrderLine(String orgId, Varelinje varelinje) {
+    public void setOrderLine(String orgId, VarelinjeResource varelinje) {
         mongoTemplate.save(varelinje, orgId);
     }
 
