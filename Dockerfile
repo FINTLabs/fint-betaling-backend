@@ -1,8 +1,10 @@
+FROM dtr.fintlabs.no/beta/fordring:latest as client
+
 FROM gradle:4.8.0-jdk8-alpine as builder
 USER root
 COPY . .
-ARG apiVersion
-RUN gradle --no-daemon -PapiVersion=${apiVersion} build
+COPY --from=client /src/build/ src/main/resources/static/
+RUN gradle --no-daemon build
 
 FROM openjdk:8-jre-alpine
 COPY --from=builder /home/gradle/build/deps/external/*.jar /data/

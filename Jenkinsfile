@@ -3,14 +3,16 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "docker build --tag ${GIT_COMMIT} ."
+                withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
+                    sh "docker build --tag ${GIT_COMMIT} ."
+                }
             }
         }
         stage('Publish') {
             when { branch 'master' }
             steps {
-                sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:latest"
                 withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
+                    sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:latest"
                     sh "docker push 'dtr.fintlabs.no/beta/betaling:latest'"
                 }
                 withDockerServer([credentialsId: "ucp-fintlabs-jenkins-bundle", uri: "tcp://ucp.fintlabs.no:443"]) {
@@ -21,8 +23,8 @@ pipeline {
         stage('Publish PR') {
             when { changeRequest() }
             steps {
-                sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:${BRANCH_NAME}"
                 withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
+                    sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:${BRANCH_NAME}"
                     sh "docker push 'dtr.fintlabs.no/beta/betaling:${BRANCH_NAME}'"
                 }
             }
@@ -30,8 +32,8 @@ pipeline {
         stage('Publish Tag') {
             when { buildingTag() }
             steps {
-                sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:${TAG_NAME}"
                 withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
+                    sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:${TAG_NAME}"
                     sh "docker push 'dtr.fintlabs.no/beta/betaling:${TAG_NAME}'"
                 }
             }
