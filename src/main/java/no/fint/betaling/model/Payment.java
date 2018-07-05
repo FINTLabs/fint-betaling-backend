@@ -3,6 +3,7 @@ package no.fint.betaling.model;
 
 import lombok.Data;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResource;
+import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 
 import java.util.List;
@@ -11,5 +12,6 @@ import java.util.List;
 public class Payment {
     private List<VarelinjeResource> orderLines;
     private List<Kunde> customers;
-    private MvakodeResource mvaKode;
+    private MvakodeResource mvaCode;
+    private OppdragsgiverResource employer;
 }

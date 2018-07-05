@@ -38,7 +38,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
         def jsonPayment = objectMapper.writeValueAsString(new Payment())
 
         when:
-        def response = mockMvc.perform(post('/api/payment/save').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
+        def response = mockMvc.perform(post('/api/payment').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
 
         then:
         1 * paymentService.setPayment('test.no', _, _)

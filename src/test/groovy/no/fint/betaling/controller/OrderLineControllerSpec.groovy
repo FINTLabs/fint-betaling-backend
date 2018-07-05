@@ -52,7 +52,7 @@ class OrderLineControllerSpec extends MockMvcSpecification {
         def jsonOrderLine = mapper.writeValueAsString(createOrderLineResource())
 
         when:
-        def response = mockMvc.perform(post('/api/orderline/save').content(jsonOrderLine).contentType(MediaType.APPLICATION_JSON)
+        def response = mockMvc.perform(post('/api/orderline').content(jsonOrderLine).contentType(MediaType.APPLICATION_JSON)
                 .header('x-org-id', 'test.org'))
         System.out.println(response)
 
