@@ -7,6 +7,7 @@ import no.fint.model.administrasjon.okonomi.Fakturalinje;
 import no.fint.model.administrasjon.okonomi.Varelinje;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -48,7 +49,7 @@ public class PaymentService {
         return mongoService.getPayments(orgId, query);
     }
 
-    public void setPayment(String orgId, List<Varelinje> orderLines, List<Kunde> customers) {
+    public void setPayment(String orgId, List<VarelinjeResource> orderLines, List<Kunde> customers) {
         customers.forEach(customer -> {
             Betaling payment = new Betaling();
             payment.setOrdrenummer(orderNumberService.getOrderNumber(orgId));

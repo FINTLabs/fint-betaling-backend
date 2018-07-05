@@ -3,6 +3,7 @@ package no.fint.betaling.model;
 import lombok.Data;
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
 import no.fint.model.administrasjon.okonomi.Varelinje;
+import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 
 import java.util.List;
 
@@ -13,6 +14,6 @@ public class Betaling {
     private String restBelop;
     private Kunde kunde;
     private Fakturagrunnlag fakturagrunnlag;
-    private List<Varelinje> varelinjer;
+    private List<VarelinjeResource> varelinjer;
     private boolean sentTilEksterntSystem = false;
 }
