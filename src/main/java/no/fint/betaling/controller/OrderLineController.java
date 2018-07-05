@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
@@ -24,12 +27,12 @@ public class OrderLineController {
     @Autowired
     private RestService restService;
 
-    @GetMapping
-    public ResponseEntity getAllOrderlines(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    @RequestMapping(method = GET)
+    public ResponseEntity getAllOrderLines(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
         return ResponseEntity.ok(restService.getResource(VarelinjeResources.class, orderLineEndpoint, orgId).getContent());
     }
 
-    @PostMapping("/save")
+    @RequestMapping(method = POST)
     public ResponseEntity setOrderLine(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
                                        @RequestBody VarelinjeResource orderLine) {
         return ResponseEntity.ok(restService.setResource(VarelinjeResource.class, orderLineEndpoint, orderLine, orgId));

@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/payment")
@@ -16,14 +19,14 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    @PostMapping("/save")
+    @RequestMapping(method = POST)
     public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
                                      @RequestBody Payment payment) {
         paymentService.setPayment(orgId, payment.getOrderLines(), payment.getCustomers());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @GetMapping
+    @RequestMapping(method = GET)
     public ResponseEntity getAllPayments(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
         return ResponseEntity.ok(paymentService.getAllPayments(orgId));
     }
