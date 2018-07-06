@@ -1,5 +1,6 @@
 package no.fint.betaling.service;
 
+import no.fint.betaling.model.Betaling;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,5 +25,9 @@ public class InvoiceService {
 
     public ResponseEntity setInvoice(String orgId, FakturagrunnlagResource invoice) {
         return restService.setResource(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
+    }
+
+    public ResponseEntity getStatus(String orgId, Betaling payment){
+        return ResponseEntity.ok(restService.getResource(FakturagrunnlagResource.class, payment.getLocation().toString(), orgId));
     }
 }

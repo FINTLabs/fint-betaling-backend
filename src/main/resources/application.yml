@@ -12,6 +12,7 @@ springfox:
 
 fint:
   betaling:
+    client-name: "FINT-Betaling"
     endpoints:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
@@ -21,8 +22,4 @@ fint:
       basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
       undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
       kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
-    invoice:
-      date-range:
-        - "7"
-        - "14"
-        - "30"
+    date-range: "7, 14, 30"

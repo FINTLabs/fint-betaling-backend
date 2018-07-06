@@ -33,18 +33,18 @@ public class ScheduleService {
     @Value("${fint.betaling.endpoints.invoice}")
     private String invoiceEndpoint;
 
-    @Autowired
-    private RestTemplate restTemplate;
-
     public void sendInvoices(String orgId) {
         List<Betaling> payments = getUnsentPayments(orgId);
         for (Betaling payment : payments){
-            FakturagrunnlagResource invoice = InvoiceFactory.getInvoice(payment);
-            ResponseEntity response = send(orgId, invoice);
-            log.info(response.toString());
+            ResponseEntity response = invoiceService.setInvoice(orgId, payment.getFakturagrunnlag());
             payment.setLocation(response.getHeaders().getLocation());
             updatePaymentLocation(orgId, payment);
         }
+    }
+
+    public void checkInvoiceStatus(String orgId){
+        List<Betaling> payments = getSentPayments(orgId);
+        payments.forEach(payment -> getPaymentStatus(orgId,payment));
     }
 
     private List<Betaling> getUnsentPayments(String orgId) {
@@ -53,9 +53,16 @@ public class ScheduleService {
         return mongoService.getPayments(orgId, query);
     }
 
+    private List<Betaling> getSentPayments(String orgId) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("sentTilEksterntSystem").is(true));
+        return mongoService.getPayments(orgId, query);
+    }
+
     private void updatePaymentLocation(String orgId, Betaling payment) {
         Update update = new Update();
         update.set("location", payment.getLocation());
+        update.set("sentTilEksterntSystem", true);
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
@@ -63,19 +70,7 @@ public class ScheduleService {
         mongoService.updatePayment(orgId, query, update);
     }
 
-    private ResponseEntity send(String orgId, FakturagrunnlagResource f){
-        return restTemplate.exchange(
-                "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag",
-                HttpMethod.POST,
-                new HttpEntity<>(f),
-                FakturagrunnlagResource.class
-        );
-    }
-
-    private HttpHeaders getHeaders(String orgId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-org-id", orgId);
-        headers.set("x-client", "fint-betaling");
-        return headers;
+    public void getPaymentStatus(String orgId, Betaling payment){
+        log.info(invoiceService.getStatus(orgId, payment).toString());
     }
 }

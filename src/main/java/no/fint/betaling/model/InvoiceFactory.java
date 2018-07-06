@@ -1,5 +1,6 @@
 package no.fint.betaling.model;
 
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
@@ -19,19 +20,25 @@ public class InvoiceFactory {
             description.add(orderLine.getNavn());
             description.add(orderLine.getEnhet());
             description.add(orderLine.getKode());
+            paymentLine.setAntall(1L);
             paymentLine.setFritekst(description);
             return paymentLine;
         }).collect(Collectors.toList());
         Long netto = payment.getVarelinjer().stream().mapToLong(VarelinjeResource::getPris).sum();
-        Long total = (netto * 125)/100;
+        Long total = netto * 125;
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(paymentLines);
         invoice.setFakturadato(new Date());
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.add(Calendar.DATE, Integer.parseInt(payment.getTimeFrameDueDate()));
         invoice.setForfallsdato(calendar.getTime());
+        invoice.setLeveringsdato(new Date());
+        invoice.setAvgifter(total); //setter avgifter lik total???
         invoice.setNetto(netto);
         invoice.setTotal(total);
+        Identifikator identifikator = new Identifikator();
+        identifikator.setIdentifikatorverdi(payment.getOrdrenummer());
+        invoice.setOrdrenummer(identifikator);
 
         return invoice;
     }

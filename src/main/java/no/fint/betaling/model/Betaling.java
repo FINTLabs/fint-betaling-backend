@@ -12,7 +12,6 @@ import java.util.List;
 @Data
 public class Betaling {
     private String ordrenummer;
-    private String fakturanummer;
     private String restBelop;
     private String timeFrameDueDate;
     private Kunde kunde;
@@ -21,7 +20,10 @@ public class Betaling {
     private FakturagrunnlagResource fakturagrunnlag;
     private List<VarelinjeResource> varelinjer;
     private boolean sentTilEksterntSystem = false;
-    private enum status {
-        ACCEPTED, PENDING, FAILED, NOTSENDT
+    private enum Status {
+        ACCEPTED,
+        PENDING,
+        FAILED,
+        NOTSENDT;
     }
 }

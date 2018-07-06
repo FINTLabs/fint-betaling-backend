@@ -15,7 +15,13 @@ public class TestScheduleController {
     private ScheduleService scheduleService;
 
     @GetMapping
-    public ResponseEntity getInvoice(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId){
+    public ResponseEntity getInvoiceTwo(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId){
+        scheduleService.checkInvoiceStatus(orgId);
+        return ResponseEntity.ok("sent invoices");
+    }
+
+    @GetMapping("/one")
+    public ResponseEntity getInvoiceOne(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId){
         scheduleService.sendInvoices(orgId);
         return ResponseEntity.ok("sent invoices");
     }

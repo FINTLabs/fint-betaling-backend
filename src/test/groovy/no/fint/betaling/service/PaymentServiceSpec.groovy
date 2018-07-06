@@ -1,6 +1,5 @@
 package no.fint.betaling.service
 
-import com.mongodb.annotations.Beta
 import no.fint.betaling.model.Betaling
 import no.fint.betaling.model.BetalingFactory
 import no.fint.betaling.model.Kunde
@@ -69,7 +68,7 @@ class PaymentServiceSpec extends Specification {
         def response = paymentService.setPayment(orgId, payment)
 
         then:
-        1 * betalingFactory.getBetaling(_ as Payment,'test.no') >> [new Betaling()]
+        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [new Betaling()]
         1 * mongoService.setPayment('test.no', _ as Betaling)
         response.size() == 1
 

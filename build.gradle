@@ -37,7 +37,7 @@ repositories {
 
 dependencies {
     compile('no.fint:fint-utdanning-resource-model-java:3.0.0')
-    compile('no.fint:fint-administrasjon-resource-model-java:0.99.21-alpha-1')
+    compile('no.fint:fint-administrasjon-resource-model-java:0.99.21-alpha-2')
 
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
