@@ -49,6 +49,8 @@ public class PaymentService {
             betaling.setKunde(customer);
             betaling.setOppdragsgiver(payment.getEmployer());
             betaling.setVarelinjer(payment.getOrderLines());
+            betaling.setOppdragsgiver(payment.getEmployer());
+            betaling.setTimeFrameDueDate(payment.getTimeFrameDueDate());
             mongoService.setPayment(orgId, betaling);
             return betaling;
         }).collect(Collectors.toList());

@@ -13,6 +13,7 @@ public class Betaling {
     private String ordrenummer;
     private String fakturanummer;
     private String restBelop;
+    private long timeFrameDueDate;
     private Kunde kunde;
     private OppdragsgiverResource oppdragsgiver;
     private URI location;

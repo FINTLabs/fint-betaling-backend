@@ -22,16 +22,13 @@ public class ScheduleService {
     @Autowired
     private InvoiceService invoiceService;
 
-    @Autowired
-    private InvoiceFactory invoiceFactory;
-
     @Value("${fint.betaling.endpoints.invoice}")
     private String invoiceEndpoint;
 
     public void sendInvoices(String orgId) {
         List<Betaling> payments = getUnsentPayments(orgId);
         for (Betaling payment : payments){
-            FakturagrunnlagResource invoice = invoiceFactory.getInvoice(payment);
+            FakturagrunnlagResource invoice = InvoiceFactory.getInvoice(payment);
             ResponseEntity response = invoiceService.setInvoice(orgId, invoice);
             payment.setLocation(response.getHeaders().getLocation());
             updatePaymentLocation(orgId, payment);
