@@ -4,6 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
+                    sh "docker pull dtr.fintlabs.no/beta/fordring:latest"
                     sh "docker build --tag ${GIT_COMMIT} ."
                 }
             }
