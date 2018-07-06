@@ -30,16 +30,19 @@ public class RestService {
     }
 
     public <T> ResponseEntity setResource(Class<T> type, String url, T content, String orgId) {
-        HttpEntity<T> httpEntity = new HttpEntity<>(content, getHeaders(orgId));
-        return restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                httpEntity,
-                type
-        );
+        try {
+            return restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    new HttpEntity<>(content, getHeaders(orgId)),
+                    type
+            );
+        } catch (RestClientException e) {
+            throw new InvalidResponseException(String.format("Unable to set %s url: %s", type.getSimpleName(), url), e);
+        }
     }
 
-    private HttpHeaders getHeaders(String orgId){
+    private HttpHeaders getHeaders(String orgId) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-org-id", orgId);
         headers.set("x-client", "fint-betaling");

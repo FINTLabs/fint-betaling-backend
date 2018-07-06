@@ -2,6 +2,7 @@ package no.fint.betaling.model;
 
 import lombok.Data;
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
+import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 
@@ -13,11 +14,11 @@ public class Betaling {
     private String ordrenummer;
     private String fakturanummer;
     private String restBelop;
-    private long timeFrameDueDate;
+    private String timeFrameDueDate;
     private Kunde kunde;
     private OppdragsgiverResource oppdragsgiver;
     private URI location;
-    private Fakturagrunnlag fakturagrunnlag;
+    private FakturagrunnlagResource fakturagrunnlag;
     private List<VarelinjeResource> varelinjer;
     private boolean sentTilEksterntSystem = false;
     private enum status {

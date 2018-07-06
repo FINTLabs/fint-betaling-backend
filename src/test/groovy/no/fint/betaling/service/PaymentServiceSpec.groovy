@@ -1,6 +1,8 @@
 package no.fint.betaling.service
 
+import com.mongodb.annotations.Beta
 import no.fint.betaling.model.Betaling
+import no.fint.betaling.model.BetalingFactory
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.Payment
 import no.fint.model.felles.kompleksedatatyper.Identifikator
@@ -16,12 +18,14 @@ class PaymentServiceSpec extends Specification {
     private MongoService mongoService
     private OrderNumberService ordernumberService
     private PaymentService paymentService
+    private BetalingFactory betalingFactory
 
     void setup() {
         orgId = 'test.no'
         mongoService = Mock(MongoService)
         ordernumberService = Mock(OrderNumberService)
-        paymentService = new PaymentService(mongoService: mongoService, orderNumberService: ordernumberService)
+        betalingFactory = Mock(BetalingFactory)
+        paymentService = new PaymentService(mongoService: mongoService, orderNumberService: ordernumberService, betalingFactory: betalingFactory)
     }
 
     def "Get all payments given valid orgId returns list"() {
@@ -65,7 +69,7 @@ class PaymentServiceSpec extends Specification {
         def response = paymentService.setPayment(orgId, payment)
 
         then:
-        1 * ordernumberService.getOrderNumber(_) >> 'testNummer'
+        1 * betalingFactory.getBetaling(_ as Payment,'test.no') >> [new Betaling()]
         1 * mongoService.setPayment('test.no', _ as Betaling)
         response.size() == 1
 

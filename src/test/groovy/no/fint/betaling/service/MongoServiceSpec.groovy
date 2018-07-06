@@ -6,6 +6,7 @@ import no.fint.betaling.model.Kunde
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
+import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -25,7 +26,7 @@ class MongoServiceSpec extends Specification {
 
     def "Save fakturagrunnlag given valid data sends Betaling and orgId to mongotemplate"() {
         given:
-        def fakturagrunnlag = new Fakturagrunnlag(total: 1000)
+        def fakturagrunnlag = new FakturagrunnlagResource(total: 1000)
         def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
 
         when:

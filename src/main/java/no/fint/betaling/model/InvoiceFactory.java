@@ -28,7 +28,7 @@ public class InvoiceFactory {
         invoice.setFakturalinjer(paymentLines);
         invoice.setFakturadato(new Date());
         GregorianCalendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.DATE, Math.toIntExact(payment.getTimeFrameDueDate()));
+        calendar.add(Calendar.DATE, Integer.parseInt(payment.getTimeFrameDueDate()));
         invoice.setForfallsdato(calendar.getTime());
         invoice.setNetto(netto);
         invoice.setTotal(total);

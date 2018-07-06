@@ -21,7 +21,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class OrderLineController {
 
 
-    @Value("${fint.betaling.endpoints.orderLine}")
+    @Value("${fint.betaling.endpoints.order-line}")
     private String orderLineEndpoint;
 
     @Autowired

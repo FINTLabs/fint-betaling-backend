@@ -1,5 +1,6 @@
 package no.fint.betaling.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Betaling;
 import no.fint.betaling.model.InvoiceFactory;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
@@ -8,11 +9,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.awt.geom.RectangularShape;
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ScheduleService {
 
@@ -25,11 +33,15 @@ public class ScheduleService {
     @Value("${fint.betaling.endpoints.invoice}")
     private String invoiceEndpoint;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public void sendInvoices(String orgId) {
         List<Betaling> payments = getUnsentPayments(orgId);
         for (Betaling payment : payments){
             FakturagrunnlagResource invoice = InvoiceFactory.getInvoice(payment);
-            ResponseEntity response = invoiceService.setInvoice(orgId, invoice);
+            ResponseEntity response = send(orgId, invoice);
+            log.info(response.toString());
             payment.setLocation(response.getHeaders().getLocation());
             updatePaymentLocation(orgId, payment);
         }
@@ -49,5 +61,21 @@ public class ScheduleService {
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         query.addCriteria(Criteria.where("ordrenummer").is(payment.getOrdrenummer()));
         mongoService.updatePayment(orgId, query, update);
+    }
+
+    private ResponseEntity send(String orgId, FakturagrunnlagResource f){
+        return restTemplate.exchange(
+                "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag",
+                HttpMethod.POST,
+                new HttpEntity<>(f),
+                FakturagrunnlagResource.class
+        );
+    }
+
+    private HttpHeaders getHeaders(String orgId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("x-org-id", orgId);
+        headers.set("x-client", "fint-betaling");
+        return headers;
     }
 }

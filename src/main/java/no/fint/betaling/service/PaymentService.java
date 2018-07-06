@@ -1,6 +1,8 @@
 package no.fint.betaling.service;
 
+import com.mongodb.annotations.Beta;
 import no.fint.betaling.model.Betaling;
+import no.fint.betaling.model.BetalingFactory;
 import no.fint.betaling.model.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -15,6 +17,9 @@ public class PaymentService {
 
     @Autowired
     private MongoService mongoService;
+
+    @Autowired
+    private BetalingFactory betalingFactory;
 
     @Autowired
     private OrderNumberService orderNumberService;
@@ -43,16 +48,10 @@ public class PaymentService {
     }
 
     public List<Betaling> setPayment(String orgId, Payment payment) {
-        return payment.getCustomers().stream().map(customer -> {
-            Betaling betaling = new Betaling();
-            betaling.setOrdrenummer(orderNumberService.getOrderNumber(orgId));
-            betaling.setKunde(customer);
-            betaling.setOppdragsgiver(payment.getEmployer());
-            betaling.setVarelinjer(payment.getOrderLines());
-            betaling.setOppdragsgiver(payment.getEmployer());
-            betaling.setTimeFrameDueDate(payment.getTimeFrameDueDate());
-            mongoService.setPayment(orgId, betaling);
-            return betaling;
-        }).collect(Collectors.toList());
+        List<Betaling> payments = betalingFactory.getBetaling(payment, orgId);
+        payments.forEach(p -> {
+            mongoService.setPayment(orgId, p);
+        });
+        return payments;
     }
 }

@@ -16,7 +16,7 @@ public class MvaCodeController {
     @Autowired
     private RestService restService;
 
-    @Value("${fint.betaling.endpoints.mvaCode}")
+    @Value("${fint.betaling.endpoints.mva-code}")
     private String mvaEndpoint;
 
     @GetMapping

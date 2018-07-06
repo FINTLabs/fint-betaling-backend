@@ -13,5 +13,5 @@ public class Payment {
     private List<VarelinjeResource> orderLines;
     private List<Kunde> customers;
     private OppdragsgiverResource employer;
-    private Long timeFrameDueDate;
+    private String timeFrameDueDate;
 }
