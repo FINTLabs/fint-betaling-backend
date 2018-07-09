@@ -23,7 +23,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
 
     def "Get all payments"() {
         when:
-        def response = mockMvc.perform(get('/api/payment'))
+        def response = mockMvc.perform(get('/api/payment').header('x-org-id','test.no'))
 
         then:
         1 * paymentService.getAllPayments('test.no') >> [createPayment('123', 'Testesen')]
@@ -38,7 +38,7 @@ class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i H
         def jsonPayment = objectMapper.writeValueAsString(new Payment())
 
         when:
-        def response = mockMvc.perform(post('/api/payment').content(jsonPayment).contentType(MediaType.APPLICATION_JSON))
+        def response = mockMvc.perform(post('/api/payment').content(jsonPayment).contentType(MediaType.APPLICATION_JSON).header('x-org-id', 'test.no'))
 
         then:
         1 * paymentService.setPayment('test.no', _ as Payment)
