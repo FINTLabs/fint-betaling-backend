@@ -14,13 +14,13 @@ public class TestScheduleController {
     @Autowired
     private ScheduleService scheduleService;
 
-    @GetMapping
+    @GetMapping("/check")
     public ResponseEntity getInvoiceTwo(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId){
         scheduleService.checkInvoiceStatus(orgId);
         return ResponseEntity.ok("sent invoices");
     }
 
-    @GetMapping("/one")
+    @GetMapping("/send")
     public ResponseEntity getInvoiceOne(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId){
         scheduleService.sendInvoices(orgId);
         return ResponseEntity.ok("sent invoices");

@@ -1,6 +1,7 @@
 package no.fint.betaling.model;
 
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
@@ -22,6 +23,7 @@ public class InvoiceFactory {
             description.add(orderLine.getKode());
             paymentLine.setAntall(1L);
             paymentLine.setFritekst(description);
+            paymentLine.addVarelinje(new Link(orderLine.getLinks().get("self").get(0).getHref()));
             return paymentLine;
         }).collect(Collectors.toList());
         Long netto = payment.getVarelinjer().stream().mapToLong(VarelinjeResource::getPris).sum();
@@ -33,9 +35,11 @@ public class InvoiceFactory {
         calendar.add(Calendar.DATE, Integer.parseInt(payment.getTimeFrameDueDate()));
         invoice.setForfallsdato(calendar.getTime());
         invoice.setLeveringsdato(new Date());
-        invoice.setAvgifter(total); //setter avgifter lik total???
+        invoice.setAvgifter(total); //TODO: finn ut hva denne skal vaere
         invoice.setNetto(netto);
         invoice.setTotal(total);
+        invoice.addMottaker(new Link(payment.getKunde().getLinkTilPerson()));
+        invoice.addOppdragsgiver(new Link(payment.getOppdragsgiver().getLinks().get("self").get(0).getHref()));
         Identifikator identifikator = new Identifikator();
         identifikator.setIdentifikatorverdi(payment.getOrdrenummer());
         invoice.setOrdrenummer(identifikator);

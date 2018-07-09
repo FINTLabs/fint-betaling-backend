@@ -1,5 +1,6 @@
 package no.fint.betaling.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,14 @@ public class RestService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private ObjectMapper mapper;
+
     @Value("${fint.betaling.client-name}")
     private String clientName;
 
     public <T> T getResource(Class<T> type, String url, String orgId) {
         try {
-            log.info("feil metode");
             return restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -40,7 +43,6 @@ public class RestService {
 
     public <T> T getResource(Class<T> type, URI uri, String orgId) {
         try {
-            log.info(uri.toString());
             return restTemplate.exchange(
                     uri,
                     HttpMethod.GET,
@@ -54,12 +56,14 @@ public class RestService {
 
     public <T> ResponseEntity setResource(Class<T> type, String url, T content, String orgId) {
         try {
-            return restTemplate.exchange(
+            ResponseEntity responseEntity = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     new HttpEntity<>(content, getHeaders(orgId)),
                     type
             );
+            log.info(responseEntity.toString());
+            return responseEntity;
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to set %s url: %s", type.getSimpleName(), url), e);
         }

@@ -15,10 +15,10 @@ public class KundeFactory {
     public Kunde getKunde(String orgId, FintLinks links) {
         String personUrl = links.getLinks().get("person").get(0).getHref();
         Person person = restService.getResource(Person.class, personUrl, orgId);
-
         Kunde customer = new Kunde();
         customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());
         customer.setNavn(person.getNavn());
+        customer.setLinkTilPerson(personUrl);
         customer.setKontaktinformasjon(person.getKontaktinformasjon());
         customer.setPostadresse(person.getPostadresse());
 

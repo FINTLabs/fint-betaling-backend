@@ -2,6 +2,7 @@ package no.fint.betaling.model;
 
 import lombok.Data;
 import no.fint.model.administrasjon.okonomi.Fakturagrunnlag;
+import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
@@ -20,10 +21,4 @@ public class Betaling {
     private FakturagrunnlagResource fakturagrunnlag;
     private List<VarelinjeResource> varelinjer;
     private boolean sentTilEksterntSystem = false;
-    private enum Status {
-        ACCEPTED,
-        PENDING,
-        FAILED,
-        NOTSENDT;
-    }
 }
