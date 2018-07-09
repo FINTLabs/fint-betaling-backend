@@ -1,6 +1,5 @@
 package no.fint.betaling.service;
 
-import com.mongodb.annotations.Beta;
 import no.fint.betaling.model.Betaling;
 import no.fint.betaling.model.BetalingFactory;
 import no.fint.betaling.model.Payment;
@@ -10,7 +9,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PaymentService {

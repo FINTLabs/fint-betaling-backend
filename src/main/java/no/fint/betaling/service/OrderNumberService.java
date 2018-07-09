@@ -30,16 +30,13 @@ public class OrderNumberService {
 
         FindAndModifyOptions.options().returnNew(true);
         OrgConfig orgConfig = mongoTemplate.findAndModify(query, update, OrgConfig.class, orgId);
-        Long ordernumber = null;
 
         if (orgConfig == null) {
             orgConfig = new OrgConfig();
             orgConfig.setOrgId(orgId);
-            orgConfig.setSisteOrdrenummer(0L);
             mongoTemplate.save(orgConfig, orgId);
         }
-        ordernumber = orgConfig.getSisteOrdrenummer();
-        return String.format("%s", ordernumber);
+        return String.format("%s", orgConfig.getSisteOrdrenummer());
     }
 
     public String getOrderNumberFromNumber(String orgId, String number){

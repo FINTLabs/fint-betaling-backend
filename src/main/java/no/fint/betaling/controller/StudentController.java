@@ -11,15 +11,15 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api")
+@RequestMapping(value = "/api/customer")
 public class StudentController {
 
     @Autowired
     private StudentService studentService;
 
 
-    @GetMapping("/customer")
-    public ResponseEntity getCustomers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+    @GetMapping
+    public ResponseEntity getCustomers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
                                        @RequestParam(value = "etternavn", required = false) String lastName) {
         List<Kunde> allCustomers = studentService.getCustomers(orgId, lastName);
         return ResponseEntity.ok(allCustomers);

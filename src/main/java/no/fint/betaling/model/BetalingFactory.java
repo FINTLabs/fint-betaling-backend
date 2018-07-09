@@ -23,6 +23,7 @@ public class BetalingFactory {
             betaling.setOppdragsgiver(payment.getEmployer());
             betaling.setTimeFrameDueDate(payment.getTimeFrameDueDate());
             betaling.setFakturagrunnlag(InvoiceFactory.getInvoice(betaling));
+            betaling.setRestBelop(betaling.getFakturagrunnlag().getTotal().toString());
             return betaling;
         }).collect(Collectors.toList());
     }

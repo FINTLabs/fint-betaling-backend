@@ -20,24 +20,24 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @RequestMapping(method = POST)
-    public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+    public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
                                      @RequestBody Payment payment) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.setPayment(orgId, payment));
     }
 
     @RequestMapping(method = GET)
-    public ResponseEntity getAllPayments(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    public ResponseEntity getAllPayments(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
         return ResponseEntity.ok(paymentService.getAllPayments(orgId));
     }
 
     @GetMapping("/navn/{etternavn}")
-    public ResponseEntity getPaymentByName(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+    public ResponseEntity getPaymentByName(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
                                            @PathVariable(value = "etternavn") String lastName) {
         return ResponseEntity.ok(paymentService.getPaymentsByLastname(orgId, lastName));
     }
 
     @GetMapping("/ordrenummer/{ordrenummer}")
-    public ResponseEntity getPaymentByOrderNumber(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+    public ResponseEntity getPaymentByOrderNumber(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
                                                   @PathVariable(value = "ordrenummer") String orderNumber) {
         return ResponseEntity.ok(paymentService.getPaymentsByOrdernumber(orgId, orderNumber));
     }

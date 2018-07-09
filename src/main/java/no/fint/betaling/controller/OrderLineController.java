@@ -28,12 +28,12 @@ public class OrderLineController {
     private RestService restService;
 
     @RequestMapping(method = GET)
-    public ResponseEntity getAllOrderLines(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    public ResponseEntity getAllOrderLines(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
         return ResponseEntity.ok(restService.getResource(VarelinjeResources.class, orderLineEndpoint, orgId).getContent());
     }
 
     @RequestMapping(method = POST)
-    public ResponseEntity setOrderLine(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId,
+    public ResponseEntity setOrderLine(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
                                        @RequestBody VarelinjeResource orderLine) {
         return ResponseEntity.ok(restService.setResource(VarelinjeResource.class, orderLineEndpoint, orderLine, orgId));
     }

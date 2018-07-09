@@ -20,7 +20,7 @@ public class MvaCodeController {
     private String mvaEndpoint;
 
     @GetMapping
-    public ResponseEntity getMvaCodes(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId){
+    public ResponseEntity getMvaCodes(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId){
         return ResponseEntity.ok(restService.getResource(MvakodeResources.class, mvaEndpoint, orgId).getContent());
     }
 }

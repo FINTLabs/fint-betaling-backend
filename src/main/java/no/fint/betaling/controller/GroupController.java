@@ -16,22 +16,22 @@ public class GroupController {
     private GroupService groupService;
 
     @GetMapping
-    public ResponseEntity getAllCustomerGroups(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    public ResponseEntity getAllCustomerGroups(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
         return ResponseEntity.ok(groupService.getAllCustomerGroups(orgId));
     }
 
     @GetMapping("/basisgruppe")
-    public ResponseEntity getCustomerGroupsFromBasisgruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    public ResponseEntity getCustomerGroupsFromBasisgruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
         return ResponseEntity.ok(groupService.getCustomerGroupListFromBasisgruppe(orgId));
     }
 
     @GetMapping("/undervisningsgruppe")
-    public ResponseEntity getCustomerGroupsFromFag(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    public ResponseEntity getCustomerGroupsFromFag(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
         return ResponseEntity.ok(groupService.getCustomerGroupListFromUndervisningsgruppe(orgId));
     }
 
     @GetMapping("/kontaktlarergruppe")
-    public ResponseEntity getCustomerGroupListFromKontaktlarergruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "test.no", required = false) String orgId) {
+    public ResponseEntity getCustomerGroupListFromKontaktlarergruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
         return ResponseEntity.ok(groupService.getCustomerGroupListFromKontaktlarergruppe(orgId));
     }
 
