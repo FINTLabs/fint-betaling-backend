@@ -26,7 +26,7 @@ fint:
       employer: "https://beta1.felleskomponent.no/administrasjon/okonomi/oppdragsgiver"
       student: "https://play-with-fint.felleskomponent.no/utdanning/elev/elev"
       basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
-      undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/undervisningsgruppe"
+      undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
       kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
     date-range: "7, 14, 30"
 
