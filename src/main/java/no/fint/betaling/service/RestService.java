@@ -1,6 +1,5 @@
 package no.fint.betaling.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.xml.ws.Response;
 import java.net.URI;
 
 @Slf4j
@@ -23,20 +21,18 @@ public class RestService {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private ObjectMapper mapper;
-
     @Value("${fint.betaling.client-name}")
     private String clientName;
 
     public <T> T getResource(Class<T> type, String url, String orgId) {
         try {
-            return restTemplate.exchange(
+            T content =  restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     new HttpEntity<>(getHeaders(orgId)),
                     type
             ).getBody();
+            return content;
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to get %s url: %s", type.getSimpleName(), url), e);
         }
@@ -57,14 +53,12 @@ public class RestService {
 
     public <T> ResponseEntity setResource(Class<T> type, String url, T content, String orgId) {
         try {
-            ResponseEntity responseEntity = restTemplate.exchange(
+            return restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     new HttpEntity<>(content, getHeaders(orgId)),
                     type
             );
-            log.info(responseEntity.toString());
-            return responseEntity;
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to set %s url: %s", type.getSimpleName(), url), e);
         }

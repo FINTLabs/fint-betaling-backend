@@ -16,7 +16,7 @@ class RestServiceSpec extends Specification {
 
     void setup() {
         restTemplate = Mock(RestTemplate)
-        restService = new RestService(restTemplate: restTemplate)
+        restService = new RestService(restTemplate: restTemplate, clientName: 'test-Betaling')
     }
 
     def "Get resource given invalid response throws InvalidResponseException"() {
@@ -24,7 +24,7 @@ class RestServiceSpec extends Specification {
         restService.getResource(String, 'http://localhost', 'test.no')
 
         then:
-        1 * restTemplate.exchange('http://localhost', HttpMethod.GET, _, String) >> {
+        1 * restTemplate.exchange('http://localhost', HttpMethod.GET, _ as HttpEntity, _ as Class) >> {
             throw new RestClientException('test')
         }
         thrown(InvalidResponseException)
@@ -35,7 +35,16 @@ class RestServiceSpec extends Specification {
         def resource = restService.getResource(ElevResource, 'http://localhost', 'test.no')
 
         then:
-        1 * restTemplate.exchange('http://localhost', HttpMethod.GET, _, ElevResource) >> ResponseEntity.ok(new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
+        1 * restTemplate.exchange('http://localhost', HttpMethod.GET, _ as HttpEntity, _ as Class<ElevResource>) >> ResponseEntity.ok(new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
         resource.elevnummer.identifikatorverdi == 'test'
+    }
+
+    def "Post ElevResource given valid url returns valid response entity"() {
+        when:
+        def response = restService.setResource(ElevResource.class, 'http://localhost', new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')), 'test.no')
+
+        then:
+        1 * restTemplate.exchange(_ as String, HttpMethod.POST, _ as HttpEntity, _ as Class<ElevResource>) >> ResponseEntity.ok().build()
+        response.statusCode.is2xxSuccessful()
     }
 }

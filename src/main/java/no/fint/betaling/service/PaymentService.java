@@ -40,8 +40,8 @@ public class PaymentService {
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         query.addCriteria(Criteria.where("ordrenummer").regex(
                 orderNumberService.getOrderNumberFromNumber(orgId, ordernumber),
-                "i")
-        );
+                "i"
+        ));
         return mongoService.getPayments(orgId, query);
     }
 

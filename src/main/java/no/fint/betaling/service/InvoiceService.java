@@ -5,6 +5,9 @@ import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,9 @@ public class InvoiceService {
     @Autowired
     private RestService restService;
 
+    @Autowired
+    private MongoService mongoService;
+
     public List<FakturagrunnlagResource> getInvoice(String orgId) {
         return restService.getResource(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
     }
@@ -27,7 +33,18 @@ public class InvoiceService {
         return restService.setResource(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
     }
 
-    public ResponseEntity getStatus(String orgId, Betaling payment){
-        return ResponseEntity.ok(restService.getResource(FakturagrunnlagResource.class, payment.getLocation().toString(), orgId));
+    public FakturagrunnlagResource getStatus(String orgId, Betaling payment) {
+        return restService.getResource(FakturagrunnlagResource.class, payment.getLocation().toString(), orgId);
+    }
+
+    public void updateInvoice(String orgId, FakturagrunnlagResource invoice) {
+        Update update = new Update();
+        update.set("fakturagrunnlag", invoice);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("ordrenummer").is(invoice.getOrdrenummer().getIdentifikatorverdi()));
+
+        mongoService.updatePayment(orgId, query, update);
     }
 }

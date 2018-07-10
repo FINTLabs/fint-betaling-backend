@@ -20,26 +20,27 @@ public class OrderNumberService {
         return String.format("%s%s", id, getAndUpdateLastOrderNumber(orgId));
     }
 
+    public String getOrderNumberFromNumber(String orgId, String number) {
+        return String.format("%s%s", orgId.replace(".", ""), number);
+    }
+
     private String getAndUpdateLastOrderNumber(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("orgId").is(orgId));
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.OrgConfig"));
 
         Update update = new Update();
-        update.inc("sisteOrdrenummer",1);
+        update.inc("nesteOrdrenummer", 1);
 
-        FindAndModifyOptions.options().returnNew(true);
+        FindAndModifyOptions.options().returnNew(false);
         OrgConfig orgConfig = mongoTemplate.findAndModify(query, update, OrgConfig.class, orgId);
 
         if (orgConfig == null) {
             orgConfig = new OrgConfig();
             orgConfig.setOrgId(orgId);
             mongoTemplate.save(orgConfig, orgId);
+            orgConfig = mongoTemplate.findAndModify(query, update, OrgConfig.class, orgId);
         }
-        return String.format("%s", orgConfig.getSisteOrdrenummer());
-    }
-
-    public String getOrderNumberFromNumber(String orgId, String number){
-        return String.format("%s%s", orgId.replace(".",""), number);
+        return String.format("%s", orgConfig.getNesteOrdrenummer());
     }
 }
