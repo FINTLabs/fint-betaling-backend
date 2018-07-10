@@ -1,15 +1,21 @@
 package no.fint.betaling.service;
 
+import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.model.InvalidResponseException;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
+import no.fint.model.resource.utdanning.elev.ElevResource;
 import no.fint.model.resource.utdanning.elev.ElevResources;
+import no.fint.model.utdanning.elev.Elev;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class StudentService {
 
@@ -31,10 +37,17 @@ public class StudentService {
             filter = "";
         }
         ElevResources elevResources = restService.getResource(ElevResources.class, elevEndpoint, orgId);
-
-        List<Kunde> allCustomers = elevResources.getContent().stream()
-                .map(elev -> kundeFactory.getKunde(orgId, elev))
-                .collect(Collectors.toList());
+        List<Kunde> allCustomers = new ArrayList<>();
+        for (ElevResource student : elevResources.getContent()){
+            try {
+                Kunde customer = kundeFactory.getKunde(orgId, student);
+                if (customer != null){
+                    allCustomers.add(customer);
+                }
+            } catch (InvalidResponseException e) {
+                log.info(e.toString());
+            }
+        }
 
         String finalFilter = filter;
         return allCustomers.stream().filter(customer ->

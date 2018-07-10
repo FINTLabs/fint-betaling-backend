@@ -26,7 +26,7 @@ public class InvoiceFactory {
             paymentLine.addVarelinje(new Link(orderLine.getLinks().get("self").get(0).getHref()));
             return paymentLine;
         }).collect(Collectors.toList());
-        Long netto = payment.getVarelinjer().stream().mapToLong(VarelinjeResource::getPris).sum();
+        Long netto = payment.getVarelinjer().stream().mapToLong(VarelinjeResource::getPris).sum() * 100;
         Long total = netto * 125;
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(paymentLines);
@@ -35,9 +35,9 @@ public class InvoiceFactory {
         calendar.add(Calendar.DATE, Integer.parseInt(payment.getTimeFrameDueDate()));
         invoice.setForfallsdato(calendar.getTime());
         invoice.setLeveringsdato(new Date());
-        invoice.setAvgifter(total); //TODO: finn ut hva denne skal vaere
         invoice.setNetto(netto);
         invoice.setTotal(total);
+        invoice.setAvgifter(total-netto);
         invoice.addMottaker(new Link(payment.getKunde().getLinkTilPerson()));
         invoice.addOppdragsgiver(new Link(payment.getOppdragsgiver().getLinks().get("self").get(0).getHref()));
         Identifikator identifikator = new Identifikator();

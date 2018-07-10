@@ -25,7 +25,7 @@ public class InvoiceService {
     @Autowired
     private MongoService mongoService;
 
-    public List<FakturagrunnlagResource> getInvoice(String orgId) {
+    public List<FakturagrunnlagResource> getInvoices(String orgId) {
         return restService.getResource(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
     }
 
