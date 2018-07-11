@@ -90,19 +90,25 @@ public class GroupService {
         List<PersonResource> persons = restService.getResource(PersonResources.class, personEndpoint, orgId).getContent();
 
         log.info(String.format("Found: %s memberships, %s student-relations, %s students, %s people", memberships.size(), studentRelations.size(), students.size(), persons.size()));
-
-        Map<Link, Kunde> membershipCustomer = new HashMap<>();
         /*
         persons.forEach(person -> {
             students.forEach(student -> {
                 if (student.getPerson().contains(person.getSelfLinks().get(0))) {
                     studentRelations.forEach(relation -> {
-
+                        if (relation.getLinks().get("self").contains(student.getElevforhold().get(0))) {
+                            memberships.forEach(membership -> {
+                                membershipCustomer.put(membership.getLinks().get("self").get(0), kundeFactory.getKunde(person));
+                            });
+                        }
                     });
                 }
             });
         });
+
+        Map<Link, Kunde> membershipCustomer = persons.stream().reduce(HashMap<Link, Kunde>)
         */
+
+        Map<Link, Kunde> membershipCustomer = new HashMap<>();
 
         for (PersonResource person : persons) {
             for (ElevResource student : students) {
@@ -120,24 +126,25 @@ public class GroupService {
             }
         }
 
-        Map<Gruppe, List<Kunde>> groupMemberMap = new HashMap<>();
-        for (Gruppe group : groups) {
-            FintLinks groupLink = (FintLinks) group;
-            List<Kunde> members = new ArrayList<>();
-            for (Link membership : groupLink.getLinks().get("medlemskap")) {
-                members.add(membershipCustomer.get(membership));
-            }
-            groupMemberMap.put(group, members);
-        }
-        log.info("All customers added to groups");
-        return groupMemberMap;
-    }
 
-    private KundeGruppe createCustomerGroup(String name, String description, List<Kunde> customerlist) {
-        KundeGruppe kundeGruppe = new KundeGruppe();
-        kundeGruppe.setNavn(name);
-        kundeGruppe.setBeskrivelse(description);
-        kundeGruppe.setKundeliste(customerlist);
-        return kundeGruppe;
+            Map<Gruppe, List<Kunde>> groupMemberMap = new HashMap<>();
+            for (Gruppe group : groups) {
+                FintLinks groupLink = (FintLinks) group;
+                List<Kunde> members = new ArrayList<>();
+                for (Link membership : groupLink.getLinks().get("medlemskap")) {
+                    members.add(membershipCustomer.get(membership));
+                }
+                groupMemberMap.put(group, members);
+            }
+            log.info("All customers added to groups");
+            return groupMemberMap;
+        }
+
+        private KundeGruppe createCustomerGroup (String name, String description, List < Kunde > customerlist){
+            KundeGruppe kundeGruppe = new KundeGruppe();
+            kundeGruppe.setNavn(name);
+            kundeGruppe.setBeskrivelse(description);
+            kundeGruppe.setKundeliste(customerlist);
+            return kundeGruppe;
+        }
     }
-}
