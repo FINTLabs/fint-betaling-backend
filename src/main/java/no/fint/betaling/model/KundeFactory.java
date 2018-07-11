@@ -1,8 +1,8 @@
 package no.fint.betaling.model;
 
 import no.fint.betaling.service.RestService;
-import no.fint.model.felles.Person;
 import no.fint.model.resource.FintLinks;
+import no.fint.model.resource.felles.PersonResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ public class KundeFactory {
 
     public Kunde getKunde(String orgId, FintLinks links) {
         String personUrl = links.getLinks().get("person").get(0).getHref();
-        Person person = restService.getResource(Person.class, personUrl, orgId);
+        PersonResource person = restService.getResource(PersonResource.class, personUrl, orgId);
         if (person != null) {
             Kunde customer = new Kunde();
             customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());
@@ -26,4 +26,15 @@ public class KundeFactory {
         }
         return null;
     }
+
+    public Kunde getKunde(PersonResource person) {
+        Kunde customer = new Kunde();
+        customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());
+        customer.setNavn(person.getNavn());
+        customer.setLinkTilPerson(person.getLinks().get("self").get(0).getHref());
+        customer.setKontaktinformasjon(person.getKontaktinformasjon());
+        customer.setPostadresse(person.getPostadresse());
+        return customer;
+    }
 }
+

@@ -4,8 +4,8 @@ import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.utdanning.elev.ElevResource
-import no.fint.model.resource.utdanning.elev.ElevResources
+import no.fint.model.resource.felles.PersonResource
+import no.fint.model.resource.felles.PersonResources
 import spock.lang.Specification
 
 class StudentServiceSpec extends Specification {
@@ -18,20 +18,20 @@ class StudentServiceSpec extends Specification {
     void setup() {
         restService = Mock(RestService)
         kundeFactory = Mock(KundeFactory)
-        studentService = new StudentService(restService: restService, kundeFactory: kundeFactory, elevEndpoint: "endpoints/elev")
+        studentService = new StudentService(restService: restService, kundeFactory: kundeFactory, personEndpoint: "endpoints/person")
         orgId = 'test.no'
     }
 
     def "Get customers returns list"() {
         given:
-        def elevResources = createElevResources(1)
+        def personResources = createPersonResources(1)
 
         when:
         List<Kunde> listCustomers = studentService.getCustomers(orgId, "")
 
         then:
-        1 * restService.getResource(ElevResources, _ as String, _ as String) >> elevResources
-        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
+        1 * restService.getResource(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
+        1 * kundeFactory.getKunde(_ as PersonResource) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
         listCustomers.size() == 1
     }
 
@@ -40,24 +40,24 @@ class StudentServiceSpec extends Specification {
         def listStudents = studentService.getCustomers(orgId, 'r')
 
         then:
-        1 * restService.getResource(ElevResources, _ as String, _ as String) >> createElevResources(3)
-        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Feilsen'))
-        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
-        1 * kundeFactory.getKunde('test.no', _) >> new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))
+        1 * restService.getResource(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3)
+        1 * kundeFactory.getKunde(_ as PersonResource) >> new Kunde(navn: new Personnavn(etternavn: 'Feilsen'))
+        1 * kundeFactory.getKunde(_ as PersonResource) >> new Kunde(navn: new Personnavn(etternavn: 'Testesen'))
+        1 * kundeFactory.getKunde(_ as PersonResource) >> new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))
 
         listStudents.size() == 1
         listStudents.get(0).navn.etternavn == 'Rettsen'
     }
 
-    private static ElevResources createElevResources(int resources) {
-        def elevResources = new ElevResources()
-        def identifikator = new Identifikator()
-        identifikator.setIdentifikatorverdi('123')
+    private static PersonResources createPersonResources(int resources) {
+        def personResources = new PersonResources()
         for (int i = 0; i < resources; i++) {
-            def elevResource = new ElevResource()
-            elevResource.setSystemId(identifikator)
-            elevResources.addResource()
+            def personResource = new PersonResource(
+                    navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'),
+                    fodselsnummer: new Identifikator(identifikatorverdi: '12345678901')
+            )
+            personResources.addResource(personResource)
         }
-        return elevResources
+        return personResources
     }
 }

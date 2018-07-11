@@ -4,8 +4,9 @@ import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.FintLinks
 import no.fint.model.resource.Link
+import no.fint.model.resource.felles.PersonResource
+import no.fint.model.resource.felles.PersonResources
 import no.fint.model.resource.utdanning.elev.*
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources
@@ -18,27 +19,58 @@ class GroupServiceSpec extends Specification {
     private GroupService groupService
 
     void setup() {
-        def elevforholdResource = new ElevforholdResource()
-        elevforholdResource.addElev(Link.with('link.to.ElevResource'))
-        def medlemskapResource = new MedlemskapResource()
+        def medlemskapResource = new MedlemskapResource(systemId: new Identifikator(identifikatorverdi: 'test'))
         medlemskapResource.addMedlem(Link.with('link.to.ElevforholdResource'))
+        medlemskapResource.addLink('self', Link.with('link.to.MedlemskapResource'))
+        def medlemskapResources = new MedlemskapResources()
+        medlemskapResources.addResource(medlemskapResource)
+
+        def elevforholdResource = new ElevforholdResource(
+                systemId: new Identifikator(identifikatorverdi: 'test'),
+                beskrivelse: 'student relation')
+        elevforholdResource.addElev(Link.with('link.to.ElevResource'))
+        elevforholdResource.addLink('self', Link.with('link.to.ElevforholdResource'))
+        elevforholdResource.addMedlemskap(Link.with('link.to.MedlemskapResource'))
+        def elevforholdResources = new ElevforholdResources()
+        elevforholdResources.addResource(elevforholdResource)
+
+        def elevResource = new ElevResource(systemId: new Identifikator(identifikatorverdi: 'test'))
+        elevResource.addLink('person', Link.with('link.to.PersonResource'))
+        elevResource.addLink('self', Link.with('link.to.ElevResource'))
+        elevResource.addElevforhold(Link.with('link.to.ElevforholdResource'))
+        def elevResources = new ElevResources()
+        elevResources.addResource(elevResource)
+
+        def personResource = new PersonResource(
+                fodselsnummer: new Identifikator(identifikatorverdi: '12345678901'),
+                navn: new Personnavn(fornavn: 'Test', etternavn: 'Testesen'))
+        personResource.addLink('self', Link.with('link.to.PersonResource'))
+        personResource.addElev(Link.with('link.to.ElevResource'))
+        def personResources = new PersonResources()
+        personResources.addResource(personResource)
 
         def kunde = new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: 'Testesen'))
 
         restService = Mock(RestService) {
-            getResource(ElevforholdResource, _ as String, _ as String) >> elevforholdResource
-            getResource(ElevResource, _ as String, _ as String) >> new ElevResource()
-            getResource(MedlemskapResource, _ as String, _ as String) >> medlemskapResource
+            getResource(ElevforholdResources, _ as String, _ as String) >> elevforholdResources
+            getResource(ElevResources, _ as String, _ as String) >> elevResources
+            getResource(MedlemskapResources, _ as String, _ as String) >> medlemskapResources
+            getResource(PersonResources, _ as String, _ as String) >> personResources
         }
         kundeFactory = Mock(KundeFactory) {
-            getKunde(_ as String, _ as FintLinks) >> kunde
+            getKunde(_ as PersonResource) >> kunde
         }
         groupService = new GroupService(
                 restService: restService,
                 kundeFactory: kundeFactory,
                 basisgruppeEndpoint: "endpoints/basisgruppe",
                 undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
-                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe")
+                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe",
+                personEndpoint: "endpoints/person",
+                studentEndpoint: "endpoints/elev",
+                membershipEndpoint: "endpoints/medlemskap",
+                studentRelationEndpoint: "endpoints/elevforhold"
+        )
     }
 
 

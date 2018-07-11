@@ -1,10 +1,13 @@
 package no.fint.betaling.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.felles.PersonResource;
+import no.fint.model.resource.felles.PersonResources;
 import no.fint.model.resource.utdanning.elev.*;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import no.fint.model.utdanning.basisklasser.Gruppe;
@@ -13,9 +16,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+@Slf4j
 @Service
 public class GroupService {
 
@@ -33,6 +38,18 @@ public class GroupService {
 
     @Value("${fint.betaling.endpoints.kontaktlarergruppe}")
     private String kontaktlarergruppeEndpoint;
+
+    @Value("${fint.betaling.endpoints.membership}")
+    private String membershipEndpoint;
+
+    @Value("${fint.betaling.endpoints.student-relation}")
+    private String studentRelationEndpoint;
+
+    @Value("${fint.betaling.endpoints.student}")
+    private String studentEndpoint;
+
+    @Value("${fint.betaling.endpoints.person}")
+    private String personEndpoint;
 
     public List<KundeGruppe> getAllCustomerGroups(String orgId) {
         List<KundeGruppe> allCustomerGroups = new ArrayList<>();
@@ -57,32 +74,52 @@ public class GroupService {
         return getCustomerGroup(orgId, basisgruppeResources.getContent());
     }
 
-    private List<KundeGruppe> getCustomerGroup(String orgId, List<? extends Gruppe> content) {
-        return content.stream().map(group -> {
-            List<Link> medlemskap = getMedlemskapLinks(group);
-            List<Kunde> customerList = getCustomerList(orgId, medlemskap);
-            return createCustomerGroup(group.getNavn(), group.getBeskrivelse(), customerList);
-        }).collect(Collectors.toList());
+    private List<KundeGruppe> getCustomerGroup(String orgId, List<? extends Gruppe> groups) {
+        Map<Gruppe, List<Kunde>> groupMap = getGroupMap(orgId, groups);
+        List<KundeGruppe> customerGroupList = new ArrayList<>();
+        groupMap.forEach((Gruppe group, List<Kunde> customerList) -> {
+            customerGroupList.add(createCustomerGroup(group.getNavn(), group.getBeskrivelse(), customerList));
+        });
+        return customerGroupList;
     }
 
-    private List<Link> getMedlemskapLinks(Gruppe gruppe) {
-        return ((FintLinks) gruppe).getLinks().get("medlemskap");
-    }
+    private Map<Gruppe, List<Kunde>> getGroupMap(String orgId, List<? extends Gruppe> groups) {
+        List<MedlemskapResource> memberships = restService.getResource(MedlemskapResources.class, membershipEndpoint, orgId).getContent();
+        List<ElevforholdResource> studentRelations = restService.getResource(ElevforholdResources.class, studentRelationEndpoint, orgId).getContent();
+        List<ElevResource> students = restService.getResource(ElevResources.class, studentEndpoint, orgId).getContent();
+        List<PersonResource> persons = restService.getResource(PersonResources.class, personEndpoint, orgId).getContent();
 
-    private List<Kunde> getCustomerList(String orgId, List<Link> listMedlemskap) {
-        List<Kunde> customerList = new ArrayList<>();
-        for (Link linkMedlemskap : listMedlemskap) {
-            MedlemskapResource resourceMeldemskap = restService.getResource(MedlemskapResource.class, linkMedlemskap.getHref(), orgId);
-            Link studentRelation = resourceMeldemskap.getMedlem().get(0);
-            ElevforholdResource elevforholdResource = restService.getResource(ElevforholdResource.class, studentRelation.getHref(), orgId);
-            List<Link> studentLinkList = elevforholdResource.getElev();
-            if (studentLinkList.size() > 0) {
-                Link studentLink = studentLinkList.get(0);
-                ElevResource elevResource = restService.getResource(ElevResource.class, studentLink.getHref(), orgId);
-                customerList.add(kundeFactory.getKunde(orgId, elevResource));
+        log.info(String.format("Found: %s memberships, %s student relations, %s students, %s people", memberships.size(), studentRelations.size(), students.size(), persons.size()));
+
+        Map<Link, Kunde> membershipCustomer = new HashMap<>();
+
+        for (PersonResource person : persons) {
+            for (ElevResource student : students) {
+                if (student.getPerson().contains(person.getLinks().get("self").get(0))) {
+                    for (ElevforholdResource relation : studentRelations) {
+                        if (relation.getElev().contains(student.getLinks().get("self").get(0))) {
+                            for (MedlemskapResource membership : memberships) {
+                                if (membership.getMedlem().contains(relation.getLinks().get("self").get(0))){
+                                    membershipCustomer.put(membership.getLinks().get("self").get(0), kundeFactory.getKunde(person));
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        return customerList;
+
+        Map<Gruppe, List<Kunde>> groupMemberMap = new HashMap<>();
+        for (Gruppe group : groups) {
+            FintLinks groupLink = (FintLinks) group;
+            List<Kunde> members = new ArrayList<>();
+            for (Link membership : groupLink.getLinks().get("medlemskap")) {
+                members.add(membershipCustomer.get(membership));
+            }
+            groupMemberMap.put(group, members);
+        }
+        log.info("All customers added to groups");
+        return groupMemberMap;
     }
 
     private KundeGruppe createCustomerGroup(String name, String description, List<Kunde> customerlist) {

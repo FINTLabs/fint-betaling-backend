@@ -18,6 +18,7 @@ public class InvoiceFactory {
             FakturalinjeResource paymentLine = new FakturalinjeResource();
             paymentLine.setPris(orderLine.getOrderLine().getPris());
             List<String> description = new ArrayList<>();
+            description.add(orderLine.getOrderLine().getNavn());
             description.add(orderLine.getDescription());
             paymentLine.setAntall(1L);
             paymentLine.setFritekst(description);

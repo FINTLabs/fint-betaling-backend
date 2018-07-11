@@ -27,7 +27,7 @@ fint:
   betaling:
     client-name: "FINT-Betaling"
     default-org-id: "fake.no"
-
+    date-range: "7, 14, 30"
     endpoints:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
@@ -37,4 +37,6 @@ fint:
       basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
       undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
       kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
-    date-range: "7, 14, 30"
+      person: "https://play-with-fint.felleskomponent.no/utdanning/elev/person"
+      membership: "https://play-with-fint.felleskomponent.no/utdanning/elev/medlemskap"
+      student-relation: "https://play-with-fint.felleskomponent.no/utdanning/elev/elevforhold"

@@ -10,7 +10,7 @@ import no.fint.test.utils.MockMvcSpecification
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 
-class PaymentControllerSpec extends MockMvcSpecification {//TODO: send orgId i HTTP header
+class PaymentControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
     private PaymentController paymentController
     private PaymentService paymentService

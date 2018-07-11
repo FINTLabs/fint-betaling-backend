@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api/test")
+@RequestMapping(value = "/api/me")
 public class MeController {
 
     @GetMapping

@@ -5,6 +5,7 @@ import no.fint.model.felles.kompleksedatatyper.Adresse;
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource;
 
 @Data
 public class Kunde {
@@ -12,5 +13,5 @@ public class Kunde {
     private Personnavn navn;
     private String linkTilPerson;
     private Kontaktinformasjon kontaktinformasjon;
-    private Adresse postadresse;
+    private AdresseResource postadresse;
 }
