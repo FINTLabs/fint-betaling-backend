@@ -71,13 +71,11 @@ public class StudentService {
         PersonResources personResources = restService.getResource(PersonResources.class, personEndpoint, orgId);
         log.info(String.format("Found %s people", personResources.getContent().size()));
         List<Kunde> allCustomers = new ArrayList<>();
-        int i = 0;
         for (PersonResource person : personResources.getContent()){
             try {
                 Kunde customer = kundeFactory.getKunde(person);
                 if (customer != null){
                     allCustomers.add(customer);
-                    log.info(String.format("Added customer nr: %s", i++));
                 }
             } catch (InvalidResponseException e) {
                 log.info(e.toString());

@@ -89,17 +89,28 @@ public class GroupService {
         List<ElevResource> students = restService.getResource(ElevResources.class, studentEndpoint, orgId).getContent();
         List<PersonResource> persons = restService.getResource(PersonResources.class, personEndpoint, orgId).getContent();
 
-        log.info(String.format("Found: %s memberships, %s student relations, %s students, %s people", memberships.size(), studentRelations.size(), students.size(), persons.size()));
+        log.info(String.format("Found: %s memberships, %s student-relations, %s students, %s people", memberships.size(), studentRelations.size(), students.size(), persons.size()));
 
         Map<Link, Kunde> membershipCustomer = new HashMap<>();
+        /*
+        persons.forEach(person -> {
+            students.forEach(student -> {
+                if (student.getPerson().contains(person.getSelfLinks().get(0))) {
+                    studentRelations.forEach(relation -> {
+
+                    });
+                }
+            });
+        });
+        */
 
         for (PersonResource person : persons) {
             for (ElevResource student : students) {
                 if (student.getPerson().contains(person.getLinks().get("self").get(0))) {
                     for (ElevforholdResource relation : studentRelations) {
-                        if (relation.getElev().contains(student.getLinks().get("self").get(0))) {
+                        if (relation.getLinks().get("self").contains(student.getElevforhold().get(0))) {
                             for (MedlemskapResource membership : memberships) {
-                                if (membership.getMedlem().contains(relation.getLinks().get("self").get(0))){
+                                if (membership.getLinks().get("self").contains(relation.getMedlemskap().get(0))) {
                                     membershipCustomer.put(membership.getLinks().get("self").get(0), kundeFactory.getKunde(person));
                                 }
                             }
