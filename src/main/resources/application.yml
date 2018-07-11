@@ -33,7 +33,7 @@ fint:
       employer: "https://beta1.felleskomponent.no/administrasjon/okonomi/oppdragsgiver"
       student: "https://beta.felleskomponent.no/utdanning/elev/elev"
       basisgruppe: "https://beta.felleskomponent.no/utdanning/elev/basisgruppe"
-      undervisningsgruppe: "https://beta.felleskomponent.no/utdanning/elev/undervisningsgruppe"
+      undervisningsgruppe: "https://beta.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
       kontaktlarergruppe: "https://beta.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
       person: "https://beta.felleskomponent.no/utdanning/elev/person"
       membership: "https://beta.felleskomponent.no/utdanning/elev/medlemskap"
