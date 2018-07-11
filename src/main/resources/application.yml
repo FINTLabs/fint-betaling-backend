@@ -26,7 +26,7 @@ fint:
     client-name: "FINT-Betaling"
     default-org-id: "fake.no"
     date-range: "7, 14, 30"
-    endpoints-fake:
+    endpoints:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
       mva-code: "https://beta1.felleskomponent.no/administrasjon/okonomi/mvakode"
@@ -38,7 +38,7 @@ fint:
       person: "https://beta.felleskomponent.no/utdanning/elev/person"
       membership: "https://beta.felleskomponent.no/utdanning/elev/medlemskap"
       student-relation: "https://beta.felleskomponent.no/utdanning/elev/elevforhold"
-    endpoints:
+    endpoints-pwf:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
       mva-code: "https://beta1.felleskomponent.no/administrasjon/okonomi/mvakode"
