@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 public class Payment {
-    private List<VarelinjeResource> orderLines;
+    private List<OrderLine> orderLines;
     private List<Kunde> customers;
     private OppdragsgiverResource employer;
     private String timeFrameDueDate;

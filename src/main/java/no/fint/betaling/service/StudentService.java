@@ -37,12 +37,15 @@ public class StudentService {
             filter = "";
         }
         ElevResources elevResources = restService.getResource(ElevResources.class, elevEndpoint, orgId);
+        log.info(String.format("Found %s students", elevResources.getContent().size()));
         List<Kunde> allCustomers = new ArrayList<>();
+        int i = 0;
         for (ElevResource student : elevResources.getContent()){
             try {
                 Kunde customer = kundeFactory.getKunde(orgId, student);
                 if (customer != null){
                     allCustomers.add(customer);
+                    log.info(String.format("Added customer nr: %s", i++));
                 }
             } catch (InvalidResponseException e) {
                 log.info(e.toString());

@@ -22,12 +22,11 @@ fint:
     client-secret: 6y4FUuP9BfAXeVqguNKT0ofToIwN5RdB1PaUvx_nCMiQbH9NeGq3pp0jQB9zOQ0APOxEbodzJXp-8RVux6318A
     access-token-uri: https://namidp01.rogfk.no/nidp/oauth/nam/token
     request-url: https://beta.felleskomponent.no/utdanning/elev/person
-
   betaling:
     client-name: "FINT-Betaling"
     default-org-id: "fake.no"
     date-range: "7, 14, 30"
-    endpoints:
+    endpoints-fake:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
       mva-code: "https://beta1.felleskomponent.no/administrasjon/okonomi/mvakode"
@@ -36,3 +35,12 @@ fint:
       basisgruppe: "https://beta.felleskomponent.no/utdanning/elev/basisgruppe"
       undervisningsgruppe: "https://beta.felleskomponent.no/utdanning/elev/undervisningsgruppe"
       kontaktlarergruppe: "https://beta.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
+    endpoints:
+          invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
+          order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
+          mva-code: "https://beta1.felleskomponent.no/administrasjon/okonomi/mvakode"
+          employer: "https://beta1.felleskomponent.no/administrasjon/okonomi/oppdragsgiver"
+          student: "https://play-with-fint.felleskomponent.no/utdanning/elev/elev"
+          basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
+          undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
+          kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"

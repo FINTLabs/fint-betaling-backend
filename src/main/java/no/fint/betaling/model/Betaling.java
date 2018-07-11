@@ -19,6 +19,6 @@ public class Betaling {
     private OppdragsgiverResource oppdragsgiver;
     private URI location;
     private FakturagrunnlagResource fakturagrunnlag;
-    private List<VarelinjeResource> varelinjer;
+    private List<OrderLine> varelinjer;
     private boolean sentTilEksterntSystem = false;
 }
