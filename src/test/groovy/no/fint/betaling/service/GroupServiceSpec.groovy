@@ -15,7 +15,6 @@ import spock.lang.Specification
 class GroupServiceSpec extends Specification {
 
     private RestService restService
-    private KundeFactory kundeFactory
     private GroupService groupService
 
     void setup() {
@@ -57,12 +56,11 @@ class GroupServiceSpec extends Specification {
             getResource(MedlemskapResources, _ as String, _ as String) >> medlemskapResources
             getResource(PersonResources, _ as String, _ as String) >> personResources
         }
-        kundeFactory = Mock(KundeFactory) {
+        GroovyMock(KundeFactory) {
             getKunde(_ as PersonResource) >> kunde
         }
         groupService = new GroupService(
                 restService: restService,
-                kundeFactory: kundeFactory,
                 basisgruppeEndpoint: "endpoints/basisgruppe",
                 undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
                 kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe",

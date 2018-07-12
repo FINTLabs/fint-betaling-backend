@@ -23,7 +23,7 @@ public class EmployerController {
     private String employerEndpoint;
 
     @GetMapping
-    public ResponseEntity getEmployers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-name}", required = false) String orgId){
+    public ResponseEntity getEmployers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId){
         return ResponseEntity.ok(restService.getResource(OppdragsgiverResources.class, employerEndpoint, orgId).getContent());
     }
 }

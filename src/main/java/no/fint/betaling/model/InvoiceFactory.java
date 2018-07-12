@@ -20,9 +20,9 @@ public class InvoiceFactory {
             List<String> description = new ArrayList<>();
             description.add(orderLine.getOrderLine().getNavn());
             description.add(orderLine.getDescription());
-            paymentLine.setAntall(1L);
+            paymentLine.setAntall(orderLine.getAmount());
             paymentLine.setFritekst(description);
-            paymentLine.addVarelinje(new Link(orderLine.getOrderLine().getLinks().get("self").get(0).getHref()));
+            paymentLine.addVarelinje(orderLine.getOrderLine().getLinks().get("self").get(0));
             return paymentLine;
         }).collect(Collectors.toList());
 
@@ -30,11 +30,12 @@ public class InvoiceFactory {
         for (OrderLine orderLine : payment.getVarelinjer()) {
             VarelinjeResource line = orderLine.getOrderLine();
             long pris = line.getPris();
-            sum += pris;
+            long amount = orderLine.getAmount();
+            sum += pris * amount;
         }
         Long netto = sum * 100;
+        Long total = sum * 125;
 
-        Long total = netto * 125;
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(paymentLines);
         invoice.setFakturadato(new Date());

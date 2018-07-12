@@ -27,7 +27,7 @@ public class KundeFactory {
         return null;
     }
 
-    public Kunde getKunde(PersonResource person) {
+    public static Kunde getKunde(PersonResource person) {
         Kunde customer = new Kunde();
         customer.setKundenummer(person.getFodselsnummer().getIdentifikatorverdi());
         customer.setNavn(person.getNavn());

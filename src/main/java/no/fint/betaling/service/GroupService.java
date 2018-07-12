@@ -5,7 +5,6 @@ import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.model.resource.FintLinks;
-import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
 import no.fint.model.resource.utdanning.elev.*;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,9 +26,6 @@ public class GroupService {
 
     @Autowired
     private RestService restService;
-
-    @Autowired
-    private KundeFactory kundeFactory;
 
     @Value(("${fint.betaling.endpoints.basisgruppe}"))
     private String basisgruppeEndpoint;
@@ -52,26 +49,33 @@ public class GroupService {
     private String personEndpoint;
 
     public List<KundeGruppe> getAllCustomerGroups(String orgId) {
-        List<KundeGruppe> allCustomerGroups = new ArrayList<>();
-        allCustomerGroups.addAll(getCustomerGroupListFromBasisgruppe(orgId));
-        allCustomerGroups.addAll(getCustomerGroupListFromUndervisningsgruppe(orgId));
-        allCustomerGroups.addAll(getCustomerGroupListFromKontaktlarergruppe(orgId));
-        return allCustomerGroups;
+        List<Gruppe> allGroups = new ArrayList<>();
+        allGroups.addAll(restService.getResource(BasisgruppeResources.class, basisgruppeEndpoint, orgId)
+                .getContent().stream().map(basisgruppeResource -> (Gruppe) basisgruppeResource).collect(Collectors.toList()));
+        allGroups.addAll(restService.getResource(KontaktlarergruppeResources.class, kontaktlarergruppeEndpoint, orgId)
+                .getContent().stream().map(kontaktlarergruppeResource -> (Gruppe) kontaktlarergruppeResource).collect(Collectors.toList()));
+        allGroups.addAll(restService.getResource(UndervisningsgruppeResources.class, undervisningsgruppeEndpoint, orgId)
+                .getContent().stream().map(undervisningsgruppeResource -> (Gruppe) undervisningsgruppeResource).collect(Collectors.toList()));
+        log.info(String.format("Found %s groups", allGroups.size()));
+        return getCustomerGroup(orgId, allGroups);
+    }
+
+    public List<KundeGruppe> getCustomerGroupListFromBasisgruppe(String orgId) {
+        BasisgruppeResources basisgruppeResources = restService.getResource(BasisgruppeResources.class, basisgruppeEndpoint, orgId);
+        log.info(String.format("Found %s basic groups", basisgruppeResources.getContent().size()));
+        return getCustomerGroup(orgId, basisgruppeResources.getContent());
     }
 
     public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe(String orgId) {
         KontaktlarergruppeResources kontaktlarergruppeResources = restService.getResource(KontaktlarergruppeResources.class, kontaktlarergruppeEndpoint, orgId);
+        log.info(String.format("Found %s contact groups", kontaktlarergruppeResources.getContent().size()));
         return getCustomerGroup(orgId, kontaktlarergruppeResources.getContent());
     }
 
     public List<KundeGruppe> getCustomerGroupListFromUndervisningsgruppe(String orgId) {
         UndervisningsgruppeResources undervisningsgruppeResources = restService.getResource(UndervisningsgruppeResources.class, undervisningsgruppeEndpoint, orgId);
+        log.info(String.format("Found %s lesson groups", undervisningsgruppeResources.getContent().size()));
         return getCustomerGroup(orgId, undervisningsgruppeResources.getContent());
-    }
-
-    public List<KundeGruppe> getCustomerGroupListFromBasisgruppe(String orgId) {
-        BasisgruppeResources basisgruppeResources = restService.getResource(BasisgruppeResources.class, basisgruppeEndpoint, orgId);
-        return getCustomerGroup(orgId, basisgruppeResources.getContent());
     }
 
     private List<KundeGruppe> getCustomerGroup(String orgId, List<? extends Gruppe> groups) {
@@ -88,63 +92,38 @@ public class GroupService {
         List<ElevforholdResource> studentRelations = restService.getResource(ElevforholdResources.class, studentRelationEndpoint, orgId).getContent();
         List<ElevResource> students = restService.getResource(ElevResources.class, studentEndpoint, orgId).getContent();
         List<PersonResource> persons = restService.getResource(PersonResources.class, personEndpoint, orgId).getContent();
-
         log.info(String.format("Found: %s memberships, %s student-relations, %s students, %s people", memberships.size(), studentRelations.size(), students.size(), persons.size()));
-        /*
-        persons.forEach(person -> {
-            students.forEach(student -> {
-                if (student.getPerson().contains(person.getSelfLinks().get(0))) {
-                    studentRelations.forEach(relation -> {
-                        if (relation.getLinks().get("self").contains(student.getElevforhold().get(0))) {
-                            memberships.forEach(membership -> {
-                                membershipCustomer.put(membership.getLinks().get("self").get(0), kundeFactory.getKunde(person));
-                            });
-                        }
-                    });
-                }
-            });
-        });
 
-        Map<Link, Kunde> membershipCustomer = persons.stream().reduce(HashMap<Link, Kunde>)
-        */
-
-        Map<Link, Kunde> membershipCustomer = new HashMap<>();
-
-        for (PersonResource person : persons) {
-            for (ElevResource student : students) {
-                if (student.getPerson().contains(person.getLinks().get("self").get(0))) {
-                    for (ElevforholdResource relation : studentRelations) {
-                        if (relation.getLinks().get("self").contains(student.getElevforhold().get(0))) {
-                            for (MedlemskapResource membership : memberships) {
-                                if (membership.getLinks().get("self").contains(relation.getMedlemskap().get(0))) {
-                                    membershipCustomer.put(membership.getLinks().get("self").get(0), kundeFactory.getKunde(person));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        Map<Gruppe, List<Kunde>> groupCustomers = new HashMap<>();
+        for (Gruppe group : groups) {
+            List<MedlemskapResource> groupMemberships = getMemberships((FintLinks) group, memberships);
+            List<ElevforholdResource> groupRelations = filterList(studentRelations, groupMemberships, "self");
+            List<ElevResource> groupStudents = filterList(students, groupRelations, "elevforhold");
+            List<PersonResource> groupPersons = filterList(persons, groupStudents, "self");
+            List<Kunde> customerList = groupPersons.stream().map(KundeFactory::getKunde).collect(Collectors.toList());
+            groupCustomers.put(group, customerList);
         }
-
-
-            Map<Gruppe, List<Kunde>> groupMemberMap = new HashMap<>();
-            for (Gruppe group : groups) {
-                FintLinks groupLink = (FintLinks) group;
-                List<Kunde> members = new ArrayList<>();
-                for (Link membership : groupLink.getLinks().get("medlemskap")) {
-                    members.add(membershipCustomer.get(membership));
-                }
-                groupMemberMap.put(group, members);
-            }
-            log.info("All customers added to groups");
-            return groupMemberMap;
-        }
-
-        private KundeGruppe createCustomerGroup (String name, String description, List < Kunde > customerlist){
-            KundeGruppe kundeGruppe = new KundeGruppe();
-            kundeGruppe.setNavn(name);
-            kundeGruppe.setBeskrivelse(description);
-            kundeGruppe.setKundeliste(customerlist);
-            return kundeGruppe;
-        }
+        log.info("GroupMap created");
+        return groupCustomers;
     }
+
+    private List<MedlemskapResource> getMemberships(FintLinks group, List<MedlemskapResource> memberships) {
+        return memberships.stream().filter(membership -> {
+            return group.getLinks().get("medlemskap").contains(membership.getLinks().get("self").get(0));
+        }).collect(Collectors.toList());
+    }
+
+    private <T extends FintLinks, R extends FintLinks> List<T> filterList(List<T> list1, List<R> list2, String query) {
+        return list1.stream().filter(element -> {
+            return list2.stream().anyMatch(element2 -> element2.getLinks().containsValue(element.getLinks().get(query)));
+        }).collect(Collectors.toList());
+    }
+
+    private KundeGruppe createCustomerGroup(String name, String description, List<Kunde> customerlist) {
+        KundeGruppe kundeGruppe = new KundeGruppe();
+        kundeGruppe.setNavn(name);
+        kundeGruppe.setBeskrivelse(description);
+        kundeGruppe.setKundeliste(customerlist);
+        return kundeGruppe;
+    }
+}

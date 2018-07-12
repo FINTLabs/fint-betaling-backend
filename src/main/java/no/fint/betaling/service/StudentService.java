@@ -22,47 +22,10 @@ import java.util.stream.Collectors;
 public class StudentService {
 
     @Autowired
-    private KundeFactory kundeFactory;
-
-    @Autowired
     private RestService restService;
-
-    @Value("${fint.betaling.endpoints.student}")
-    private String elevEndpoint;
 
     @Value("${fint.betaling.endpoints.person}")
     private String personEndpoint;
-
-    public List<Kunde> getCustomers(String orgId) {
-        return getCustomers(orgId, "");
-    }
-
-    public List<Kunde> getCustomersFromElev(String orgId, String filter) {
-        if (filter == null) {
-            filter = "";
-        }
-        ElevResources elevResources = restService.getResource(ElevResources.class, elevEndpoint, orgId);
-        log.info(String.format("Found %s students", elevResources.getContent().size()));
-        List<Kunde> allCustomers = new ArrayList<>();
-        int i = 0;
-        for (ElevResource student : elevResources.getContent()){
-            try {
-                Kunde customer = kundeFactory.getKunde(orgId, student);
-                if (customer != null){
-                    allCustomers.add(customer);
-                    log.info(String.format("Added customer nr: %s", i++));
-                }
-            } catch (InvalidResponseException e) {
-                log.info(e.toString());
-            }
-        }
-
-        String finalFilter = filter;
-        return allCustomers.stream().filter(customer ->
-                customer.getNavn().getEtternavn().toLowerCase()
-                        .contains(finalFilter.toLowerCase()))
-                .collect(Collectors.toList());
-    }
 
     public List<Kunde> getCustomers(String orgId, String filter) {
         if (filter == null) {
@@ -73,7 +36,7 @@ public class StudentService {
         List<Kunde> allCustomers = new ArrayList<>();
         for (PersonResource person : personResources.getContent()){
             try {
-                Kunde customer = kundeFactory.getKunde(person);
+                Kunde customer = KundeFactory.getKunde(person);
                 if (customer != null){
                     allCustomers.add(customer);
                 }
