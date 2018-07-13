@@ -21,11 +21,11 @@ class KundeFactorySpec extends Specification {
 
     void setup() {
         restService = Mock(RestService)
-        factory = new KundeFactory(restService: restService)
+        factory = new KundeFactory()
         orgId = 'test.no'
     }
 
-    def "Get kunde given resource with links"() {
+    def "Get customer given valid person resource returns customer"() {
         given:
         def person = createPerson('12345678901', 'Oslo', 'test@test.com')
 
@@ -36,22 +36,6 @@ class KundeFactorySpec extends Specification {
         kunde.kundenummer == '12345678901'
         kunde.postadresse.poststed == 'Oslo'
         kunde.kontaktinformasjon.epostadresse == 'test@test.com'
-    }
-
-    def "Get kunde given resource with invalid link throws InvalidResponseException"() {
-        given:
-        def invalidUrl = 'invalid.url'
-        def invalidResource = new ElevResource()
-        invalidResource.addPerson(Link.with(invalidUrl))
-
-        when:
-        factory.getKunde(orgId, invalidResource)
-
-        then:
-        1 * restService.getResource(PersonResource, invalidUrl, 'test.no') >> {
-            throw new InvalidResponseException('test exception', new Exception())
-        }
-        thrown(InvalidResponseException)
     }
 
     private static PersonResource createPerson(String kundenummer, String poststed, String epostadresse) {

@@ -26,6 +26,7 @@ fint:
     client-name: "FINT-Betaling"
     default-org-id: "fake.no"
     date-range: "7, 14, 30"
+    invoice-send-rate: "60000"
     endpoints:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"

@@ -30,6 +30,17 @@ class RestServiceSpec extends Specification {
         thrown(InvalidResponseException)
     }
 
+    def "Set resource given invalid response throws InvalidResponseException"() {
+        when:
+        restService.setResource(String, 'http://localhost', 'ping', 'test.no')
+
+        then:
+        1 * restTemplate.exchange('http://localhost', HttpMethod.POST, _ as HttpEntity, _ as Class) >> {
+            throw new RestClientException('test')
+        }
+        thrown(InvalidResponseException)
+    }
+
     def "Get ElevResource given valid url returns ElevResource"() {
         when:
         def resource = restService.getResource(ElevResource, 'http://localhost', 'test.no')

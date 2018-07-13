@@ -1,11 +1,9 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.model.Betaling
-import no.fint.betaling.model.BetalingFactory
-import no.fint.betaling.model.Kunde
-import no.fint.betaling.model.Payment
+import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
+import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
@@ -59,7 +57,11 @@ class PaymentServiceSpec extends Specification {
 
     def "Save payment given valid data returns void"() {
         given:
-        def orderLine = new VarelinjeResource(pris: 100L, enhet: "enhet", kontering: new KontostrengResource())
+        def orderLine = new OrderLine(
+                orderLine: new VarelinjeResource(pris: 100L, enhet: "enhet", kontering: new KontostrengResource()),
+                amount: 1,
+                description: 'test'
+        )
         def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
         def employer = new OppdragsgiverResource(navn: 'Emp Loyer', systemId: new Identifikator(identifikatorverdi: 'test'))
         def payment = new Payment(employer: employer, orderLines: [orderLine], customers: [customer], timeFrameDueDate: 7L)
@@ -68,13 +70,33 @@ class PaymentServiceSpec extends Specification {
         def response = paymentService.setPayment(orgId, payment)
 
         then:
-        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [new Betaling()]
+        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [createPayment('testno0','Testesen')]
         1 * mongoService.setPayment('test.no', _ as Betaling)
         response.size() == 1
-
+        response.get(0).varelinjer.size() == 1
+        response.get(0).ordrenummer == 'testno0'
+        response.get(0).kunde.navn.etternavn == 'Testesen'
     }
 
     private static Betaling createPayment(String ordernumber, String lastname) {
-        return new Betaling(kunde: new Kunde(navn: new Personnavn(etternavn: lastname)), ordrenummer: ordernumber);
+        def employer = new OppdragsgiverResource()
+        employer.setNavn('test employer')
+        employer.addLink('self', new Link('link.to.Oppdragsgiver'))
+        def varelinjeResource = new VarelinjeResource()
+        varelinjeResource.setEnhet('enhet')
+        varelinjeResource.setKontering(new KontostrengResource())
+        varelinjeResource.setPris(1L)
+        def orderLine = new OrderLine(orderLine: varelinjeResource, amount: 1, description: 'test')
+        def customer = new Kunde(
+                navn: new Personnavn(fornavn: 'Test', etternavn: lastname)
+        )
+        return new Betaling(
+                varelinjer: [orderLine],
+                kunde: customer,
+                ordrenummer: ordernumber,
+                oppdragsgiver: employer,
+                timeFrameDueDate: '7'
+        )
     }
+
 }

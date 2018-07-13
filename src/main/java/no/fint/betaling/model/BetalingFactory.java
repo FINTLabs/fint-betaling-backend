@@ -13,6 +13,9 @@ public class BetalingFactory {
     @Autowired
     private OrderNumberService orderNumberService;
 
+    @Autowired
+    private InvoiceFactory invoiceFactory;
+
     public List<Betaling> getBetaling(Payment payment, String orgId){
         return payment.getCustomers().stream().map(customer -> {
             Betaling betaling = new Betaling();
@@ -21,7 +24,7 @@ public class BetalingFactory {
             betaling.setOppdragsgiver(payment.getEmployer());
             betaling.setVarelinjer(payment.getOrderLines());
             betaling.setTimeFrameDueDate(payment.getTimeFrameDueDate());
-            betaling.setFakturagrunnlag(InvoiceFactory.getInvoice(betaling));
+            betaling.setFakturagrunnlag(invoiceFactory.getInvoice(betaling));
             betaling.setRestBelop(betaling.getFakturagrunnlag().getTotal().toString());
             return betaling;
         }).collect(Collectors.toList());

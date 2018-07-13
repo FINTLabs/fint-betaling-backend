@@ -1,5 +1,6 @@
 package no.fint.betaling.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Betaling;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class InvoiceService {
 
@@ -24,6 +26,53 @@ public class InvoiceService {
 
     @Autowired
     private MongoService mongoService;
+
+    public void sendInvoices(String orgId) {
+        List<Betaling> payments = getUnsentPayments(orgId);
+        for (Betaling payment : payments) {
+            ResponseEntity response = setInvoice(orgId, payment.getFakturagrunnlag());
+            payment.setLocation(response.getHeaders().getLocation());
+            updatePaymentLocation(orgId, payment);
+        }
+    }
+
+    public void updateInvoiceStatus(String orgId) {
+        List<Betaling> payments = getSentPayments(orgId);
+        payments.forEach(payment -> getPaymentStatus(orgId, payment));
+    }
+
+    private void getPaymentStatus(String orgId, Betaling payment) {
+        FakturagrunnlagResource invoice = getStatus(orgId, payment);
+        if (invoice != null) {
+            updateInvoice(orgId, invoice);
+            log.info(String.format("Updated %s", payment.getOrdrenummer()));
+        }
+    }
+
+    private List<Betaling> getUnsentPayments(String orgId) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("sentTilEksterntSystem").is(false));
+        return getPayments(orgId, query);
+    }
+
+    private List<Betaling> getSentPayments(String orgId) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("sentTilEksterntSystem").is(true));
+        return getPayments(orgId, query);
+    }
+
+    private void updatePaymentLocation(String orgId, Betaling payment) {
+        Update update = new Update();
+        update.set("location", payment.getLocation());
+        update.set("sentTilEksterntSystem", true);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("ordrenummer").is(payment.getOrdrenummer()));
+        updatePayment(orgId, query, update);
+    }
 
     public List<FakturagrunnlagResource> getInvoices(String orgId) {
         return restService.getResource(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
@@ -45,6 +94,14 @@ public class InvoiceService {
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
         query.addCriteria(Criteria.where("ordrenummer").is(invoice.getOrdrenummer().getIdentifikatorverdi()));
 
+        mongoService.updatePayment(orgId, query, update);
+    }
+
+    public List<Betaling> getPayments(String orgId, Query query) {
+        return mongoService.getPayments(orgId, query);
+    }
+
+    public void updatePayment(String orgId, Query query, Update update) {
         mongoService.updatePayment(orgId, query, update);
     }
 }

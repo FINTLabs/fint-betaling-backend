@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
+import sun.plugin.javascript.navig.Link
 
 class InvoiceServiceSpec extends Specification {
     private InvoiceService invoiceService
@@ -16,7 +17,12 @@ class InvoiceServiceSpec extends Specification {
     private MongoService mongoService
 
     void setup() {
-        restService = Mock(RestService)
+        restService = Mock(RestService) {
+            getResource(_ as Class<FakturagrunnlagResource>, _ as String, 'valid.org') >> createInvoice()
+            setResource(_ as Class<FakturagrunnlagResource>, _ as String, _ as FakturagrunnlagResource, _ as String) >> {
+                ResponseEntity.ok().headers().location(new URI('http', 'valid.host', '/path', '')).build()
+            }
+        }
         mongoService = Mock(MongoService)
         invoiceService = new InvoiceService(
                 restService: restService,
@@ -24,6 +30,25 @@ class InvoiceServiceSpec extends Specification {
                 invoiceEndpoint: 'enpoints/invoice'
         )
     }
+
+    def "Send invoices given valid orgId sends invoices and updates payments"() {
+        when:
+        invoiceService.sendInvoices('valid.org')
+
+        then:
+        1 * mongoService.getPayments(_ as String, _ as Query) >> [createPayment(false)]
+        1 * mongoService.updatePayment('valid.org', _ as Query, _ as Update)
+    }
+
+    def "Update invoice status given valid orgId updates payments"() {
+        when:
+        invoiceService.updateInvoiceStatus('valid.org')
+
+        then:
+        1 * mongoService.getPayments(_ as String, _ as Query) >> [createPayment(true)]
+        1 * mongoService.updatePayment(_ as String, _ as Query, _ as Update)
+    }
+
 
     def "Get invoice given valid org id returns list of invoices"() {
         given:
@@ -45,9 +70,6 @@ class InvoiceServiceSpec extends Specification {
         def response = invoiceService.setInvoice('valid.org', createInvoice())
 
         then:
-        1 * restService.setResource(_ as Class<FakturagrunnlagResource>, _ as String, _ as FakturagrunnlagResource, _ as String) >> {
-            ResponseEntity.ok().headers().location(new URI('http', 'valid.host', '/path', '')).build()
-        }
         response.getStatusCode().is2xxSuccessful()
         response.getHeaders().getLocation().getHost() == 'valid.host'
     }
@@ -60,7 +82,6 @@ class InvoiceServiceSpec extends Specification {
         )
 
         then:
-        1 * restService.getResource(_ as Class<FakturagrunnlagResource>, _ as String, 'valid.org') >> createInvoice()
         invoice.ordrenummer.identifikatorverdi == 'testOrder'
     }
 
@@ -72,8 +93,24 @@ class InvoiceServiceSpec extends Specification {
         1 * mongoService.updatePayment(_ as String, _ as Query, _ as Update)
     }
 
+    def "Get payments passes arguments to mongoservice"() {
+        when:
+        invoiceService.getPayments('valid.org', new Query())
+
+        then:
+        1 * mongoService.getPayments('valid.org', _ as Query)
+    }
+
+    def "Update payment passes arguments to mongoservice"() {
+        when:
+        invoiceService.updatePayment('valid.org', new Query(), new Update())
+
+        then:
+        1 * mongoService.updatePayment('valid.org', _ as Query, _ as Update)
+    }
+
     private static FakturagrunnlagResource createInvoice() {
-        return new FakturagrunnlagResource(
+        def resource = new FakturagrunnlagResource(
                 ordrenummer: new Identifikator(identifikatorverdi: 'testOrder'),
                 fakturalinjer: [
                         new FakturalinjeResource(
@@ -83,5 +120,14 @@ class InvoiceServiceSpec extends Specification {
                         )
                 ]
         )
+        return resource
+    }
+
+    private static Betaling createPayment(boolean sent) {
+        def payment = new Betaling()
+        payment.setFakturagrunnlag(createInvoice())
+        payment.location = new URI('http','host.test','/location','')
+        payment.sentTilEksterntSystem = sent
+        return payment
     }
 }

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Service
 public class InvoiceFactory {
 
-    public static FakturagrunnlagResource getInvoice(Betaling payment) {
+    public FakturagrunnlagResource getInvoice(Betaling payment) {
         List<FakturalinjeResource> paymentLines = payment.getVarelinjer().stream().map(orderLine -> {
             FakturalinjeResource paymentLine = new FakturalinjeResource();
             paymentLine.setPris(orderLine.getOrderLine().getPris());

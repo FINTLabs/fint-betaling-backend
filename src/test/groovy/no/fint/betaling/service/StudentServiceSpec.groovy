@@ -1,6 +1,7 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.Kunde
+import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
@@ -12,11 +13,13 @@ class StudentServiceSpec extends Specification {
 
     private StudentService studentService
     private RestService restService
+    private KundeFactory kundeFactory
     private String orgId
 
     void setup() {
         restService = Mock(RestService)
-        studentService = new StudentService(restService: restService, personEndpoint: "endpoints/person")
+        kundeFactory = Mock(KundeFactory)
+        studentService = new StudentService(restService: restService, kundeFactory: kundeFactory, personEndpoint: "endpoints/person")
         orgId = 'test.no'
     }
 
@@ -29,6 +32,7 @@ class StudentServiceSpec extends Specification {
 
         then:
         1 * restService.getResource(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
+        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
         listCustomers.size() == 1
     }
 
@@ -40,9 +44,15 @@ class StudentServiceSpec extends Specification {
 
         then:
         1 * restService.getResource(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3, lastnames)
-
+        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Feilsen')
+        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
+        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Rettsen')
         listStudents.size() == 1
         listStudents.get(0).navn.etternavn == 'Rettsen'
+    }
+
+    private static Kunde createKunde(String lastname){
+        return new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: lastname))
     }
 
     private static PersonResources createPersonResources(int resources, List<String> lastnames) {

@@ -24,9 +24,6 @@ import java.util.stream.Collectors;
 @Service
 public class GroupService {
 
-    @Autowired
-    private RestService restService;
-
     @Value(("${fint.betaling.endpoints.basisgruppe}"))
     private String basisgruppeEndpoint;
 
@@ -47,6 +44,12 @@ public class GroupService {
 
     @Value("${fint.betaling.endpoints.person}")
     private String personEndpoint;
+
+    @Autowired
+    private RestService restService;
+
+    @Autowired
+    private KundeFactory kundeFactory;
 
     public List<KundeGruppe> getAllCustomerGroups(String orgId) {
         List<Gruppe> allGroups = new ArrayList<>();
@@ -100,10 +103,10 @@ public class GroupService {
             List<ElevforholdResource> groupRelations = filterList(studentRelations, groupMemberships, "self");
             List<ElevResource> groupStudents = filterList(students, groupRelations, "elevforhold");
             List<PersonResource> groupPersons = filterList(persons, groupStudents, "self");
-            List<Kunde> customerList = groupPersons.stream().map(KundeFactory::getKunde).collect(Collectors.toList());
+            List<Kunde> customerList = groupPersons.stream().map(kundeFactory::getKunde).collect(Collectors.toList());
             groupCustomers.put(group, customerList);
         }
-        log.info("GroupMap created");
+        log.info("Groupmaps created");
         return groupCustomers;
     }
 

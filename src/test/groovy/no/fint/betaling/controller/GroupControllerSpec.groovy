@@ -13,21 +13,54 @@ class GroupControllerSpec extends MockMvcSpecification {
     private GroupService groupService
 
     void setup() {
-        groupService = Mock(GroupService)
+        def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
+        groupService = Mock(GroupService) {
+            getAllCustomerGroups(_ as String) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+            getCustomerGroupListFromBasisgruppe(_ as String) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+            getCustomerGroupListFromKontaktlarergruppe(_ as String) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+            getCustomerGroupListFromUndervisningsgruppe(_ as String) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+        }
         groupController = new GroupController(groupService: groupService)
         mockMvc = standaloneSetup(groupController)
     }
 
     def "Get all customer groups"() {
-        given:
-        def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
-
         when:
         def response = mockMvc.perform(get('/api/group'))
 
         then:
-        1 * groupService.getAllCustomerGroups(_) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
+        response.andExpect(status().isOk())
+                .andExpect(jsonPathSize('$', 1))
+                .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+    }
+    def "Get customer groups from basisgruppe"() {
+        when:
+        def response = mockMvc.perform(get('/api/group/basisgruppe'))
 
+        then:
+        response.andExpect(status().isOk())
+                .andExpect(jsonPathSize('$', 1))
+                .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+    }
+
+    def "Get customer groups from undervisningsgruppe"() {
+        when:
+        def response = mockMvc.perform(get('/api/group/undervisningsgruppe'))
+
+        then:
+        response.andExpect(status().isOk())
+                .andExpect(jsonPathSize('$', 1))
+                .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+    }
+
+    def "Get customer groups from kontaktlarergruppe"() {
+        when:
+        def response = mockMvc.perform(get('/api/group/kontaktlarergruppe'))
+
+        then:
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))

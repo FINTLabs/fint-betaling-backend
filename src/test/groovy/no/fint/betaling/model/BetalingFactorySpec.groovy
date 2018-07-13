@@ -4,17 +4,28 @@ import no.fint.betaling.service.OrderNumberService
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
+import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
+import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
 import spock.lang.Specification
 
 class BetalingFactorySpec extends Specification {
     private OrderNumberService orderNumberService
+    private InvoiceFactory invoiceFactory
     private BetalingFactory betalingFactory
 
     void setup() {
         orderNumberService = Mock(OrderNumberService)
-        betalingFactory = new BetalingFactory(orderNumberService: orderNumberService)
+        invoiceFactory = Mock(InvoiceFactory) {
+            getInvoice(_ as Betaling) >>
+                    new FakturagrunnlagResource(
+                            fakturalinjer: [new FakturalinjeResource(pris: 100L, antall: 2, fritekst: ['test'])],
+                            ordrenummer: new Identifikator(identifikatorverdi: 'validorg0'),
+                            total: 200L
+                    )
+        }
+        betalingFactory = new BetalingFactory(orderNumberService: orderNumberService, invoiceFactory: invoiceFactory)
     }
 
     def "Get betaling given valid payment returns betaling"() {
