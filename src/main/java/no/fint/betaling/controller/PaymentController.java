@@ -30,10 +30,10 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getAllPayments(orgId));
     }
 
-    @GetMapping("/navn/{etternavn}")
+    @GetMapping("/navn/{navn}")
     public ResponseEntity getPaymentByName(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
-                                           @PathVariable(value = "etternavn") String lastName) {
-        return ResponseEntity.ok(paymentService.getPaymentsByLastname(orgId, lastName));
+                                           @PathVariable(value = "navn") String name) {
+        return ResponseEntity.ok(paymentService.getPaymentsByCustomerName(orgId, name));
     }
 
     @GetMapping("/ordrenummer/{ordrenummer}")

@@ -3,10 +3,8 @@ package no.fint.betaling.service
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.PersonResources
 import no.fint.model.resource.utdanning.elev.*
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources
@@ -17,59 +15,47 @@ class GroupServiceSpec extends Specification {
     private RestService restService
     private GroupService groupService
     private KundeFactory kundeFactory
+    private CustomerService customerService
+    private MembershipService membershipService
+    private StudentRelationService studentRelationService
 
     void setup() {
         def medlemskapResource = new MedlemskapResource(systemId: new Identifikator(identifikatorverdi: 'test'))
+        medlemskapResource.addGruppe(Link.with('link.to.Gruppe'))
         medlemskapResource.addMedlem(Link.with('link.to.ElevforholdResource'))
         medlemskapResource.addLink('self', Link.with('link.to.MedlemskapResource'))
-        def medlemskapResources = new MedlemskapResources()
-        medlemskapResources.addResource(medlemskapResource)
 
-        def elevforholdResource = new ElevforholdResource(
-                systemId: new Identifikator(identifikatorverdi: 'test'),
-                beskrivelse: 'student relation')
-        elevforholdResource.addElev(Link.with('link.to.ElevResource'))
-        elevforholdResource.addLink('self', Link.with('link.to.ElevforholdResource'))
-        elevforholdResource.addMedlemskap(Link.with('link.to.MedlemskapResource'))
-        def elevforholdResources = new ElevforholdResources()
-        elevforholdResources.addResource(elevforholdResource)
+        def kunde = new Kunde(
+                navn: 'Testesen, Test',
+                person: Link.with('link.to.PersonResource'),
+                elev: Link.with('link.to.ElevResource'),
+                setKundeid: '12345678901')
 
-        def elevResource = new ElevResource(systemId: new Identifikator(identifikatorverdi: 'test'))
-        elevResource.addLink('person', Link.with('link.to.PersonResource'))
-        elevResource.addLink('self', Link.with('link.to.ElevResource'))
-        elevResource.addElevforhold(Link.with('link.to.ElevforholdResource'))
-        def elevResources = new ElevResources()
-        elevResources.addResource(elevResource)
-
-        def personResource = new PersonResource(
-                fodselsnummer: new Identifikator(identifikatorverdi: '12345678901'),
-                navn: new Personnavn(fornavn: 'Test', etternavn: 'Testesen'))
-        personResource.addLink('self', Link.with('link.to.PersonResource'))
-        personResource.addElev(Link.with('link.to.ElevResource'))
-        def personResources = new PersonResources()
-        personResources.addResource(personResource)
-
-        def kunde = new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: 'Testesen'))
-
-        restService = Mock(RestService) {
-            getResource(ElevforholdResources, _ as String, _ as String) >> elevforholdResources
-            getResource(ElevResources, _ as String, _ as String) >> elevResources
-            getResource(MedlemskapResources, _ as String, _ as String) >> medlemskapResources
-            getResource(PersonResources, _ as String, _ as String) >> personResources
+        membershipService = Mock(MembershipService) {
+            getMemberships(_ as String) >> [medlemskapResource]
         }
+
+        customerService = Mock(CustomerService) {
+            getCustomers(_ as String, _) >> [kunde]
+        }
+
+        studentRelationService = Mock(StudentRelationService) {
+            getStudentRelationships(_) >> [(Link.with('link.to.ElevforholdResource')): Link.with('link.to.ElevResource')]
+        }
+
+        restService = Mock(RestService)
         kundeFactory = Mock(KundeFactory) {
             getKunde(_ as PersonResource) >> kunde
         }
         groupService = new GroupService(
                 restService: restService,
                 kundeFactory: kundeFactory,
+                membershipService: membershipService,
+                customerService: customerService,
+                studentRelationService: studentRelationService,
                 basisgruppeEndpoint: "endpoints/basisgruppe",
                 undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
-                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe",
-                personEndpoint: "endpoints/person",
-                studentEndpoint: "endpoints/elev",
-                membershipEndpoint: "endpoints/medlemskap",
-                studentRelationEndpoint: "endpoints/elevforhold"
+                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe"
         )
     }
 
@@ -87,7 +73,7 @@ class GroupServiceSpec extends Specification {
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+        customerList.get(0).getKundeliste().get(0) == '12345678901'
     }
 
     def "Get customer groups from undervisningsgruppe"() {
@@ -103,7 +89,7 @@ class GroupServiceSpec extends Specification {
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+        customerList.get(0).getKundeliste().get(0) == '12345678901'
     }
 
     def "Get customer groups from basisgruppe"() {
@@ -119,7 +105,7 @@ class GroupServiceSpec extends Specification {
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+        customerList.get(0).getKundeliste().get(0) == '12345678901'
     }
 
     def populateResource(def resource) {
@@ -130,6 +116,7 @@ class GroupServiceSpec extends Specification {
         identifikator.setIdentifikatorverdi('test')
         resource.systemId = identifikator
         resource.addMedlemskap(Link.with('link.to.MedlemskapResource'))
+        resource.addLink("self", Link.with('link.to.Gruppe'))
         return resource
     }
 }

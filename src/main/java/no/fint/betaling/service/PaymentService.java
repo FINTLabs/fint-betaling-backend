@@ -28,10 +28,10 @@ public class PaymentService {
         return mongoService.getPayments(orgId, query);
     }
 
-    public List<Betaling> getPaymentsByLastname(String orgId, String lastName) {
+    public List<Betaling> getPaymentsByCustomerName(String orgId, String name) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
-        query.addCriteria(Criteria.where("kunde.navn.etternavn").regex(lastName, "i"));
+        query.addCriteria(Criteria.where("kunde.navn").regex(name, "i"));
         return mongoService.getPayments(orgId, query);
     }
 

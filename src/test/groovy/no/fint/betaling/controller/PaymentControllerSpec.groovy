@@ -5,7 +5,6 @@ import no.fint.betaling.model.Betaling
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.Payment
 import no.fint.betaling.service.PaymentService
-import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -29,7 +28,7 @@ class PaymentControllerSpec extends MockMvcSpecification {
         1 * paymentService.getAllPayments('test.no') >> [createPayment('123', 'Testesen')]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].kunde.navn.etternavn', 'Testesen'))
+                .andExpect(jsonPathEquals('$[0].kunde.navn', 'Testesen'))
     }
 
     def "Set payment given valid payment returns status ok"() {
@@ -47,13 +46,13 @@ class PaymentControllerSpec extends MockMvcSpecification {
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {
         when:
-        def response = mockMvc.perform(get('/api/payment/navn/{etternavn}', 'Testesen'))
+        def response = mockMvc.perform(get('/api/payment/navn/{navn}', 'Testesen'))
 
         then:
-        1 * paymentService.getPaymentsByLastname(_, 'Testesen') >> [createPayment('123', 'Testesen')]
+        1 * paymentService.getPaymentsByCustomerName(_, 'Testesen') >> [createPayment('123', 'Testesen')]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].kunde.navn.etternavn', 'Testesen'))
+                .andExpect(jsonPathEquals('$[0].kunde.navn', 'Testesen'))
     }
 
     def "Get payment by orderNumber given valid orderNumber returns list of payments with matching orderNumber"() {
@@ -68,6 +67,6 @@ class PaymentControllerSpec extends MockMvcSpecification {
     }
 
     private static Betaling createPayment(String orderNumber, String lastname) {
-        return new Betaling(kunde: new Kunde(navn: new Personnavn(etternavn: lastname)), ordrenummer: orderNumber)
+        return new Betaling(kunde: new Kunde(navn: lastname), ordrenummer: orderNumber)
     }
 }

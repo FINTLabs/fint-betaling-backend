@@ -8,5 +8,5 @@ import java.util.List;
 public class KundeGruppe {
     private String navn;
     private String beskrivelse;
-    private List<Kunde> kundeliste;
+    private List<String> kundeliste;
 }

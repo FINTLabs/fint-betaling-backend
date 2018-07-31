@@ -9,17 +9,17 @@ import no.fint.model.resource.felles.PersonResource
 import no.fint.model.resource.felles.PersonResources
 import spock.lang.Specification
 
-class StudentServiceSpec extends Specification {
+class CustomerServiceSpec extends Specification {
 
-    private StudentService studentService
-    private RestService restService
+    private CustomerService customerService
+    private CacheService cacheService
     private KundeFactory kundeFactory
     private String orgId
 
     void setup() {
-        restService = Mock(RestService)
-        kundeFactory = Mock(KundeFactory)
-        studentService = new StudentService(restService: restService, kundeFactory: kundeFactory, personEndpoint: "endpoints/person")
+        cacheService = Mock()
+        kundeFactory = Mock()
+        customerService = new CustomerService(cacheService: cacheService, kundeFactory: kundeFactory, personEndpoint: "endpoints/person")
         orgId = 'test.no'
     }
 
@@ -28,10 +28,10 @@ class StudentServiceSpec extends Specification {
         def personResources = createPersonResources(1, ['Testesen'])
 
         when:
-        List<Kunde> listCustomers = studentService.getCustomers(orgId, "")
+        List<Kunde> listCustomers = customerService.getCustomers(orgId, "")
 
         then:
-        1 * restService.getResource(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
+        1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
         listCustomers.size() == 1
     }
@@ -40,19 +40,19 @@ class StudentServiceSpec extends Specification {
         given:
         def lastnames = ['Feilsen', 'Testesen', 'Rettsen']
         when:
-        def listStudents = studentService.getCustomers(orgId, 'r')
+        def listStudents = customerService.getCustomers(orgId, 'r')
 
         then:
-        1 * restService.getResource(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3, lastnames)
+        1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3, lastnames)
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Feilsen')
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Rettsen')
         listStudents.size() == 1
-        listStudents.get(0).navn.etternavn == 'Rettsen'
+        listStudents.get(0).navn == 'Rettsen, Test'
     }
 
     private static Kunde createKunde(String lastname){
-        return new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: lastname))
+        return new Kunde(navn: "${lastname}, Test")
     }
 
     private static PersonResources createPersonResources(int resources, List<String> lastnames) {

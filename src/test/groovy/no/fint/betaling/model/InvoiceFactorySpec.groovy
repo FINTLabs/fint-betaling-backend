@@ -1,6 +1,6 @@
 package no.fint.betaling.model
 
-import no.fint.model.felles.kompleksedatatyper.Personnavn
+
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
@@ -37,7 +37,7 @@ class InvoiceFactorySpec extends Specification {
         varelinjeResource.addLink('self', new Link('link.to.VarelinjeResource'))
         def orderLine = new OrderLine(orderLine: varelinjeResource, amount: 1, description: 'test')
         def customer = new Kunde(
-                linkTilPerson: new Link('link.to.PersonResource')
+                person: new Link('link.to.PersonResource')
         )
         return new Betaling(
                 varelinjer: [orderLine],

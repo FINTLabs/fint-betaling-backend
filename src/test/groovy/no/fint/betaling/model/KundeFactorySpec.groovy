@@ -1,16 +1,12 @@
 package no.fint.betaling.model
 
 import no.fint.betaling.service.RestService
-import no.fint.model.felles.Person
-import no.fint.model.felles.kompleksedatatyper.Adresse
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.PersonResources
 import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
-import no.fint.model.resource.utdanning.elev.ElevResource
 import spock.lang.Specification
 
 class KundeFactorySpec extends Specification {
@@ -33,9 +29,43 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(person)
 
         then:
-        kunde.kundenummer == '12345678901'
-        kunde.postadresse.poststed == 'Oslo'
-        kunde.kontaktinformasjon.epostadresse == 'test@test.com'
+        kunde.kundeid == '21i3v9'
+    }
+
+    def "Determine customer ID from NIN"() {
+        given:
+        def nin = "12345678901"
+
+        when:
+        def id = KundeFactory.getCustomerId(nin)
+
+        then:
+        id == '21i3v9'
+    }
+
+    def "Get Personnavn as String"() {
+        given:
+        def navn1 = new Personnavn(fornavn: "Sture", etternavn: "Hansen")
+        def navn2 = new Personnavn(fornavn: "Sture", mellomnavn: "Pettersen", etternavn: "Hansen")
+        def navn3 = new Personnavn(etternavn: "Hansen")
+
+        when:
+        def result = KundeFactory.getPersonnavnAsString(navn1)
+
+        then:
+        result == "Hansen, Sture"
+
+        when:
+        result = KundeFactory.getPersonnavnAsString(navn2)
+
+        then:
+        result == "Hansen, Sture Pettersen"
+
+        when:
+        result = KundeFactory.getPersonnavnAsString(navn3)
+
+        then:
+        result == "Hansen"
     }
 
     private static PersonResource createPerson(String kundenummer, String poststed, String epostadresse) {

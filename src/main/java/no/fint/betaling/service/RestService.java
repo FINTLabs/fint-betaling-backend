@@ -26,28 +26,14 @@ public class RestService {
 
     public <T> T getResource(Class<T> type, String url, String orgId) {
         try {
-            T content =  restTemplate.exchange(
+            return restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     new HttpEntity<>(getHeaders(orgId)),
                     type
             ).getBody();
-            return content;
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to get %s url: %s", type.getSimpleName(), url), e);
-        }
-    }
-
-    public <T> T getResource(Class<T> type, URI uri, String orgId) {
-        try {
-            return restTemplate.exchange(
-                    uri,
-                    HttpMethod.GET,
-                    new HttpEntity<>(getHeaders(orgId)),
-                    type
-            ).getBody();
-        } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to get %s url: %s", type.getSimpleName(), uri), e);
         }
     }
 

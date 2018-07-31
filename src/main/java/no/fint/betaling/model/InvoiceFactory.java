@@ -47,7 +47,7 @@ public class InvoiceFactory {
         invoice.setNetto(netto);
         invoice.setTotal(total);
         invoice.setAvgifter(total-netto);
-        invoice.addMottaker(new Link(payment.getKunde().getLinkTilPerson()));
+        invoice.addMottaker(payment.getKunde().getPerson());
         invoice.addOppdragsgiver(new Link(payment.getOppdragsgiver().getLinks().get("self").get(0).getHref()));
 
         Identifikator identifikator = new Identifikator();

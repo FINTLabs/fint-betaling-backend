@@ -13,7 +13,7 @@ class GroupControllerSpec extends MockMvcSpecification {
     private GroupService groupService
 
     void setup() {
-        def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
+        def customer = '12345678901'
         groupService = Mock(GroupService) {
             getAllCustomerGroups(_ as String) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
             getCustomerGroupListFromBasisgruppe(_ as String) >> [new KundeGruppe(navn: 'testgruppe', beskrivelse: 'test', kundeliste: [customer])]
@@ -32,7 +32,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
     }
     def "Get customer groups from basisgruppe"() {
         when:
@@ -42,7 +42,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
     }
 
     def "Get customer groups from undervisningsgruppe"() {
@@ -53,7 +53,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
     }
 
     def "Get customer groups from kontaktlarergruppe"() {
@@ -64,6 +64,6 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0].navn.etternavn','Testesen'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
     }
 }
