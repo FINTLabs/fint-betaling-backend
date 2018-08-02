@@ -26,7 +26,7 @@ public class StudentRelationService {
 
     private final Map<String, Map<Link,Link>> studentRelationshipMap = Collections.synchronizedMap(new HashMap<>());
 
-    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.refresh-rate:500000}")
+    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.refresh-rate:360000}")
     public void updateCaches() {
         studentRelationshipMap.forEach(this::updateCache);
     }

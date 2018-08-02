@@ -12,7 +12,7 @@ import spock.lang.Specification
 
 class GroupServiceSpec extends Specification {
 
-    private RestService restService
+    private CacheService cacheService
     private GroupService groupService
     private KundeFactory kundeFactory
     private CustomerService customerService
@@ -29,7 +29,7 @@ class GroupServiceSpec extends Specification {
                 navn: 'Testesen, Test',
                 person: Link.with('link.to.PersonResource'),
                 elev: Link.with('link.to.ElevResource'),
-                setKundeid: '12345678901')
+                kundeid: '12345678901')
 
         membershipService = Mock(MembershipService) {
             getMemberships(_ as String) >> [medlemskapResource]
@@ -43,12 +43,12 @@ class GroupServiceSpec extends Specification {
             getStudentRelationships(_) >> [(Link.with('link.to.ElevforholdResource')): Link.with('link.to.ElevResource')]
         }
 
-        restService = Mock(RestService)
+        cacheService = Mock()
         kundeFactory = Mock(KundeFactory) {
             getKunde(_ as PersonResource) >> kunde
         }
         groupService = new GroupService(
-                restService: restService,
+                cacheService: cacheService,
                 kundeFactory: kundeFactory,
                 membershipService: membershipService,
                 customerService: customerService,
@@ -57,6 +57,7 @@ class GroupServiceSpec extends Specification {
                 undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
                 kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe"
         )
+        groupService.init()
     }
 
 
@@ -69,7 +70,7 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromKontaktlarergruppe('rogfk.no')
 
         then:
-        1 * restService.getResource(KontaktlarergruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getUpdates(KontaktlarergruppeResources, _ as String, _ as String) >> resources
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
@@ -85,7 +86,7 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromUndervisningsgruppe('rogfk.no')
 
         then:
-        1 * restService.getResource(UndervisningsgruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getUpdates(UndervisningsgruppeResources, _ as String, _ as String) >> resources
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
@@ -101,7 +102,7 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromBasisgruppe('rogfk.no')
 
         then:
-        1 * restService.getResource(BasisgruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getUpdates(BasisgruppeResources, _ as String, _ as String) >> resources
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'

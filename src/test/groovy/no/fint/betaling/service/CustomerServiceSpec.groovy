@@ -21,6 +21,7 @@ class CustomerServiceSpec extends Specification {
         kundeFactory = Mock()
         customerService = new CustomerService(cacheService: cacheService, kundeFactory: kundeFactory, personEndpoint: "endpoints/person")
         orgId = 'test.no'
+        customerService.init()
     }
 
     def "Get customers returns list"() {

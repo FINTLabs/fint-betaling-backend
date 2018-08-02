@@ -1,6 +1,7 @@
 package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.util.ResourceCache;
 import no.fint.model.resource.utdanning.elev.MedlemskapResource;
 import no.fint.model.resource.utdanning.elev.MedlemskapResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Slf4j
@@ -20,27 +22,18 @@ public class MembershipService {
     @Value("${fint.betaling.endpoints.membership}")
     private String membershipEndpoint;
 
-    private final Map<String, List<MedlemskapResource>> membershipCache = Collections.synchronizedMap(new HashMap<>());
+    private ResourceCache<MedlemskapResource> medlemskapResourceResourceCache;
 
-    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.refresh-rate:500000}")
+    @PostConstruct
+    public void init() { medlemskapResourceResourceCache = new ResourceCache<>(cacheService, membershipEndpoint, MedlemskapResources.class); }
+
+    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.refresh-rate:360000}")
     public void updateCaches() {
-        membershipCache.forEach(this::updateCache);
-    }
-
-    private void updateCache(String orgId, List<MedlemskapResource> membershipList) {
-        log.info("{}: Updating cache.", orgId);
-        MedlemskapResources medlemskapResources = cacheService.getUpdates(MedlemskapResources.class, membershipEndpoint, orgId);
-        log.info("{}: Found {} entries", orgId, medlemskapResources.getTotalItems());
-        membershipList.addAll(medlemskapResources.getContent());
-        log.info("{}: New size {}", orgId, membershipList.size());
+        medlemskapResourceResourceCache.updateCaches();
     }
 
     public List<MedlemskapResource> getMemberships(String orgId) {
-        return membershipCache.computeIfAbsent(orgId, s -> {
-           List<MedlemskapResource> l = Collections.synchronizedList(new ArrayList<>());
-           updateCache(orgId, l);
-           return l;
-        });
+        return medlemskapResourceResourceCache.getResources(orgId);
     }
 
 }

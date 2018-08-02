@@ -4,15 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
+import no.fint.betaling.util.ResourceCache;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.utdanning.elev.BasisgruppeResources;
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResources;
-import no.fint.model.resource.utdanning.elev.MedlemskapResource;
+import no.fint.model.resource.utdanning.elev.*;
+import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,7 @@ public class GroupService {
     private String kontaktlarergruppeEndpoint;
 
     @Autowired
-    private RestService restService;
+    private CacheService cacheService;
 
     @Autowired
     private KundeFactory kundeFactory;
@@ -46,6 +48,25 @@ public class GroupService {
     @Autowired
     private StudentRelationService studentRelationService;
 
+    private ResourceCache<BasisgruppeResource> basisgruppeResourceResourceCache;
+    private ResourceCache<KontaktlarergruppeResource> kontaktlarergruppeResourceResourceCache;
+    private ResourceCache<UndervisningsgruppeResource> undervisningsgruppeResourceResourceCache;
+
+    @PostConstruct
+    public void init() {
+        basisgruppeResourceResourceCache = new ResourceCache<>(cacheService, basisgruppeEndpoint, BasisgruppeResources.class);
+        kontaktlarergruppeResourceResourceCache = new ResourceCache<>(cacheService, kontaktlarergruppeEndpoint, KontaktlarergruppeResources.class);
+        undervisningsgruppeResourceResourceCache = new ResourceCache<>(cacheService, undervisningsgruppeEndpoint, UndervisningsgruppeResources.class);
+    }
+
+    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.refresh-rate:360000}")
+    public void updateCaches() {
+        basisgruppeResourceResourceCache.updateCaches();
+        kontaktlarergruppeResourceResourceCache.updateCaches();
+        undervisningsgruppeResourceResourceCache.updateCaches();
+    }
+
+
     public List<KundeGruppe> getAllCustomerGroups(String orgId) {
         List<KundeGruppe> allGroups = new ArrayList<>();
         allGroups.addAll(getCustomerGroupListFromBasisgruppe(orgId));
@@ -55,30 +76,27 @@ public class GroupService {
     }
 
     public List<KundeGruppe> getCustomerGroupListFromBasisgruppe(String orgId) {
-        BasisgruppeResources basisgruppeResources = restService.getResource(BasisgruppeResources.class, basisgruppeEndpoint, orgId);
-        log.info(String.format("Found %s basic groups", basisgruppeResources.getContent().size()));
+        List<BasisgruppeResource> basisgruppeResources = basisgruppeResourceResourceCache.getResources(orgId);
+        log.info(String.format("Found %s basic groups", basisgruppeResources.size()));
         return basisgruppeResources
-                .getContent()
                 .stream()
                 .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getSelfLinks()))
                 .collect(Collectors.toList());
     }
 
     public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe(String orgId) {
-        KontaktlarergruppeResources kontaktlarergruppeResources = restService.getResource(KontaktlarergruppeResources.class, kontaktlarergruppeEndpoint, orgId);
-        log.info(String.format("Found %s contact groups", kontaktlarergruppeResources.getContent().size()));
+        List<KontaktlarergruppeResource> kontaktlarergruppeResources = kontaktlarergruppeResourceResourceCache.getResources(orgId);
+        log.info(String.format("Found %s contact groups", kontaktlarergruppeResources.size()));
         return kontaktlarergruppeResources
-                .getContent()
                 .stream()
                 .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getSelfLinks()))
                 .collect(Collectors.toList());
     }
 
     public List<KundeGruppe> getCustomerGroupListFromUndervisningsgruppe(String orgId) {
-        UndervisningsgruppeResources undervisningsgruppeResources = restService.getResource(UndervisningsgruppeResources.class, undervisningsgruppeEndpoint, orgId);
-        log.info(String.format("Found %s lesson groups", undervisningsgruppeResources.getContent().size()));
+        List<UndervisningsgruppeResource> undervisningsgruppeResources = undervisningsgruppeResourceResourceCache.getResources(orgId);
+        log.info(String.format("Found %s lesson groups", undervisningsgruppeResources.size()));
         return undervisningsgruppeResources
-                .getContent()
                 .stream()
                 .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getSelfLinks()))
                 .collect(Collectors.toList());
