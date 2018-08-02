@@ -4,7 +4,6 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -26,15 +25,7 @@ public class InvoiceFactory {
             return paymentLine;
         }).collect(Collectors.toList());
 
-        long sum = 0L;
-        for (OrderLine orderLine : payment.getVarelinjer()) {
-            VarelinjeResource line = orderLine.getOrderLine();
-            long pris = line.getPris();
-            long amount = orderLine.getAmount();
-            sum += pris * amount;
-        }
-        Long netto = sum * 100;
-        Long total = sum * 125;
+        long sum = payment.getVarelinjer().stream().mapToLong(line-> line.getAmount() * line.getOrderLine().getPris()).sum();
 
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(paymentLines);
@@ -44,9 +35,7 @@ public class InvoiceFactory {
 
         invoice.setForfallsdato(calendar.getTime());
         invoice.setLeveringsdato(new Date());
-        invoice.setNetto(netto);
-        invoice.setTotal(total);
-        invoice.setAvgifter(total-netto);
+        invoice.setNetto(sum);
         invoice.addMottaker(payment.getKunde().getPerson());
         invoice.addOppdragsgiver(new Link(payment.getOppdragsgiver().getLinks().get("self").get(0).getHref()));
 

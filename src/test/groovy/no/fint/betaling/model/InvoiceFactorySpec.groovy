@@ -21,8 +21,7 @@ class InvoiceFactorySpec extends Specification {
 
         then:
         invoice.ordrenummer.identifikatorverdi == 'test0'
-        invoice.netto == 100L
-        invoice.total == 125L
+        invoice.netto == 1L
         invoice.fakturalinjer.size() == 1
     }
 
