@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
 
-
 class InvoiceServiceSpec extends Specification {
     private InvoiceService invoiceService
     private RestService restService
