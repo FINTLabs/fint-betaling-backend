@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
-import sun.plugin.javascript.navig.Link
 
 class InvoiceServiceSpec extends Specification {
     private InvoiceService invoiceService
