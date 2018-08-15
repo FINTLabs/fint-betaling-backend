@@ -28,6 +28,8 @@ public class KundeFactory {
         customer.setKundenummer(getCustomerId(person.getFodselsnummer().getIdentifikatorverdi()));
         customer.setNavn(person.getNavn());
         customer.setFulltNavn(getPersonnavnAsString(person.getNavn()));
+        customer.setKontaktinformasjon(person.getKontaktinformasjon());
+        customer.setPostadresse(person.getPostadresse());
         person.getSelfLinks().stream().findAny().ifPresent(customer::setPerson);
         person.getElev().stream().findAny().ifPresent(customer::setElev);
         return customer;
