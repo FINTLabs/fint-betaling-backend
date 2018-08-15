@@ -41,19 +41,19 @@ class CustomerServiceSpec extends Specification {
         given:
         def lastnames = ['Feilsen', 'Testesen', 'Rettsen']
         when:
-        def listStudents = customerService.getCustomers(orgId, 'r')
+        def listCustomers = customerService.getCustomers(orgId, 'r')
 
         then:
         1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3, lastnames)
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Feilsen')
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
         1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Rettsen')
-        listStudents.size() == 1
-        listStudents.get(0).navn == 'Rettsen, Test'
+        listCustomers.size() == 1
+        listCustomers.get(0).navn.etternavn == 'Rettsen'
     }
 
     private static Kunde createKunde(String lastname){
-        return new Kunde(navn: "${lastname}, Test")
+        return new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: lastname), fulltNavn: "${lastname}, Test")
     }
 
     private static PersonResources createPersonResources(int resources, List<String> lastnames) {

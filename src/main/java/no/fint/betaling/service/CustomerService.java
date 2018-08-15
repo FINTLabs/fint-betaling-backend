@@ -53,7 +53,7 @@ public class CustomerService {
         String finalFilter = filter.toLowerCase();
         return allCustomers
                 .filter(customer ->
-                customer.getNavn().toLowerCase()
+                customer.getFulltNavn().toLowerCase()
                         .contains(finalFilter))
                 .collect(Collectors.toList());
     }

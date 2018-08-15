@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -110,9 +111,9 @@ public class GroupService {
         return kundeGruppe;
     }
 
-    private List<String> getCustomersForGroup(String orgId, Link group) {
-        Map<Link,String> memberToCustomerMap = customerService.getCustomers(orgId,null).stream()
-                .collect(Collectors.toMap(Kunde::getElev, Kunde::getKundenummer, (a, b)->a));
+    private List<Kunde> getCustomersForGroup(String orgId, Link group) {
+        Map<Link,Kunde> memberToCustomerMap = customerService.getCustomers(orgId,null).stream()
+                .collect(Collectors.toMap(Kunde::getElev, Function.identity(), (a, b)->a));
         Map<Link,Link> studentRelationToStudentMap = studentRelationService.getStudentRelationships(orgId);
         List<MedlemskapResource> memberships = membershipService.getMemberships(orgId);
 

@@ -41,7 +41,7 @@ class PaymentServiceSpec extends Specification {
         then:
         1 * mongoService.getPayments('test.no', _) >> [createPayment('123', 'Correctlastname')]
         listBetaling.size() == 1
-        listBetaling.get(0).kunde.navn == 'Correctlastname, Test'
+        listBetaling.get(0).kunde.navn.etternavn == 'Correctlastname'
     }
 
     def "Get payment given valid ordernumber returns list with payments matching given ordernumber"() {
@@ -62,7 +62,7 @@ class PaymentServiceSpec extends Specification {
                 amount: 1,
                 description: 'test'
         )
-        def customer = new Kunde(navn: 'Testesen, Ola')
+        def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
         def employer = new OppdragsgiverResource(navn: 'Emp Loyer', systemId: new Identifikator(identifikatorverdi: 'test'))
         def payment = new Payment(employer: employer, orderLines: [orderLine], customers: [customer], timeFrameDueDate: 7L)
 
@@ -75,7 +75,7 @@ class PaymentServiceSpec extends Specification {
         response.size() == 1
         response.get(0).varelinjer.size() == 1
         response.get(0).ordrenummer == 'testno0'
-        response.get(0).kunde.navn == 'Testesen, Test'
+        response.get(0).kunde.navn.etternavn == 'Testesen'
     }
 
     private static Betaling createPayment(String ordernumber, String lastname) {
@@ -88,7 +88,7 @@ class PaymentServiceSpec extends Specification {
         varelinjeResource.setPris(1L)
         def orderLine = new OrderLine(orderLine: varelinjeResource, amount: 1, description: 'test')
         def customer = new Kunde(
-                navn: "${lastname}, Test"
+                navn: new Personnavn(fornavn: 'Test', etternavn: lastname)
         )
         return new Betaling(
                 varelinjer: [orderLine],

@@ -26,7 +26,8 @@ public class KundeFactory {
     public Kunde getKunde(PersonResource person) {
         Kunde customer = new Kunde();
         customer.setKundenummer(getCustomerId(person.getFodselsnummer().getIdentifikatorverdi()));
-        customer.setNavn(getPersonnavnAsString(person.getNavn()));
+        customer.setNavn(person.getNavn());
+        customer.setFulltNavn(getPersonnavnAsString(person.getNavn()));
         person.getSelfLinks().stream().findAny().ifPresent(customer::setPerson);
         person.getElev().stream().findAny().ifPresent(customer::setElev);
         return customer;

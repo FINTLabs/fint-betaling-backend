@@ -22,20 +22,20 @@ class CustomerControllerSpec extends MockMvcSpecification {//TODO: finn ut hvord
         def response = mockMvc.perform(get('/api/customer'))
 
         then:
-        1 * customerService.getCustomers(_, _) >> [new Kunde(navn: 'Testesen')]
+        1 * customerService.getCustomers(_, _) >> [new Kunde(navn: new Personnavn(etternavn: 'Testesen'))]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].navn', 'Testesen'))
+                .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Testesen'))
     }
 
     def "Get customers given filter keyword returns filtered list"() {
         when:
-        def response = mockMvc.perform(get('/api/customer').param('navn', 'r'))
+        def response = mockMvc.perform(get('/api/customer').param('etternavn', 'r'))
 
         then:
-        1 * customerService.getCustomers(_, _) >> [new Kunde(navn: 'Rettsen')]
+        1 * customerService.getCustomers(_, _) >> [new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].navn', 'Rettsen'))
+                .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Rettsen'))
     }
 }

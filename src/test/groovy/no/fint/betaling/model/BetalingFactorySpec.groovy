@@ -22,7 +22,7 @@ class BetalingFactorySpec extends Specification {
                     new FakturagrunnlagResource(
                             fakturalinjer: [new FakturalinjeResource(pris: 100L, antall: 2, fritekst: ['test'])],
                             ordrenummer: new Identifikator(identifikatorverdi: 'validorg0'),
-                            total: 200L
+                            netto: 200L
                     )
         }
         betalingFactory = new BetalingFactory(orderNumberService: orderNumberService, invoiceFactory: invoiceFactory)

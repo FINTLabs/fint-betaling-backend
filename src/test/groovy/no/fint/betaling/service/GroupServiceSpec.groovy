@@ -3,6 +3,7 @@ package no.fint.betaling.service
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
+import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource
 import no.fint.model.resource.utdanning.elev.*
@@ -26,10 +27,10 @@ class GroupServiceSpec extends Specification {
         medlemskapResource.addLink('self', Link.with('link.to.MedlemskapResource'))
 
         def kunde = new Kunde(
-                navn: 'Testesen, Test',
+                navn: new Personnavn(etternavn: 'Testesen', fornavn: 'Test'),
                 person: Link.with('link.to.PersonResource'),
                 elev: Link.with('link.to.ElevResource'),
-                setKundenummer: '12345678901')
+                kundenummer: '12345678901')
 
         membershipService = Mock(MembershipService) {
             getMemberships(_ as String) >> [medlemskapResource]
@@ -74,7 +75,7 @@ class GroupServiceSpec extends Specification {
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0) == '12345678901'
+        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
     }
 
     def "Get customer groups from undervisningsgruppe"() {
@@ -90,7 +91,7 @@ class GroupServiceSpec extends Specification {
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0) == '12345678901'
+        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
     }
 
     def "Get customer groups from basisgruppe"() {
@@ -106,7 +107,7 @@ class GroupServiceSpec extends Specification {
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0) == '12345678901'
+        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
     }
 
     def populateResource(def resource) {
