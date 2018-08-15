@@ -112,7 +112,7 @@ public class GroupService {
 
     private List<String> getCustomersForGroup(String orgId, Link group) {
         Map<Link,String> memberToCustomerMap = customerService.getCustomers(orgId,null).stream()
-                .collect(Collectors.toMap(Kunde::getElev, Kunde::getKundeid));
+                .collect(Collectors.toMap(Kunde::getElev, Kunde::getKundenummer, (a, b)->a));
         Map<Link,Link> studentRelationToStudentMap = studentRelationService.getStudentRelationships(orgId);
         List<MedlemskapResource> memberships = membershipService.getMemberships(orgId);
 

@@ -29,7 +29,7 @@ class GroupServiceSpec extends Specification {
                 navn: 'Testesen, Test',
                 person: Link.with('link.to.PersonResource'),
                 elev: Link.with('link.to.ElevResource'),
-                kundeid: '12345678901')
+                setKundenummer: '12345678901')
 
         membershipService = Mock(MembershipService) {
             getMemberships(_ as String) >> [medlemskapResource]

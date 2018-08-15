@@ -29,7 +29,7 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(person)
 
         then:
-        kunde.kundeid == '21i3v9'
+        kunde.kundenummer == '21i3v9'
     }
 
     def "Determine customer ID from NIN"() {

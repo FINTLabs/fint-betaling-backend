@@ -25,7 +25,7 @@ public class BetalingFactory {
             betaling.setVarelinjer(payment.getOrderLines());
             betaling.setTimeFrameDueDate(payment.getTimeFrameDueDate());
             betaling.setFakturagrunnlag(invoiceFactory.getInvoice(betaling));
-            betaling.setRestBelop(betaling.getFakturagrunnlag().getTotal().toString());
+            betaling.setRestBelop(betaling.getFakturagrunnlag().getNetto().toString());
             return betaling;
         }).collect(Collectors.toList());
     }
