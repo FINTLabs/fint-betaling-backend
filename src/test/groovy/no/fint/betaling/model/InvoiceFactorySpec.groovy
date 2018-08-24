@@ -20,7 +20,7 @@ class InvoiceFactorySpec extends Specification {
         def invoice = invoiceFactory.getInvoice(createPayment())
 
         then:
-        invoice.ordrenummer.identifikatorverdi == 'test0'
+        invoice.ordrenummer.identifikatorverdi == '123'
         invoice.netto == 1L
         invoice.fakturalinjer.size() == 1
     }
@@ -41,7 +41,7 @@ class InvoiceFactorySpec extends Specification {
         return new Betaling(
                 varelinjer: [orderLine],
                 kunde: customer,
-                ordrenummer: 'test0',
+                ordrenummer: 123,
                 oppdragsgiver: employer,
                 timeFrameDueDate: '7'
         )

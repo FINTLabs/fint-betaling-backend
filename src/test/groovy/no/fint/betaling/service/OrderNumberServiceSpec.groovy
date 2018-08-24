@@ -20,7 +20,7 @@ class OrderNumberServiceSpec extends Specification {
 
         then:
         1 * mongoTemplate.findAndModify(_, _, _, _) >> new OrgConfig(orgId: 'existing.org', nesteOrdrenummer: 1001)
-        ordernumber == 'existingorg1001'
+        ordernumber == 1001
     }
 
     def "Get ordernumber given nonexisting orgId returns valid ordernumber"() {
@@ -30,15 +30,9 @@ class OrderNumberServiceSpec extends Specification {
         then:
         1 * mongoTemplate.findAndModify(_, _, _, _) >> null
         1 * mongoTemplate.save(_, _)
+        1 * mongoTemplate.count(_, _) >> 1
         1 * mongoTemplate.findAndModify(_, _, _, _) >> new OrgConfig(nesteOrdrenummer: 0)
-        ordernumber == 'notexistingorg0'
+        ordernumber == 0
     }
 
-    def "Get ordernumber from number given number and orgId returns valid ordernumber"() {
-        when:
-        def ordernumber = ordernumberService.getOrderNumberFromNumber('valid.org', '5')
-
-        then:
-        ordernumber == 'validorg5'
-    }
 }

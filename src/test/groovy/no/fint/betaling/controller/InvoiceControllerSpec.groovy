@@ -21,7 +21,7 @@ class InvoiceControllerSpec extends MockMvcSpecification {
 
         then:
         1 * invoiceService.sendInvoices('valid.org')
-        response.andExpect(status().isOk())
+        response.andExpect(status().isNoContent())
     }
 
     def "Update invoices given valid org id updates invoices"() {
@@ -30,6 +30,6 @@ class InvoiceControllerSpec extends MockMvcSpecification {
 
         then:
         1 * invoiceService.updateInvoiceStatus('valid.org')
-        response.andExpect(status().isOk())
+        response.andExpect(status().isNoContent())
     }
 }

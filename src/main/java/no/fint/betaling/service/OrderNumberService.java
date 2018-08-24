@@ -15,16 +15,11 @@ public class OrderNumberService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public String getOrderNumber(String orgId) {
-        String id = orgId.replace(".", "");
-        return String.format("%s%s", id, getAndUpdateLastOrderNumber(orgId));
+    public long getOrderNumber(String orgId) {
+        return getAndUpdateLastOrderNumber(orgId);
     }
 
-    public String getOrderNumberFromNumber(String orgId, String number) {
-        return String.format("%s%s", orgId.replace(".", ""), number);
-    }
-
-    private String getAndUpdateLastOrderNumber(String orgId) {
+    private long getAndUpdateLastOrderNumber(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("orgId").is(orgId));
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.OrgConfig"));
@@ -38,9 +33,10 @@ public class OrderNumberService {
         if (orgConfig == null) {
             orgConfig = new OrgConfig();
             orgConfig.setOrgId(orgId);
+            orgConfig.setNesteOrdrenummer(100000L * (1 + mongoTemplate.count(null, OrgConfig.class)));
             mongoTemplate.save(orgConfig, orgId);
             orgConfig = mongoTemplate.findAndModify(query, update, OrgConfig.class, orgId);
         }
-        return String.format("%s", orgConfig.getNesteOrdrenummer());
+        return orgConfig.getNesteOrdrenummer();
     }
 }

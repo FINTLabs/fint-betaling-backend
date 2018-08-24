@@ -33,9 +33,9 @@ class CustomerControllerSpec extends MockMvcSpecification {//TODO: finn ut hvord
         def response = mockMvc.perform(get('/api/customer').param('etternavn', 'r'))
 
         then:
-        1 * customerService.getCustomers(_, _) >> [new Kunde(navn: new Personnavn(etternavn: 'Rettsen'))]
+        1 * customerService.getCustomers(_, _) >> [new Kunde(navn: new Personnavn(etternavn: 'Røttsen'))]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Rettsen'))
+                .andExpect(jsonPathEquals('$[0].navn.etternavn', 'Røttsen'))
     }
 }

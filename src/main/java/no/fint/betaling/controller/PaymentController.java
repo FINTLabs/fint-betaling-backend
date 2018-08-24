@@ -1,5 +1,6 @@
 package no.fint.betaling.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.HeaderConstants;
 import no.fint.betaling.model.Payment;
 import no.fint.betaling.service.PaymentService;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+@Slf4j
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/payment")
@@ -22,6 +24,7 @@ public class PaymentController {
     @RequestMapping(method = POST)
     public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
                                      @RequestBody Payment payment) {
+        log.info("{}: Received payment {}", orgId, payment);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.setPayment(orgId, payment));
     }
 

@@ -2,6 +2,7 @@ package no.fint.betaling.service
 
 import no.fint.betaling.model.Betaling
 import no.fint.model.felles.kompleksedatatyper.Identifikator
+import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource
@@ -60,7 +61,7 @@ class InvoiceServiceSpec extends Specification {
         then:
         1 * restService.getResource(_ as Class<FakturagrunnlagResources>, _ as String, _ as String) >> invoiceResources
         invoices.size() == 1
-        invoices.get(0).ordrenummer.identifikatorverdi == 'testOrder'
+        invoices.get(0).ordrenummer.identifikatorverdi == '1234'
         invoices.get(0).fakturalinjer.get(0).pris == 1000
     }
 
@@ -81,7 +82,7 @@ class InvoiceServiceSpec extends Specification {
         )
 
         then:
-        invoice.ordrenummer.identifikatorverdi == 'testOrder'
+        invoice.ordrenummer.identifikatorverdi == '1234'
     }
 
     def "Update invoice given valid invoice behaves as expected"() {
@@ -110,7 +111,7 @@ class InvoiceServiceSpec extends Specification {
 
     private static FakturagrunnlagResource createInvoice() {
         def resource = new FakturagrunnlagResource(
-                ordrenummer: new Identifikator(identifikatorverdi: 'testOrder'),
+                ordrenummer: new Identifikator(identifikatorverdi: '1234'),
                 fakturalinjer: [
                         new FakturalinjeResource(
                                 antall: 1,
@@ -119,13 +120,14 @@ class InvoiceServiceSpec extends Specification {
                         )
                 ]
         )
+        resource.addLink("self", Link.with("/some/path/to/self"))
         return resource
     }
 
     private static Betaling createPayment(boolean sent) {
         def payment = new Betaling()
         payment.setFakturagrunnlag(createInvoice())
-        payment.location = new URI('http','host.test','/location','')
+        payment.location = new URI('http','host.test','/location','').toString()
         payment.sentTilEksterntSystem = sent
         return payment
     }

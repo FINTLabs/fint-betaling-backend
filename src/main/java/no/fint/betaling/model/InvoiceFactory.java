@@ -40,7 +40,7 @@ public class InvoiceFactory {
         invoice.addOppdragsgiver(new Link(payment.getOppdragsgiver().getLinks().get("self").get(0).getHref()));
 
         Identifikator identifikator = new Identifikator();
-        identifikator.setIdentifikatorverdi(payment.getOrdrenummer());
+        identifikator.setIdentifikatorverdi(payment.getOrdrenummer().toString());
         invoice.setOrdrenummer(identifikator);
 
         return invoice;

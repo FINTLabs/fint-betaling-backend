@@ -33,8 +33,8 @@ class BetalingFactorySpec extends Specification {
         def betaling = betalingFactory.getBetaling(createPayment(), 'valid.org')
 
         then:
-        1 * orderNumberService.getOrderNumber(_ as String) >> 'validorg0'
-        betaling.get(0).ordrenummer == 'validorg0'
+        1 * orderNumberService.getOrderNumber(_ as String) >> 123
+        betaling.get(0).ordrenummer == 123
         betaling.get(0).fakturagrunnlag.fakturalinjer.get(0).pris == 100
     }
 

@@ -12,12 +12,13 @@ import java.util.List;
 
 @Data
 public class Betaling {
-    private String ordrenummer;
+    private Long ordrenummer;
+    private Long fakturanummer;
     private String restBelop;
     private String timeFrameDueDate;
     private Kunde kunde;
     private OppdragsgiverResource oppdragsgiver;
-    private URI location;
+    private String location;
     private FakturagrunnlagResource fakturagrunnlag;
     private List<OrderLine> varelinjer;
     private boolean sentTilEksterntSystem = false;

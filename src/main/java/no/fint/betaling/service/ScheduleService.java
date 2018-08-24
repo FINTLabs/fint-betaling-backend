@@ -24,8 +24,24 @@ public class ScheduleService {
     @Value("${fint.betaling.default-org-id}")
     private String orgId;
 
-    @Scheduled(fixedRateString = "${fint.betaling.invoice-send-rate}")
+    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.invoice-send-rate}")
     public void sendInvoices(){
-        invoiceService.sendInvoices(orgId);
+        log.info("Sending invoices...");
+        try {
+            invoiceService.sendInvoices(orgId);
+        } catch (Exception e) {
+            log.error("Error caught when sending invoices!", e);
+        }
+    }
+
+
+    @Scheduled(initialDelay = 20000, fixedRateString = "${fint.betaling.invoice-update-rate}")
+    public void updateInvoices(){
+        log.info("Updating invoices...");
+        try {
+            invoiceService.updateInvoiceStatus(orgId);
+        } catch (Exception e) {
+            log.error("Error caught when updating invoices!", e);
+        }
     }
 }

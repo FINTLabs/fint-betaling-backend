@@ -38,10 +38,7 @@ public class PaymentService {
     public List<Betaling> getPaymentsByOrdernumber(String orgId, String ordernumber) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
-        query.addCriteria(Criteria.where("ordrenummer").regex(
-                orderNumberService.getOrderNumberFromNumber(orgId, ordernumber),
-                "i"
-        ));
+        query.addCriteria(Criteria.where("ordrenummer").is(Long.parseLong(ordernumber)));
         return mongoService.getPayments(orgId, query);
     }
 

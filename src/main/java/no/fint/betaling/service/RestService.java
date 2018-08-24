@@ -37,8 +37,9 @@ public class RestService {
         }
     }
 
-    public <T> ResponseEntity setResource(Class<T> type, String url, T content, String orgId) {
+    public <T> ResponseEntity<T> setResource(Class<T> type, String url, T content, String orgId) {
         try {
+            log.info("POST {} {}", url, content);
             return restTemplate.exchange(
                     url,
                     HttpMethod.POST,

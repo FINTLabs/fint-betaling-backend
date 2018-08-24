@@ -2,6 +2,8 @@ package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Betaling;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -31,7 +34,7 @@ public class InvoiceService {
         List<Betaling> payments = getUnsentPayments(orgId);
         for (Betaling payment : payments) {
             ResponseEntity response = setInvoice(orgId, payment.getFakturagrunnlag());
-            payment.setLocation(response.getHeaders().getLocation());
+            payment.setLocation(response.getHeaders().getLocation().toString());
             updatePaymentLocation(orgId, payment);
         }
     }
@@ -45,7 +48,7 @@ public class InvoiceService {
         FakturagrunnlagResource invoice = getStatus(orgId, payment);
         if (invoice != null) {
             updateInvoice(orgId, invoice);
-            log.info(String.format("Updated %s", payment.getOrdrenummer()));
+            log.info("Updated {}", payment.getOrdrenummer());
         }
     }
 
@@ -83,16 +86,18 @@ public class InvoiceService {
     }
 
     public FakturagrunnlagResource getStatus(String orgId, Betaling payment) {
-        return restService.getResource(FakturagrunnlagResource.class, payment.getLocation().toString(), orgId);
+        return restService.getResource(FakturagrunnlagResource.class, payment.getLocation(), orgId);
     }
 
     public void updateInvoice(String orgId, FakturagrunnlagResource invoice) {
         Update update = new Update();
         update.set("fakturagrunnlag", invoice);
+        invoice.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(s -> update.set("location", s));
+        Optional.ofNullable(invoice.getFakturanummer()).map(Identifikator::getIdentifikatorverdi).map(Long::valueOf).ifPresent(s -> update.set("fakturanummer", s));
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
-        query.addCriteria(Criteria.where("ordrenummer").is(invoice.getOrdrenummer().getIdentifikatorverdi()));
+        query.addCriteria(Criteria.where("ordrenummer").is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
 
         mongoService.updatePayment(orgId, query, update);
     }

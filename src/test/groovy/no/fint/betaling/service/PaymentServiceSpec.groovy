@@ -39,7 +39,7 @@ class PaymentServiceSpec extends Specification {
         def listBetaling = paymentService.getPaymentsByCustomerName(orgId, 'Correctlastname')
 
         then:
-        1 * mongoService.getPayments('test.no', _) >> [createPayment('123', 'Correctlastname')]
+        1 * mongoService.getPayments('test.no', _) >> [createPayment(123, 'Correctlastname')]
         listBetaling.size() == 1
         listBetaling.get(0).kunde.navn.etternavn == 'Correctlastname'
     }
@@ -49,10 +49,9 @@ class PaymentServiceSpec extends Specification {
         def listBetaling = paymentService.getPaymentsByOrdernumber(orgId, '5')
 
         then:
-        1 * ordernumberService.getOrderNumberFromNumber(orgId, _) >> 'testno5'
-        1 * mongoService.getPayments('test.no', _ as Query) >> [createPayment('testno5', 'Testesen')]
+        1 * mongoService.getPayments('test.no', _ as Query) >> [createPayment(124, 'Testesen')]
         listBetaling.size() == 1
-        listBetaling.get(0).ordrenummer == 'testno5'
+        listBetaling.get(0).ordrenummer == 124
     }
 
     def "Save payment given valid data returns void"() {
@@ -70,15 +69,15 @@ class PaymentServiceSpec extends Specification {
         def response = paymentService.setPayment(orgId, payment)
 
         then:
-        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [createPayment('testno0','Testesen')]
+        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [createPayment(123,'Testesen')]
         1 * mongoService.setPayment('test.no', _ as Betaling)
         response.size() == 1
         response.get(0).varelinjer.size() == 1
-        response.get(0).ordrenummer == 'testno0'
+        response.get(0).ordrenummer == 123
         response.get(0).kunde.navn.etternavn == 'Testesen'
     }
 
-    private static Betaling createPayment(String ordernumber, String lastname) {
+    private static Betaling createPayment(long ordernumber, String lastname) {
         def employer = new OppdragsgiverResource()
         employer.setNavn('test employer')
         employer.addLink('self', new Link('link.to.Oppdragsgiver'))
