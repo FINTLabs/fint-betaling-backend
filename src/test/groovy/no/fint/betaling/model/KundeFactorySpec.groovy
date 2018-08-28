@@ -45,31 +45,32 @@ class KundeFactorySpec extends Specification {
 
     def "Get Personnavn as String"() {
         given:
-        def navn1 = new Personnavn(fornavn: "Sture", etternavn: "Hansen")
-        def navn2 = new Personnavn(fornavn: "Sture", mellomnavn: "Pettersen", etternavn: "Hansen")
-        def navn3 = new Personnavn(etternavn: "Hansen")
+        def navn = new Personnavn()
+        if (fornavn) {
+            navn.setFornavn(fornavn)
+        }
+        if (mellomnavn) {
+            navn.setMellomnavn(mellomnavn)
+        }
+        if (etternavn) {
+            navn.setEtternavn(etternavn)
+        }
 
         when:
-        def result = KundeFactory.getPersonnavnAsString(navn1)
+        def result = KundeFactory.getPersonnavnAsString(navn)
 
         then:
-        result == "Hansen, Sture"
+        result == personnavn
 
-        when:
-        result = KundeFactory.getPersonnavnAsString(navn2)
-
-        then:
-        result == "Hansen, Sture Pettersen"
-
-        when:
-        result = KundeFactory.getPersonnavnAsString(navn3)
-
-        then:
-        result == "Hansen"
+        where:
+        fornavn | mellomnavn  | etternavn || personnavn
+        'Sture' | null        | 'Hansen'  || 'Hansen, Sture'
+        'Sture' | 'Pettersen' | 'Hansen'  || 'Hansen, Sture Pettersen'
+        null    | null        | 'Hansen'  || 'Hansen'
+        null    | null        | null      || ''
     }
 
     private static PersonResource createPerson(String kundenummer, String poststed, String epostadresse) {
-
         def fodselsnummer = new Identifikator()
         fodselsnummer.setIdentifikatorverdi(kundenummer)
 

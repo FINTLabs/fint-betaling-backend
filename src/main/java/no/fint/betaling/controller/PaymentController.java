@@ -1,7 +1,7 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.config.HeaderConstants;
+import no.fint.betaling.model.Betaling;
 import no.fint.betaling.model.Payment;
 import no.fint.betaling.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
+import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -22,26 +26,27 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @RequestMapping(method = POST)
-    public ResponseEntity setPayment(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
+    public ResponseEntity setPayment(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                      @RequestBody Payment payment) {
         log.info("{}: Received payment {}", orgId, payment);
+        // TODO missing location header?
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.setPayment(orgId, payment));
     }
 
     @RequestMapping(method = GET)
-    public ResponseEntity getAllPayments(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
-        return ResponseEntity.ok(paymentService.getAllPayments(orgId));
+    public List<Betaling> getAllPayments(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return paymentService.getAllPayments(orgId);
     }
 
     @GetMapping("/navn/{navn}")
-    public ResponseEntity getPaymentByName(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
+    public List<Betaling> getPaymentByName(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                            @PathVariable(value = "navn") String name) {
-        return ResponseEntity.ok(paymentService.getPaymentsByCustomerName(orgId, name));
+        return paymentService.getPaymentsByCustomerName(orgId, name);
     }
 
     @GetMapping("/ordrenummer/{ordrenummer}")
-    public ResponseEntity getPaymentByOrderNumber(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
+    public List<Betaling> getPaymentByOrderNumber(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                                   @PathVariable(value = "ordrenummer") String orderNumber) {
-        return ResponseEntity.ok(paymentService.getPaymentsByOrdernumber(orgId, orderNumber));
+        return paymentService.getPaymentsByOrdernumber(orgId, orderNumber);
     }
 }

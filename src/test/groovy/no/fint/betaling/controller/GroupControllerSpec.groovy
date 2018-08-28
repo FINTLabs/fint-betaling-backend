@@ -1,9 +1,8 @@
 package no.fint.betaling.controller
 
-import no.fint.betaling.model.Kunde
+
 import no.fint.betaling.model.KundeGruppe
 import no.fint.betaling.service.GroupService
-import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
 
@@ -32,8 +31,9 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]', '12345678901'))
     }
+
     def "Get customer groups from basisgruppe"() {
         when:
         def response = mockMvc.perform(get('/api/group/basisgruppe'))
@@ -42,7 +42,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]', '12345678901'))
     }
 
     def "Get customer groups from undervisningsgruppe"() {
@@ -53,7 +53,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]', '12345678901'))
     }
 
     def "Get customer groups from kontaktlarergruppe"() {
@@ -64,6 +64,6 @@ class GroupControllerSpec extends MockMvcSpecification {
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testgruppe'))
-                .andExpect(jsonPathEquals('$[0].kundeliste[0]','12345678901'))
+                .andExpect(jsonPathEquals('$[0].kundeliste[0]', '12345678901'))
     }
 }

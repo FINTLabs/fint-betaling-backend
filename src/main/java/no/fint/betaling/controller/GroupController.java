@@ -1,10 +1,14 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.config.HeaderConstants;
+import no.fint.betaling.model.KundeGruppe;
 import no.fint.betaling.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
+import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -16,23 +20,23 @@ public class GroupController {
     private GroupService groupService;
 
     @GetMapping
-    public ResponseEntity getAllCustomerGroups(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
-        return ResponseEntity.ok(groupService.getAllCustomerGroups(orgId));
+    public List<KundeGruppe> getAllCustomerGroups(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return groupService.getAllCustomerGroups(orgId);
     }
 
     @GetMapping("/basisgruppe")
-    public ResponseEntity getCustomerGroupsFromBasisgruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupListFromBasisgruppe(orgId));
+    public List<KundeGruppe> getCustomerGroupsFromBasisgruppe(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return groupService.getCustomerGroupListFromBasisgruppe(orgId);
     }
 
     @GetMapping("/undervisningsgruppe")
-    public ResponseEntity getCustomerGroupsFromFag(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupListFromUndervisningsgruppe(orgId));
+    public List<KundeGruppe> getCustomerGroupsFromFag(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return groupService.getCustomerGroupListFromUndervisningsgruppe(orgId);
     }
 
     @GetMapping("/kontaktlarergruppe")
-    public ResponseEntity getCustomerGroupListFromKontaktlarergruppe(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupListFromKontaktlarergruppe(orgId));
+    public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return groupService.getCustomerGroupListFromKontaktlarergruppe(orgId);
     }
 
 }

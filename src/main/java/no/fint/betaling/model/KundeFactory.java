@@ -5,22 +5,30 @@ import no.fint.model.resource.felles.PersonResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+
 @Service
 public class KundeFactory {
 
+    private static final String ETTERNAVN_FORNAVN_MELLOMNAVN = "%s, %s %s";
+    private static final String ETTERNAVN_FORNAVN = "%s, %s";
+
     public static String getPersonnavnAsString(Personnavn navn) {
         if (navn == null) return null;
-        String result = "";
-        if (!StringUtils.isEmpty(navn.getEtternavn()))
-            result += navn.getEtternavn();
-        if (!StringUtils.isEmpty(navn.getFornavn())) {
-            if (!result.isEmpty())
-                result += ", ";
-            result += navn.getFornavn();
-        }
-        if (!StringUtils.isEmpty(navn.getMellomnavn()))
-            result += " " + navn.getMellomnavn();
-        return result;
+
+        Optional<String> fornavn = getValue(navn.getFornavn());
+        Optional<String> mellomnavn = getValue(navn.getMellomnavn());
+        Optional<String> etternavn = getValue(navn.getEtternavn());
+
+        if (fornavn.isPresent() && mellomnavn.isPresent() && etternavn.isPresent()) {
+            return String.format(ETTERNAVN_FORNAVN_MELLOMNAVN, etternavn.get(), fornavn.get(), mellomnavn.get());
+        } else if (fornavn.isPresent() && etternavn.isPresent()) {
+            return String.format(ETTERNAVN_FORNAVN, etternavn.get(), fornavn.get());
+        } else return etternavn.orElse("");
+    }
+
+    private static Optional<String> getValue(String value) {
+        return StringUtils.isEmpty(value) ? Optional.empty() : Optional.of(value);
     }
 
     public Kunde getKunde(PersonResource person) {
