@@ -1,7 +1,7 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.service.RestService;
+import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,16 +27,16 @@ public class OrderLineController {
     private String orderLineEndpoint;
 
     @Autowired
-    private RestService restService;
+    private RestUtil restUtil;
 
     @RequestMapping(method = GET)
     public List<VarelinjeResource> getAllOrderLines(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restService.getResource(VarelinjeResources.class, orderLineEndpoint, orgId).getContent();
+        return restUtil.get(VarelinjeResources.class, orderLineEndpoint, orgId).getContent();
     }
 
     @RequestMapping(method = POST)
     public ResponseEntity setOrderLine(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                        @RequestBody VarelinjeResource orderLine) {
-        return restService.setResource(VarelinjeResource.class, orderLineEndpoint, orderLine, orgId);
+        return restUtil.post(VarelinjeResource.class, orderLineEndpoint, orderLine, orgId);
     }
 }

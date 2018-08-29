@@ -44,7 +44,7 @@ public class KundeFactory {
     }
 
     public static String getCustomerId(String nin) {
-        return Long.toString((long) (Long.parseLong(nin) / 100), 36);
+        return Long.toString((Long.parseLong(nin) / 100), 36);
     }
 
 }

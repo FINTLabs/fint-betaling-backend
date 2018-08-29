@@ -2,7 +2,7 @@ package no.fint.betaling.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import no.fint.betaling.service.RestService
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
@@ -16,13 +16,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 class OrderLineControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
-    private RestService restService
+    private RestUtil restUtil
     private OrderLineController orderLineController
     private ObjectMapper mapper
 
     void setup() {
-        restService = Mock(RestService)
-        orderLineController = new OrderLineController(restService: restService, orderLineEndpoint: 'endpoints/orderLine')
+        restUtil = Mock(RestUtil)
+        orderLineController = new OrderLineController(restUtil: restUtil, orderLineEndpoint: 'endpoints/orderLine')
 
         def converter = new MappingJackson2HttpMessageConverter()
         mapper = new ObjectMapper()
@@ -42,7 +42,7 @@ class OrderLineControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/orderline').header('x-org-id', 'test.org'))
 
         then:
-        1 * restService.getResource(_, _, 'test.org') >> resources
+        1 * restUtil.get(_, _, 'test.org') >> resources
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testOrder'))
@@ -59,7 +59,7 @@ class OrderLineControllerSpec extends MockMvcSpecification {
 
 
         then:
-        1 * restService.setResource(_, _, _, 'test.org') >> ResponseEntity.ok().build()
+        1 * restUtil.post(_, _, _, 'test.org') >> ResponseEntity.ok().build()
         response.andExpect(status().isOk())
     }
 

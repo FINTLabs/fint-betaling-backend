@@ -1,11 +1,9 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.Kunde
-import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
 import no.fint.model.resource.utdanning.elev.*
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources
@@ -15,7 +13,6 @@ class GroupServiceSpec extends Specification {
 
     private CacheService cacheService
     private GroupService groupService
-    private KundeFactory kundeFactory
     private CustomerService customerService
     private MembershipService membershipService
     private StudentRelationService studentRelationService
@@ -45,12 +42,8 @@ class GroupServiceSpec extends Specification {
         }
 
         cacheService = Mock()
-        kundeFactory = Mock(KundeFactory) {
-            getKunde(_ as PersonResource) >> kunde
-        }
         groupService = new GroupService(
                 cacheService: cacheService,
-                kundeFactory: kundeFactory,
                 membershipService: membershipService,
                 customerService: customerService,
                 studentRelationService: studentRelationService,

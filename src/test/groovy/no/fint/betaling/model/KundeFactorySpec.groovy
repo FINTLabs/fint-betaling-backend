@@ -1,6 +1,6 @@
 package no.fint.betaling.model
 
-import no.fint.betaling.service.RestService
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
@@ -11,12 +11,12 @@ import spock.lang.Specification
 
 class KundeFactorySpec extends Specification {
 
-    private RestService restService
+    private RestUtil restUtil
     private KundeFactory factory
     private String orgId
 
     void setup() {
-        restService = Mock(RestService)
+        restUtil = Mock(RestUtil)
         factory = new KundeFactory()
         orgId = 'test.no'
     }

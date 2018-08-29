@@ -1,14 +1,15 @@
 package no.fint.betaling.service
 
+import no.fint.betaling.repository.InvoiceRepository
 import spock.lang.Specification
 
 class ScheduleServiceSpec extends Specification {
-    private InvoiceService invoiceService
+    private InvoiceRepository invoiceRepository
     private ScheduleService scheduleService
 
     void setup() {
-        invoiceService = Mock(InvoiceService)
-        scheduleService = new ScheduleService(invoiceService: invoiceService)
+        invoiceRepository = Mock(InvoiceRepository)
+        scheduleService = new ScheduleService(invoiceRepository: invoiceRepository)
     }
 
     def "Send invoices"() {
@@ -16,6 +17,6 @@ class ScheduleServiceSpec extends Specification {
         scheduleService.sendInvoices()
 
         then:
-        invoiceService.sendInvoices(_ as String)
+        invoiceRepository.sendInvoices(_ as String)
     }
 }

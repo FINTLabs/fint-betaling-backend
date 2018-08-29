@@ -2,7 +2,6 @@ package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Kunde;
-import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.betaling.util.ResourceCache;
 import no.fint.model.resource.Link;
@@ -36,9 +35,6 @@ public class GroupService {
 
     @Autowired
     private CacheService cacheService;
-
-    @Autowired
-    private KundeFactory kundeFactory;
 
     @Autowired
     private MembershipService membershipService;
@@ -112,9 +108,9 @@ public class GroupService {
     }
 
     private List<Kunde> getCustomersForGroup(String orgId, Link group) {
-        Map<Link,Kunde> memberToCustomerMap = customerService.getCustomers(orgId,null).stream()
-                .collect(Collectors.toMap(Kunde::getElev, Function.identity(), (a, b)->a));
-        Map<Link,Link> studentRelationToStudentMap = studentRelationService.getStudentRelationships(orgId);
+        Map<Link, Kunde> memberToCustomerMap = customerService.getCustomers(orgId, null).stream()
+                .collect(Collectors.toMap(Kunde::getElev, Function.identity(), (a, b) -> a));
+        Map<Link, Link> studentRelationToStudentMap = studentRelationService.getStudentRelationships(orgId);
         List<MedlemskapResource> memberships = membershipService.getMemberships(orgId);
 
         return memberships

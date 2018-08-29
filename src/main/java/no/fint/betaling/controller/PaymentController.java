@@ -3,7 +3,7 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Betaling;
 import no.fint.betaling.model.Payment;
-import no.fint.betaling.service.PaymentService;
+import no.fint.betaling.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,30 +23,30 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 public class PaymentController {
 
     @Autowired
-    private PaymentService paymentService;
+    private PaymentRepository paymentRepository;
 
     @RequestMapping(method = POST)
     public ResponseEntity setPayment(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                      @RequestBody Payment payment) {
         log.info("{}: Received payment {}", orgId, payment);
         // TODO missing location header?
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.setPayment(orgId, payment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentRepository.setPayment(orgId, payment));
     }
 
     @RequestMapping(method = GET)
     public List<Betaling> getAllPayments(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return paymentService.getAllPayments(orgId);
+        return paymentRepository.getAllPayments(orgId);
     }
 
     @GetMapping("/navn/{navn}")
     public List<Betaling> getPaymentByName(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                            @PathVariable(value = "navn") String name) {
-        return paymentService.getPaymentsByCustomerName(orgId, name);
+        return paymentRepository.getPaymentsByCustomerName(orgId, name);
     }
 
     @GetMapping("/ordrenummer/{ordrenummer}")
     public List<Betaling> getPaymentByOrderNumber(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                                   @PathVariable(value = "ordrenummer") String orderNumber) {
-        return paymentService.getPaymentsByOrdernumber(orgId, orderNumber);
+        return paymentRepository.getPaymentsByOrdernumber(orgId, orderNumber);
     }
 }

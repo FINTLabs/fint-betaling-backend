@@ -1,7 +1,8 @@
-package no.fint.betaling.service;
+package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Betaling;
+import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
@@ -19,16 +20,16 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class InvoiceService {
+public class InvoiceRepository {
 
     @Value("${fint.betaling.endpoints.invoice}")
     private String invoiceEndpoint;
 
     @Autowired
-    private RestService restService;
+    private RestUtil restUtil;
 
     @Autowired
-    private MongoService mongoService;
+    private MongoRepository mongoRepository;
 
     public void sendInvoices(String orgId) {
         List<Betaling> payments = getUnsentPayments(orgId);
@@ -54,14 +55,14 @@ public class InvoiceService {
 
     private List<Betaling> getUnsentPayments(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
         query.addCriteria(Criteria.where("sentTilEksterntSystem").is(false));
         return getPayments(orgId, query);
     }
 
     private List<Betaling> getSentPayments(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
         query.addCriteria(Criteria.where("sentTilEksterntSystem").is(true));
         return getPayments(orgId, query);
     }
@@ -72,21 +73,21 @@ public class InvoiceService {
         update.set("sentTilEksterntSystem", true);
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
         query.addCriteria(Criteria.where("ordrenummer").is(payment.getOrdrenummer()));
         updatePayment(orgId, query, update);
     }
 
     public List<FakturagrunnlagResource> getInvoices(String orgId) {
-        return restService.getResource(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
+        return restUtil.get(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
     }
 
     public ResponseEntity setInvoice(String orgId, FakturagrunnlagResource invoice) {
-        return restService.setResource(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
+        return restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
     }
 
     public FakturagrunnlagResource getStatus(String orgId, Betaling payment) {
-        return restService.getResource(FakturagrunnlagResource.class, payment.getLocation(), orgId);
+        return restUtil.get(FakturagrunnlagResource.class, payment.getLocation(), orgId);
     }
 
     public void updateInvoice(String orgId, FakturagrunnlagResource invoice) {
@@ -96,17 +97,17 @@ public class InvoiceService {
         Optional.ofNullable(invoice.getFakturanummer()).map(Identifikator::getIdentifikatorverdi).map(Long::valueOf).ifPresent(s -> update.set("fakturanummer", s));
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.Betaling"));
+        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
         query.addCriteria(Criteria.where("ordrenummer").is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
 
-        mongoService.updatePayment(orgId, query, update);
+        mongoRepository.updatePayment(orgId, query, update);
     }
 
     public List<Betaling> getPayments(String orgId, Query query) {
-        return mongoService.getPayments(orgId, query);
+        return mongoRepository.getPayments(orgId, query);
     }
 
     public void updatePayment(String orgId, Query query, Update update) {
-        mongoService.updatePayment(orgId, query, update);
+        mongoRepository.updatePayment(orgId, query, update);
     }
 }

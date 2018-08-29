@@ -1,6 +1,6 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.service.RestService;
+import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResource;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +18,13 @@ import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 public class MvaCodeController {
 
     @Autowired
-    private RestService restService;
+    private RestUtil restUtil;
 
     @Value("${fint.betaling.endpoints.mva-code}")
     private String mvaEndpoint;
 
     @GetMapping
     public List<MvakodeResource> getMvaCodes(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restService.getResource(MvakodeResources.class, mvaEndpoint, orgId).getContent();
+        return restUtil.get(MvakodeResources.class, mvaEndpoint, orgId).getContent();
     }
 }
