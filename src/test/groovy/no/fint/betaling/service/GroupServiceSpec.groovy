@@ -1,12 +1,9 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.Kunde
-import no.fint.betaling.model.KundeFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.PersonResources
 import no.fint.model.resource.utdanning.elev.*
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources
@@ -14,63 +11,47 @@ import spock.lang.Specification
 
 class GroupServiceSpec extends Specification {
 
-    private RestService restService
+    private CacheService cacheService
     private GroupService groupService
-    private KundeFactory kundeFactory
+    private CustomerService customerService
+    private MembershipService membershipService
+    private StudentRelationService studentRelationService
 
     void setup() {
         def medlemskapResource = new MedlemskapResource(systemId: new Identifikator(identifikatorverdi: 'test'))
+        medlemskapResource.addGruppe(Link.with('link.to.Gruppe'))
         medlemskapResource.addMedlem(Link.with('link.to.ElevforholdResource'))
         medlemskapResource.addLink('self', Link.with('link.to.MedlemskapResource'))
-        def medlemskapResources = new MedlemskapResources()
-        medlemskapResources.addResource(medlemskapResource)
 
-        def elevforholdResource = new ElevforholdResource(
-                systemId: new Identifikator(identifikatorverdi: 'test'),
-                beskrivelse: 'student relation')
-        elevforholdResource.addElev(Link.with('link.to.ElevResource'))
-        elevforholdResource.addLink('self', Link.with('link.to.ElevforholdResource'))
-        elevforholdResource.addMedlemskap(Link.with('link.to.MedlemskapResource'))
-        def elevforholdResources = new ElevforholdResources()
-        elevforholdResources.addResource(elevforholdResource)
+        def kunde = new Kunde(
+                navn: new Personnavn(etternavn: 'Testesen', fornavn: 'Test'),
+                person: Link.with('link.to.PersonResource'),
+                elev: Link.with('link.to.ElevResource'),
+                kundenummer: '12345678901')
 
-        def elevResource = new ElevResource(systemId: new Identifikator(identifikatorverdi: 'test'))
-        elevResource.addLink('person', Link.with('link.to.PersonResource'))
-        elevResource.addLink('self', Link.with('link.to.ElevResource'))
-        elevResource.addElevforhold(Link.with('link.to.ElevforholdResource'))
-        def elevResources = new ElevResources()
-        elevResources.addResource(elevResource)
-
-        def personResource = new PersonResource(
-                fodselsnummer: new Identifikator(identifikatorverdi: '12345678901'),
-                navn: new Personnavn(fornavn: 'Test', etternavn: 'Testesen'))
-        personResource.addLink('self', Link.with('link.to.PersonResource'))
-        personResource.addElev(Link.with('link.to.ElevResource'))
-        def personResources = new PersonResources()
-        personResources.addResource(personResource)
-
-        def kunde = new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: 'Testesen'))
-
-        restService = Mock(RestService) {
-            getResource(ElevforholdResources, _ as String, _ as String) >> elevforholdResources
-            getResource(ElevResources, _ as String, _ as String) >> elevResources
-            getResource(MedlemskapResources, _ as String, _ as String) >> medlemskapResources
-            getResource(PersonResources, _ as String, _ as String) >> personResources
+        membershipService = Mock(MembershipService) {
+            getMemberships(_ as String) >> [medlemskapResource]
         }
-        kundeFactory = Mock(KundeFactory) {
-            getKunde(_ as PersonResource) >> kunde
+
+        customerService = Mock(CustomerService) {
+            getCustomers(_ as String, _) >> [kunde]
         }
+
+        studentRelationService = Mock(StudentRelationService) {
+            getStudentRelationships(_) >> [(Link.with('link.to.ElevforholdResource')): Link.with('link.to.ElevResource')]
+        }
+
+        cacheService = Mock()
         groupService = new GroupService(
-                restService: restService,
-                kundeFactory: kundeFactory,
+                cacheService: cacheService,
+                membershipService: membershipService,
+                customerService: customerService,
+                studentRelationService: studentRelationService,
                 basisgruppeEndpoint: "endpoints/basisgruppe",
                 undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
-                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe",
-                personEndpoint: "endpoints/person",
-                studentEndpoint: "endpoints/elev",
-                membershipEndpoint: "endpoints/medlemskap",
-                studentRelationEndpoint: "endpoints/elevforhold"
+                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe"
         )
+        groupService.init()
     }
 
 
@@ -83,11 +64,11 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromKontaktlarergruppe('rogfk.no')
 
         then:
-        1 * restService.getResource(KontaktlarergruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getUpdates(KontaktlarergruppeResources, _ as String, _ as String) >> resources
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
     }
 
     def "Get customer groups from undervisningsgruppe"() {
@@ -99,11 +80,11 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromUndervisningsgruppe('rogfk.no')
 
         then:
-        1 * restService.getResource(UndervisningsgruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getUpdates(UndervisningsgruppeResources, _ as String, _ as String) >> resources
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
     }
 
     def "Get customer groups from basisgruppe"() {
@@ -115,11 +96,11 @@ class GroupServiceSpec extends Specification {
         def customerList = groupService.getCustomerGroupListFromBasisgruppe('rogfk.no')
 
         then:
-        1 * restService.getResource(BasisgruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getUpdates(BasisgruppeResources, _ as String, _ as String) >> resources
 
         customerList.size() == 1
         customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).navn.fornavn == 'Test'
+        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
     }
 
     def populateResource(def resource) {
@@ -130,6 +111,7 @@ class GroupServiceSpec extends Specification {
         identifikator.setIdentifikatorverdi('test')
         resource.systemId = identifikator
         resource.addMedlemskap(Link.with('link.to.MedlemskapResource'))
+        resource.addLink("self", Link.with('link.to.Gruppe'))
         return resource
     }
 }

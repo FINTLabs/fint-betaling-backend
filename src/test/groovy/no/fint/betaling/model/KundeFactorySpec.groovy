@@ -1,26 +1,22 @@
 package no.fint.betaling.model
 
-import no.fint.betaling.service.RestService
-import no.fint.model.felles.Person
-import no.fint.model.felles.kompleksedatatyper.Adresse
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.PersonResources
 import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
-import no.fint.model.resource.utdanning.elev.ElevResource
 import spock.lang.Specification
 
 class KundeFactorySpec extends Specification {
 
-    private RestService restService
+    private RestUtil restUtil
     private KundeFactory factory
     private String orgId
 
     void setup() {
-        restService = Mock(RestService)
+        restUtil = Mock(RestUtil)
         factory = new KundeFactory()
         orgId = 'test.no'
     }
@@ -33,13 +29,48 @@ class KundeFactorySpec extends Specification {
         def kunde = factory.getKunde(person)
 
         then:
-        kunde.kundenummer == '12345678901'
-        kunde.postadresse.poststed == 'Oslo'
-        kunde.kontaktinformasjon.epostadresse == 'test@test.com'
+        kunde.kundenummer == '21i3v9'
+    }
+
+    def "Determine customer ID from NIN"() {
+        given:
+        def nin = "12345678901"
+
+        when:
+        def id = KundeFactory.getCustomerId(nin)
+
+        then:
+        id == '21i3v9'
+    }
+
+    def "Get Personnavn as String"() {
+        given:
+        def navn = new Personnavn()
+        if (fornavn) {
+            navn.setFornavn(fornavn)
+        }
+        if (mellomnavn) {
+            navn.setMellomnavn(mellomnavn)
+        }
+        if (etternavn) {
+            navn.setEtternavn(etternavn)
+        }
+
+        when:
+        def result = KundeFactory.getPersonnavnAsString(navn)
+
+        then:
+        result == personnavn
+
+        where:
+        fornavn | mellomnavn  | etternavn || personnavn
+        'Sture' | null        | 'Hansen'  || 'Hansen, Sture'
+        'Sture' | 'Pettersen' | 'Hansen'  || 'Hansen, Sture Pettersen'
+        null    | null        | 'Hansen'  || 'Hansen'
+        null    | null        | null      || ''
     }
 
     private static PersonResource createPerson(String kundenummer, String poststed, String epostadresse) {
-
         def fodselsnummer = new Identifikator()
         fodselsnummer.setIdentifikatorverdi(kundenummer)
 

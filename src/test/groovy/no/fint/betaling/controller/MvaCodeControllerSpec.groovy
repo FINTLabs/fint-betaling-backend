@@ -1,6 +1,6 @@
 package no.fint.betaling.controller
 
-import no.fint.betaling.service.RestService
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResource
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResources
@@ -9,12 +9,12 @@ import org.springframework.test.web.servlet.MockMvc
 
 class MvaCodeControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
-    private RestService restService
+    private RestUtil restUtil
     private MvaCodeController controller
 
     void setup() {
-        restService = Mock(RestService)
-        controller = new MvaCodeController(restService: restService, mvaEndpoint: 'endpoints/mva')
+        restUtil = Mock(RestUtil)
+        controller = new MvaCodeController(restUtil: restUtil, mvaEndpoint: 'endpoints/mva')
         mockMvc = standaloneSetup(controller)
     }
 
@@ -25,13 +25,13 @@ class MvaCodeControllerSpec extends MockMvcSpecification {
         mvaCodes.addResource(mvaCode)
 
         when:
-        def response = mockMvc.perform(get('/api/mvakode').header('x-org-id','test.org'))
+        def response = mockMvc.perform(get('/api/mvakode').header('x-org-id', 'test.org'))
 
         then:
-        1*restService.getResource(_ as Class<MvakodeResources>, _ as String, _ as String) >> mvaCodes
+        1 * restUtil.get(_ as Class<MvakodeResources>, _ as String, _ as String) >> mvaCodes
 
         response.andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].kode','25'))
-                .andExpect(jsonPathEquals('$[0].navn','25%'))
+                .andExpect(jsonPathEquals('$[0].kode', '25'))
+                .andExpect(jsonPathEquals('$[0].navn', '25%'))
     }
 }

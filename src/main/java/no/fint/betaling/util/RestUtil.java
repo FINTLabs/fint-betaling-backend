@@ -1,4 +1,4 @@
-package no.fint.betaling.service;
+package no.fint.betaling.util;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.InvalidResponseException;
@@ -8,15 +8,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-
 @Slf4j
-@Service
-public class RestService {
+@Component
+public class RestUtil {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -24,35 +22,22 @@ public class RestService {
     @Value("${fint.betaling.client-name}")
     private String clientName;
 
-    public <T> T getResource(Class<T> type, String url, String orgId) {
+    public <T> T get(Class<T> type, String url, String orgId) {
         try {
-            T content =  restTemplate.exchange(
+            return restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     new HttpEntity<>(getHeaders(orgId)),
                     type
             ).getBody();
-            return content;
         } catch (RestClientException e) {
             throw new InvalidResponseException(String.format("Unable to get %s url: %s", type.getSimpleName(), url), e);
         }
     }
 
-    public <T> T getResource(Class<T> type, URI uri, String orgId) {
+    public <T> ResponseEntity<T> post(Class<T> type, String url, T content, String orgId) {
         try {
-            return restTemplate.exchange(
-                    uri,
-                    HttpMethod.GET,
-                    new HttpEntity<>(getHeaders(orgId)),
-                    type
-            ).getBody();
-        } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to get %s url: %s", type.getSimpleName(), uri), e);
-        }
-    }
-
-    public <T> ResponseEntity setResource(Class<T> type, String url, T content, String orgId) {
-        try {
+            log.info("POST {} {}", url, content);
             return restTemplate.exchange(
                     url,
                     HttpMethod.POST,

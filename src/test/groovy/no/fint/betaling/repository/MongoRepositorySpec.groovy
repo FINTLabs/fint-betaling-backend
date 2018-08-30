@@ -1,4 +1,4 @@
-package no.fint.betaling.service
+package no.fint.betaling.repository
 
 import no.fint.betaling.model.Betaling
 import no.fint.betaling.model.Kunde
@@ -10,16 +10,16 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import spock.lang.Specification
 
-class MongoServiceSpec extends Specification {
+class MongoRepositorySpec extends Specification {
 
     private String orgId
     private MongoTemplate mongoTemplate
-    private MongoService mongoService
+    private MongoRepository mongoRepository
 
     void setup() {
         orgId = 'test.no'
         mongoTemplate = Mock(MongoTemplate)
-        mongoService = new MongoService(mongoTemplate: mongoTemplate)
+        mongoRepository = new MongoRepository(mongoTemplate: mongoTemplate)
     }
 
     def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
@@ -28,7 +28,7 @@ class MongoServiceSpec extends Specification {
         def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
 
         when:
-        mongoService.setPayment(orgId, new Betaling(fakturagrunnlag: fakturagrunnlag, kunde: kunde))
+        mongoRepository.setPayment(orgId, new Betaling(fakturagrunnlag: fakturagrunnlag, kunde: kunde))
 
         then:
         1 * mongoTemplate.save(_ as Betaling, 'test.no')
@@ -40,7 +40,7 @@ class MongoServiceSpec extends Specification {
         query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
 
         when:
-        def listBetaling = mongoService.getPayments(orgId, query)
+        def listBetaling = mongoRepository.getPayments(orgId, query)
 
         then:
         1 * mongoTemplate.find(_ as Query, Betaling.class, 'test.no') >> [new Betaling()]
@@ -56,7 +56,7 @@ class MongoServiceSpec extends Specification {
         update.set('someValue','testValue')
 
         when:
-        mongoService.updatePayment('test.no', query, update)
+        mongoRepository.updatePayment('test.no', query, update)
 
         then:
         1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as String)

@@ -1,4 +1,4 @@
-package no.fint.betaling.service
+package no.fint.betaling.repository
 
 import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
@@ -10,49 +10,46 @@ import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
 import org.springframework.data.mongodb.core.query.Query
 import spock.lang.Specification
 
-class PaymentServiceSpec extends Specification {
+class PaymentRepositorySpec extends Specification {
     private String orgId
-    private MongoService mongoService
-    private OrderNumberService ordernumberService
-    private PaymentService paymentService
+    private MongoRepository mongoRepository
+    private PaymentRepository paymentRepository
     private BetalingFactory betalingFactory
 
     void setup() {
         orgId = 'test.no'
-        mongoService = Mock(MongoService)
-        ordernumberService = Mock(OrderNumberService)
+        mongoRepository = Mock(MongoRepository)
         betalingFactory = Mock(BetalingFactory)
-        paymentService = new PaymentService(mongoService: mongoService, orderNumberService: ordernumberService, betalingFactory: betalingFactory)
+        paymentRepository = new PaymentRepository(mongoRepository: mongoRepository, betalingFactory: betalingFactory)
     }
 
     def "Get all payments given valid orgId returns list"() {
         when:
-        def listBetaling = paymentService.getAllPayments(orgId)
+        def listBetaling = paymentRepository.getAllPayments(orgId)
 
         then:
-        1 * mongoService.getPayments('test.no', _) >> [new Betaling(), new Betaling()]
+        1 * mongoRepository.getPayments('test.no', _) >> [new Betaling(), new Betaling()]
         listBetaling.size() == 2
     }
 
     def "Get payment by name given valid lastname returns list with payments matching given lastname"() {
         when:
-        def listBetaling = paymentService.getPaymentsByLastname(orgId, 'Correctlastname')
+        def listBetaling = paymentRepository.getPaymentsByCustomerName(orgId, 'Correctlastname')
 
         then:
-        1 * mongoService.getPayments('test.no', _) >> [createPayment('123', 'Correctlastname')]
+        1 * mongoRepository.getPayments('test.no', _) >> [createPayment(123, 'Correctlastname')]
         listBetaling.size() == 1
         listBetaling.get(0).kunde.navn.etternavn == 'Correctlastname'
     }
 
     def "Get payment given valid ordernumber returns list with payments matching given ordernumber"() {
         when:
-        def listBetaling = paymentService.getPaymentsByOrdernumber(orgId, '5')
+        def listBetaling = paymentRepository.getPaymentsByOrdernumber(orgId, '5')
 
         then:
-        1 * ordernumberService.getOrderNumberFromNumber(orgId, _) >> 'testno5'
-        1 * mongoService.getPayments('test.no', _ as Query) >> [createPayment('testno5', 'Testesen')]
+        1 * mongoRepository.getPayments('test.no', _ as Query) >> [createPayment(124, 'Testesen')]
         listBetaling.size() == 1
-        listBetaling.get(0).ordrenummer == 'testno5'
+        listBetaling.get(0).ordrenummer == 124
     }
 
     def "Save payment given valid data returns void"() {
@@ -67,18 +64,18 @@ class PaymentServiceSpec extends Specification {
         def payment = new Payment(employer: employer, orderLines: [orderLine], customers: [customer], timeFrameDueDate: 7L)
 
         when:
-        def response = paymentService.setPayment(orgId, payment)
+        def response = paymentRepository.setPayment(orgId, payment)
 
         then:
-        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [createPayment('testno0','Testesen')]
-        1 * mongoService.setPayment('test.no', _ as Betaling)
+        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [createPayment(123,'Testesen')]
+        1 * mongoRepository.setPayment('test.no', _ as Betaling)
         response.size() == 1
         response.get(0).varelinjer.size() == 1
-        response.get(0).ordrenummer == 'testno0'
+        response.get(0).ordrenummer == 123
         response.get(0).kunde.navn.etternavn == 'Testesen'
     }
 
-    private static Betaling createPayment(String ordernumber, String lastname) {
+    private static Betaling createPayment(long ordernumber, String lastname) {
         def employer = new OppdragsgiverResource()
         employer.setNavn('test employer')
         employer.addLink('self', new Link('link.to.Oppdragsgiver'))

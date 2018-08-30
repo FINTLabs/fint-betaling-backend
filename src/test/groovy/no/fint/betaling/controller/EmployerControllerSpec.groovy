@@ -1,6 +1,6 @@
 package no.fint.betaling.controller
 
-import no.fint.betaling.service.RestService
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResources
@@ -9,12 +9,12 @@ import org.springframework.test.web.servlet.MockMvc
 
 class EmployerControllerSpec extends MockMvcSpecification {
     private EmployerController controller
-    private RestService restService
+    private RestUtil restUtil
     private MockMvc mockMvc
 
     void setup() {
-        restService = Mock(RestService)
-        controller = new EmployerController(restService: restService, employerEndpoint: 'endpoints/employer')
+        restUtil = Mock(RestUtil)
+        controller = new EmployerController(restUtil: restUtil, employerEndpoint: 'endpoints/employer')
         mockMvc = standaloneSetup(controller)
     }
 
@@ -28,7 +28,7 @@ class EmployerControllerSpec extends MockMvcSpecification {
                 .header('x-org-id', 'valid.org'))
 
         then:
-        1 * restService.getResource(_ as Class<OppdragsgiverResources>, _ as String, _ as String) >>
+        1 * restUtil.get(_ as Class<OppdragsgiverResources>, _ as String, _ as String) >>
                 oppdragsgiverResources
 
         response.andExpect(status().isOk())

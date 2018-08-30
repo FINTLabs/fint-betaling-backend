@@ -1,12 +1,16 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.config.HeaderConstants;
-import no.fint.betaling.service.RestService;
+import no.fint.betaling.util.RestUtil;
+import no.fint.model.resource.administrasjon.okonomi.MvakodeResource;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
+import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -14,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 public class MvaCodeController {
 
     @Autowired
-    private RestService restService;
+    private RestUtil restUtil;
 
     @Value("${fint.betaling.endpoints.mva-code}")
     private String mvaEndpoint;
 
     @GetMapping
-    public ResponseEntity getMvaCodes(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId){
-        return ResponseEntity.ok(restService.getResource(MvakodeResources.class, mvaEndpoint, orgId).getContent());
+    public List<MvakodeResource> getMvaCodes(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return restUtil.get(MvakodeResources.class, mvaEndpoint, orgId).getContent();
     }
 }
