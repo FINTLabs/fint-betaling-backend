@@ -1,6 +1,7 @@
-package no.fint.betaling.service
+package no.fint.betaling.repository
 
 import no.fint.betaling.model.Betaling
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
@@ -11,29 +12,29 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
 
-class InvoiceServiceSpec extends Specification {
-    private InvoiceService invoiceService
-    private RestService restService
-    private MongoService mongoService
+class InvoiceRepositorySpec extends Specification {
+    private InvoiceRepository invoiceRepository
+    private RestUtil restUtil
+    private MongoRepository mongoService
 
     void setup() {
-        restService = Mock(RestService) {
-            getResource(_ as Class<FakturagrunnlagResource>, _ as String, 'valid.org') >> createInvoice()
-            setResource(_ as Class<FakturagrunnlagResource>, _ as String, _ as FakturagrunnlagResource, _ as String) >> {
+        restUtil = Mock(RestUtil) {
+            get(_ as Class<FakturagrunnlagResource>, _ as String, 'valid.org') >> createInvoice()
+            post(_ as Class<FakturagrunnlagResource>, _ as String, _ as FakturagrunnlagResource, _ as String) >> {
                 ResponseEntity.ok().headers().location(new URI('http', 'valid.host', '/path', '')).build()
             }
         }
-        mongoService = Mock(MongoService)
-        invoiceService = new InvoiceService(
-                restService: restService,
-                mongoService: mongoService,
+        mongoService = Mock(MongoRepository)
+        invoiceRepository = new InvoiceRepository(
+                restUtil: restUtil,
+                mongoRepository: mongoService,
                 invoiceEndpoint: 'enpoints/invoice'
         )
     }
 
     def "Send invoices given valid orgId sends invoices and updates payments"() {
         when:
-        invoiceService.sendInvoices('valid.org')
+        invoiceRepository.sendInvoices('valid.org')
 
         then:
         1 * mongoService.getPayments(_ as String, _ as Query) >> [createPayment(false)]
@@ -42,7 +43,7 @@ class InvoiceServiceSpec extends Specification {
 
     def "Update invoice status given valid orgId updates payments"() {
         when:
-        invoiceService.updateInvoiceStatus('valid.org')
+        invoiceRepository.updateInvoiceStatus('valid.org')
 
         then:
         1 * mongoService.getPayments(_ as String, _ as Query) >> [createPayment(true)]
@@ -56,10 +57,10 @@ class InvoiceServiceSpec extends Specification {
         invoiceResources.addResource(createInvoice())
 
         when:
-        def invoices = invoiceService.getInvoices('valid.org')
+        def invoices = invoiceRepository.getInvoices('valid.org')
 
         then:
-        1 * restService.getResource(_ as Class<FakturagrunnlagResources>, _ as String, _ as String) >> invoiceResources
+        1 * restUtil.get(_ as Class<FakturagrunnlagResources>, _ as String, _ as String) >> invoiceResources
         invoices.size() == 1
         invoices.get(0).ordrenummer.identifikatorverdi == '1234'
         invoices.get(0).fakturalinjer.get(0).pris == 1000
@@ -67,7 +68,7 @@ class InvoiceServiceSpec extends Specification {
 
     def "Set invoice given valid invoice returns valid response"() {
         when:
-        def response = invoiceService.setInvoice('valid.org', createInvoice())
+        def response = invoiceRepository.setInvoice('valid.org', createInvoice())
 
         then:
         response.getStatusCode().is2xxSuccessful()
@@ -76,7 +77,7 @@ class InvoiceServiceSpec extends Specification {
 
     def "Get status given payment with valid location uri returns invoice"() {
         when:
-        def invoice = invoiceService.getStatus(
+        def invoice = invoiceRepository.getStatus(
                 'valid.org',
                 new Betaling(location: new URI('http', 'valid.location', '/path', ''))
         )
@@ -87,7 +88,7 @@ class InvoiceServiceSpec extends Specification {
 
     def "Update invoice given valid invoice behaves as expected"() {
         when:
-        invoiceService.updateInvoice('valid.org', createInvoice())
+        invoiceRepository.updateInvoice('valid.org', createInvoice())
 
         then:
         1 * mongoService.updatePayment(_ as String, _ as Query, _ as Update)
@@ -95,7 +96,7 @@ class InvoiceServiceSpec extends Specification {
 
     def "Get payments passes arguments to mongoservice"() {
         when:
-        invoiceService.getPayments('valid.org', new Query())
+        invoiceRepository.getPayments('valid.org', new Query())
 
         then:
         1 * mongoService.getPayments('valid.org', _ as Query)
@@ -103,7 +104,7 @@ class InvoiceServiceSpec extends Specification {
 
     def "Update payment passes arguments to mongoservice"() {
         when:
-        invoiceService.updatePayment('valid.org', new Query(), new Update())
+        invoiceRepository.updatePayment('valid.org', new Query(), new Update())
 
         then:
         1 * mongoService.updatePayment('valid.org', _ as Query, _ as Update)
@@ -127,7 +128,7 @@ class InvoiceServiceSpec extends Specification {
     private static Betaling createPayment(boolean sent) {
         def payment = new Betaling()
         payment.setFakturagrunnlag(createInvoice())
-        payment.location = new URI('http','host.test','/location','').toString()
+        payment.location = new URI('http', 'host.test', '/location', '').toString()
         payment.sentTilEksterntSystem = sent
         return payment
     }

@@ -1,4 +1,4 @@
-package no.fint.betaling.service;
+package no.fint.betaling.repository;
 
 import no.fint.betaling.model.OrgConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,10 +7,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
-@Service
-public class OrderNumberService {
+@Repository
+public class OrderNumberRepository {
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -22,7 +22,7 @@ public class OrderNumberService {
     private long getAndUpdateLastOrderNumber(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("orgId").is(orgId));
-        query.addCriteria(Criteria.where("_class").is("no.fint.betaling.model.OrgConfig"));
+        query.addCriteria(Criteria.where("_class").is(OrgConfig.class.getName()));
 
         Update update = new Update();
         update.inc("nesteOrdrenummer", 1);

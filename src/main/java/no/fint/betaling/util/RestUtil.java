@@ -1,4 +1,4 @@
-package no.fint.betaling.service;
+package no.fint.betaling.util;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.InvalidResponseException;
@@ -8,15 +8,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-
 @Slf4j
-@Service
-public class RestService {
+@Component
+public class RestUtil {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -24,7 +22,7 @@ public class RestService {
     @Value("${fint.betaling.client-name}")
     private String clientName;
 
-    public <T> T getResource(Class<T> type, String url, String orgId) {
+    public <T> T get(Class<T> type, String url, String orgId) {
         try {
             return restTemplate.exchange(
                     url,
@@ -37,7 +35,7 @@ public class RestService {
         }
     }
 
-    public <T> ResponseEntity<T> setResource(Class<T> type, String url, T content, String orgId) {
+    public <T> ResponseEntity<T> post(Class<T> type, String url, T content, String orgId) {
         try {
             log.info("POST {} {}", url, content);
             return restTemplate.exchange(

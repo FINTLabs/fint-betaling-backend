@@ -1,17 +1,17 @@
-package no.fint.betaling.service
+package no.fint.betaling.repository
 
 import no.fint.betaling.model.OrgConfig
 import org.springframework.data.mongodb.core.MongoTemplate
 import spock.lang.Specification
 
-class OrderNumberServiceSpec extends Specification {
+class OrderNumberRepositorySpec extends Specification {
 
     private MongoTemplate mongoTemplate
-    private OrderNumberService ordernumberService
+    private OrderNumberRepository ordernumberService
 
     void setup() {
         mongoTemplate = Mock(MongoTemplate)
-        ordernumberService = new OrderNumberService(mongoTemplate: mongoTemplate)
+        ordernumberService = new OrderNumberRepository(mongoTemplate: mongoTemplate)
     }
 
     def "Get ordernumber given existing orgId returns valid ordernumber"() {

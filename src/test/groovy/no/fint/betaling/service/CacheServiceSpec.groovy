@@ -1,16 +1,17 @@
 package no.fint.betaling.service
 
+import no.fint.betaling.util.RestUtil
 import org.codehaus.jackson.map.ObjectMapper
 import spock.lang.Specification
 
 class CacheServiceSpec extends Specification {
-    private RestService restService
+    private RestUtil restUtil
     private CacheService cacheService
     private ObjectMapper objectMapper
 
     void setup() {
-        restService = Mock()
-        cacheService = new CacheService(restService: restService)
+        restUtil = Mock(RestUtil)
+        cacheService = new CacheService(restUtil: restUtil)
         objectMapper = new ObjectMapper()
     }
 
@@ -24,8 +25,8 @@ class CacheServiceSpec extends Specification {
 
         then:
         result == "Monkey"
-        1 * restService.getResource(_, "http://foo/last-updated", "mock.no") >> json
-        1 * restService.getResource(_, "http://foo?sinceTimeStamp=0", "mock.no") >> "Monkey"
+        1 * restUtil.get(_, "http://foo/last-updated", "mock.no") >> json
+        1 * restUtil.get(_, "http://foo?sinceTimeStamp=0", "mock.no") >> "Monkey"
     }
 
     def "Second fetch with since"() {
@@ -40,8 +41,8 @@ class CacheServiceSpec extends Specification {
 
         then:
         result == "Gorilla"
-        2 * restService.getResource(_, "http://foo/last-updated", "mock.no") >> json
-        1 * restService.getResource(_, "http://foo?sinceTimeStamp=0", "mock.no") >> "Monkey"
-        1 * restService.getResource(_, "http://foo?sinceTimeStamp=124", "mock.no") >> "Gorilla"
+        2 * restUtil.get(_, "http://foo/last-updated", "mock.no") >> json
+        1 * restUtil.get(_, "http://foo?sinceTimeStamp=0", "mock.no") >> "Monkey"
+        1 * restUtil.get(_, "http://foo?sinceTimeStamp=124", "mock.no") >> "Gorilla"
     }
 }

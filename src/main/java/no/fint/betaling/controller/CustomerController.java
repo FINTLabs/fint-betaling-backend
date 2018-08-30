@@ -1,13 +1,14 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.config.HeaderConstants;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
+import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -19,9 +20,8 @@ public class CustomerController {
 
 
     @GetMapping
-    public ResponseEntity getCustomers(@RequestHeader(name = HeaderConstants.ORG_ID, defaultValue = "${fint.betaling.default-org-id}", required = false) String orgId,
-                                       @RequestParam(value = "navn", required = false) String name) {
-        List<Kunde> allCustomers = customerService.getCustomers(orgId, name);
-        return ResponseEntity.ok(allCustomers);
+    public List<Kunde> getCustomers(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                    @RequestParam(value = "navn", required = false) String name) {
+        return customerService.getCustomers(orgId, name);
     }
 }
