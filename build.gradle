@@ -81,7 +81,6 @@ build.dependsOn(copyExternalDependencies)
 build.dependsOn(copyFintDependencies)
 
 jar {
-    baseName = 'fint-betaling'
     manifest {
         attributes(
                 "Manifest-Version": "1.0",
