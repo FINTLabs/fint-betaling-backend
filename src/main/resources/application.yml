@@ -16,10 +16,10 @@ springfox:
 fint:
   oauth:
     enabled: true
-    username: "betaling@client.fintlabs.no",
-    client-id: "e56a78b9-0f0e-4ff9-846b-46d99fa66d76",
-    scope: "fint-client",
-    access-token-uri: "https://idp.felleskomponent.no/nidp/oauth/nam/token",
+    username: "betaling@client.fintlabs.no"
+    client-id: "e56a78b9-0f0e-4ff9-846b-46d99fa66d76"
+    scope: "fint-client"
+    access-token-uri: "https://idp.felleskomponent.no/nidp/oauth/nam/token"
     request-url: https://beta.felleskomponent.no/utdanning/elev/person
   betaling:
     client-name: "FINT-Betaling"
