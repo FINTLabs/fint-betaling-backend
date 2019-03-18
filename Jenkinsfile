@@ -3,8 +3,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
-                    sh "docker pull dtr.fintlabs.no/beta/fordring:latest"
+                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
+                    sh "docker pull fintlabs.azurecr.io/fordring:latest"
                     sh "docker build --tag ${GIT_COMMIT} ."
                 }
             }
@@ -12,30 +12,32 @@ pipeline {
         stage('Publish') {
             when { branch 'master' }
             steps {
-                withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
-                    sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:latest"
-                    sh "docker push 'dtr.fintlabs.no/beta/betaling:latest'"
-                }
-                withDockerServer([credentialsId: "ucp-fintlabs-jenkins-bundle", uri: "tcp://ucp.fintlabs.no:443"]) {
-                    sh "docker service update betaling-beta_betaling --image dtr.fintlabs.no/beta/betaling:latest --detach=false"
+                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
+                    sh "docker tag ${GIT_COMMIT} fintlabs.azurecr.io/betaling:build.${BUILD_NUMBER}"
+                    sh "docker push fintlabs.azurecr.io/betaling:build.${BUILD_NUMBER}"
                 }
             }
         }
         stage('Publish PR') {
             when { changeRequest() }
             steps {
-                withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
-                    sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:${BRANCH_NAME}"
-                    sh "docker push 'dtr.fintlabs.no/beta/betaling:${BRANCH_NAME}'"
+                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
+                    sh "docker tag ${GIT_COMMIT} fintlabs.azurecr.io/betaling:${BRANCH_NAME}.${BUILD_NUMBER}"
+                    sh "docker push fintlabs.azurecr.io/betaling:${BRANCH_NAME}.${BUILD_NUMBER}"
                 }
             }
         }
-        stage('Publish Tag') {
-            when { buildingTag() }
+        stage('Publish Version') {
+            when {
+                tag pattern: "v\\d+\\.\\d+\\.\\d+(-\\w+-\\d+)?", comparator: "REGEXP"
+            }
             steps {
-                withDockerRegistry([credentialsId: 'dtr-fintlabs-no', url: 'https://dtr.fintlabs.no']) {
-                    sh "docker tag ${GIT_COMMIT} dtr.fintlabs.no/beta/betaling:${TAG_NAME}"
-                    sh "docker push 'dtr.fintlabs.no/beta/betaling:${TAG_NAME}'"
+                script {
+                    VERSION = TAG_NAME[1..-1]
+                }
+                withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
+                    sh "docker tag ${GIT_COMMIT} fintlabs.azurecr.io/betaling:${VERSION}"
+                    sh "docker push fintlabs.azurecr.io/betaling:${VERSION}"
                 }
             }
         }

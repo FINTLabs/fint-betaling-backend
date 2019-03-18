@@ -19,7 +19,7 @@ public class InvoiceFactory {
             List<String> description = new ArrayList<>();
             description.add(orderLine.getOrderLine().getNavn());
             description.add(orderLine.getDescription());
-            paymentLine.setAntall(orderLine.getAmount());
+            paymentLine.setAntall(orderLine.getAmount() / 1.0f);
             paymentLine.setFritekst(description);
             paymentLine.addVarelinje(orderLine.getOrderLine().getLinks().get("self").get(0));
             return paymentLine;

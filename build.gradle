@@ -1,5 +1,5 @@
 buildscript {
-    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.3.0/dependencies.gradle'
+    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.6.0/dependencies.gradle'
     ext {
         springBootVersion = springBootVersion
     }
@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("com.github.ben-manes:gradle-versions-plugin:0.20.0")
+        classpath("com.github.ben-manes:gradle-versions-plugin:0.21.0")
     }
 }
 
@@ -20,7 +20,6 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.github.ben-manes.versions'
 
 group = 'no.fint'
-version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
@@ -36,9 +35,9 @@ repositories {
 
 
 dependencies {
-    compile('no.fint:fint-utdanning-resource-model-java:3.0.0')
-    compile('no.fint:fint-administrasjon-resource-model-java:0.99.21-alpha-2')
-    compile('no.fint:fint-oauth-token-service:1.1.0')
+    compile('no.fint:fint-utdanning-resource-model-java:3.1.0')
+    compile("no.fint:fint-administrasjon-resource-model-java:${apiVersion}")
+    compile('no.fint:fint-oauth-token-service:1.4.0')
 
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
@@ -48,15 +47,13 @@ dependencies {
     compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
 
+    runtime('org.springframework.boot:spring-boot-actuator')
+
     testCompile('no.fint:fint-test-utils:0.0.4')
     testCompile("cglib:cglib-nodep:${cglibVersion}")
     testCompile("org.spockframework:spock-spring:${spockSpringVersion}")
     testCompile("org.spockframework:spock-core:${spockSpringVersion}")
     testCompile('org.springframework.boot:spring-boot-starter-test')
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = gradleVersion
 }
 
 test {
@@ -66,13 +63,13 @@ test {
 }
 
 task copyExternalDependencies(type: Copy) {
-    from configurations.compile
+    from configurations.runtime
     into "$buildDir/deps/external"
     exclude '**/fint-*.jar'
 }
 
 task copyFintDependencies(type: Copy) {
-    from configurations.compile
+    from configurations.runtime
     into "$buildDir/deps/fint"
     include '**/fint-*.jar'
 }
@@ -87,9 +84,11 @@ jar {
                 "Main-Class": "no.fint.betaling.Application",
                 "Specification-Version": "${version}",
                 "Implementation-Version": "${version}",
-                "Class-Path": configurations.compile.collect { it.getName() }.join(' ')
+                "Class-Path": configurations.runtime.collect { it.getName() }.join(' ')
         )
     }
 }
 
 bootRepackage.enabled = false
+
+apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.6.0/dependencyReport.gradle'
