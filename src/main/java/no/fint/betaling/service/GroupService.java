@@ -5,7 +5,10 @@ import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.betaling.util.ResourceCache;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.utdanning.elev.*;
+import no.fint.model.resource.utdanning.elev.BasisgruppeResource;
+import no.fint.model.resource.utdanning.elev.BasisgruppeResources;
+import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResource;
+import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResources;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -77,7 +81,7 @@ public class GroupService {
         log.info(String.format("Found %s basic groups", basisgruppeResources.size()));
         return basisgruppeResources
                 .stream()
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getSelfLinks()))
+                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
@@ -86,7 +90,7 @@ public class GroupService {
         log.info(String.format("Found %s contact groups", kontaktlarergruppeResources.size()));
         return kontaktlarergruppeResources
                 .stream()
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getSelfLinks()))
+                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
@@ -95,31 +99,27 @@ public class GroupService {
         log.info(String.format("Found %s lesson groups", undervisningsgruppeResources.size()));
         return undervisningsgruppeResources
                 .stream()
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getSelfLinks()))
+                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
-    private KundeGruppe createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> self) {
+    private KundeGruppe createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
         KundeGruppe kundeGruppe = new KundeGruppe();
         kundeGruppe.setNavn(navn);
         kundeGruppe.setBeskrivelse(beskrivelse);
-        kundeGruppe.setKundeliste(self.stream().flatMap(l -> getCustomersForGroup(orgId, l).stream()).collect(Collectors.toList()));
+        kundeGruppe.setKundeliste(getCustomersForGroup(orgId, elevforhold).collect(Collectors.toList()));
         return kundeGruppe;
     }
 
-    private List<Kunde> getCustomersForGroup(String orgId, Link group) {
+    private Stream<Kunde> getCustomersForGroup(String orgId, List<Link> elevforhold) {
         Map<Link, Kunde> memberToCustomerMap = customerService.getCustomers(orgId, null).stream()
                 .collect(Collectors.toMap(Kunde::getElev, Function.identity(), (a, b) -> a));
         Map<Link, Link> studentRelationToStudentMap = studentRelationService.getStudentRelationships(orgId);
-        List<MedlemskapResource> memberships = membershipService.getMemberships(orgId);
 
-        return memberships
+        return elevforhold
                 .stream()
-                .filter(m -> m.getGruppe().contains(group))
-                .flatMap(m -> m.getMedlem().stream())
                 .map(studentRelationToStudentMap::get)
-                .map(memberToCustomerMap::get)
-                .collect(Collectors.toList());
+                .map(memberToCustomerMap::get);
     }
 
 }
