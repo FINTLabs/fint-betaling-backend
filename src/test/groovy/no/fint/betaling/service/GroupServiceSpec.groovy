@@ -4,7 +4,10 @@ import no.fint.betaling.model.Kunde
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
-import no.fint.model.resource.utdanning.elev.*
+import no.fint.model.resource.utdanning.elev.BasisgruppeResource
+import no.fint.model.resource.utdanning.elev.BasisgruppeResources
+import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResource
+import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResources
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources
 import spock.lang.Specification
@@ -18,11 +21,6 @@ class GroupServiceSpec extends Specification {
     private StudentRelationService studentRelationService
 
     void setup() {
-        def medlemskapResource = new MedlemskapResource(systemId: new Identifikator(identifikatorverdi: 'test'))
-        medlemskapResource.addGruppe(Link.with('link.to.Gruppe'))
-        medlemskapResource.addMedlem(Link.with('link.to.ElevforholdResource'))
-        medlemskapResource.addLink('self', Link.with('link.to.MedlemskapResource'))
-
         def kunde = new Kunde(
                 navn: new Personnavn(etternavn: 'Testesen', fornavn: 'Test'),
                 person: Link.with('link.to.PersonResource'),
@@ -30,7 +28,7 @@ class GroupServiceSpec extends Specification {
                 kundenummer: '12345678901')
 
         membershipService = Mock(MembershipService) {
-            getMemberships(_ as String) >> [medlemskapResource]
+            getMemberships(_ as String) >> []
         }
 
         customerService = Mock(CustomerService) {
@@ -110,7 +108,7 @@ class GroupServiceSpec extends Specification {
         def identifikator = new Identifikator()
         identifikator.setIdentifikatorverdi('test')
         resource.systemId = identifikator
-        resource.addMedlemskap(Link.with('link.to.MedlemskapResource'))
+        resource.addElevforhold(Link.with('link.to.ElevforholdResource'))
         resource.addLink("self", Link.with('link.to.Gruppe'))
         return resource
     }
