@@ -95,6 +95,7 @@ public class InvoiceRepository {
         update.set("fakturagrunnlag", invoice);
         invoice.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(s -> update.set("location", s));
         Optional.ofNullable(invoice.getFakturanummer()).map(Identifikator::getIdentifikatorverdi).map(Long::valueOf).ifPresent(s -> update.set("fakturanummer", s));
+        Optional.ofNullable(invoice.getTotal()).map(String::valueOf).ifPresent(s -> update.set("restBelop", s));
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
