@@ -39,6 +39,7 @@ dependencies {
     compile("no.fint:fint-administrasjon-resource-model-java:${apiVersion}")
     compile('no.fint:fint-oauth-token-service:1.4.0')
 
+    compile('org.jooq:jool-java-8:0.9.14')
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile("org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}")

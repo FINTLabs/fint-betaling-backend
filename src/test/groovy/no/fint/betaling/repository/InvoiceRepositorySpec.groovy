@@ -51,21 +51,6 @@ class InvoiceRepositorySpec extends Specification {
     }
 
 
-    def "Get invoice given valid org id returns list of invoices"() {
-        given:
-        def invoiceResources = new FakturagrunnlagResources()
-        invoiceResources.addResource(createInvoice())
-
-        when:
-        def invoices = invoiceRepository.getInvoices('valid.org')
-
-        then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResources>, _ as String, _ as String) >> invoiceResources
-        invoices.size() == 1
-        invoices.get(0).ordrenummer.identifikatorverdi == '1234'
-        invoices.get(0).fakturalinjer.get(0).pris == 1000
-    }
-
     def "Set invoice given valid invoice returns valid response"() {
         when:
         def response = invoiceRepository.setInvoice('valid.org', createInvoice())

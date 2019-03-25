@@ -6,7 +6,7 @@ import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources;
+import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -21,6 +21,10 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class InvoiceRepository {
+
+    public static final String SENDT_TIL_EKSTERNT_SYSTEM = "sentTilEksterntSystem";
+    public static final String ORDRENUMMER = "ordrenummer";
+    public static final String LOCATION = "location";
 
     @Value("${fint.betaling.endpoints.invoice}")
     private String invoiceEndpoint;
@@ -41,45 +45,41 @@ public class InvoiceRepository {
     }
 
     public void updateInvoiceStatus(String orgId) {
-        List<Betaling> payments = getSentPayments(orgId);
-        payments.forEach(payment -> getPaymentStatus(orgId, payment));
+        getSentPayments(orgId).forEach(Consumer2.from(this::getPaymentStatus).acceptPartially(orgId));
     }
 
     private void getPaymentStatus(String orgId, Betaling payment) {
-        FakturagrunnlagResource invoice = getStatus(orgId, payment);
-        if (invoice != null) {
-            updateInvoice(orgId, invoice);
+        try {
+            updateInvoice(orgId, getStatus(orgId, payment));
             log.info("Updated {}", payment.getOrdrenummer());
+        } catch (Exception e) {
+            log.warn("Error updating {}: {}", payment.getOrdrenummer(), e.getMessage());
         }
     }
 
     private List<Betaling> getUnsentPayments(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where("sentTilEksterntSystem").is(false));
+        query.addCriteria(Criteria.where(SENDT_TIL_EKSTERNT_SYSTEM).is(false));
         return getPayments(orgId, query);
     }
 
     private List<Betaling> getSentPayments(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where("sentTilEksterntSystem").is(true));
+        query.addCriteria(Criteria.where(SENDT_TIL_EKSTERNT_SYSTEM).is(true));
         return getPayments(orgId, query);
     }
 
     private void updatePaymentLocation(String orgId, Betaling payment) {
         Update update = new Update();
-        update.set("location", payment.getLocation());
-        update.set("sentTilEksterntSystem", true);
+        update.set(LOCATION, payment.getLocation());
+        update.set(SENDT_TIL_EKSTERNT_SYSTEM, true);
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where("ordrenummer").is(payment.getOrdrenummer()));
+        query.addCriteria(Criteria.where(ORDRENUMMER).is(payment.getOrdrenummer()));
         updatePayment(orgId, query, update);
-    }
-
-    public List<FakturagrunnlagResource> getInvoices(String orgId) {
-        return restUtil.get(FakturagrunnlagResources.class, invoiceEndpoint, orgId).getContent();
     }
 
     public ResponseEntity setInvoice(String orgId, FakturagrunnlagResource invoice) {
@@ -92,14 +92,15 @@ public class InvoiceRepository {
 
     public void updateInvoice(String orgId, FakturagrunnlagResource invoice) {
         Update update = new Update();
-        update.set("fakturagrunnlag", invoice);
-        invoice.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(s -> update.set("location", s));
-        Optional.ofNullable(invoice.getFakturanummer()).map(Identifikator::getIdentifikatorverdi).map(Long::valueOf).ifPresent(s -> update.set("fakturanummer", s));
-        Optional.ofNullable(invoice.getTotal()).map(String::valueOf).ifPresent(s -> update.set("restBelop", s));
+        Consumer2<String, Object> updater = Consumer2.from(update::set);
+        updater.accept("fakturagrunnlag", invoice);
+        invoice.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(updater.acceptPartially(LOCATION));
+        Optional.ofNullable(invoice.getFakturanummer()).map(Identifikator::getIdentifikatorverdi).map(Long::valueOf).ifPresent(updater.acceptPartially("fakturanummer"));
+        Optional.ofNullable(invoice.getTotal()).map(String::valueOf).ifPresent(updater.acceptPartially("restBelop"));
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where("ordrenummer").is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
+        query.addCriteria(Criteria.where(ORDRENUMMER).is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
 
         mongoRepository.updatePayment(orgId, query, update);
     }

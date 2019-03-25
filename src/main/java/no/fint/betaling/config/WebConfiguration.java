@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class WebConfiguration extends WebMvcConfigurerAdapter {
 
     // https://stackoverflow.com/a/42998817
-    
+
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/{spring:\\w+}")
