@@ -31,7 +31,7 @@ public class RestUtil {
                     type
             ).getBody();
         } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to get %s url: %s", type.getSimpleName(), url), e);
+            throw new InvalidResponseException(String.format("Unable to get %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
         }
     }
 
@@ -45,7 +45,7 @@ public class RestUtil {
                     type
             );
         } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to set %s url: %s", type.getSimpleName(), url), e);
+            throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
         }
     }
 
