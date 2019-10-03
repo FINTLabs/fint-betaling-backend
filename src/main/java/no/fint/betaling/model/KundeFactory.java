@@ -44,8 +44,10 @@ public class KundeFactory {
     }
 
     public static String getCustomerId(String nin) {
-        return Long.toString((Long.parseLong(nin) / 100), 36);
+        try {
+            return Long.toString((Long.parseLong(nin) / 100), 36);
+        } catch (NumberFormatException ex) {
+            return nin;
+        }
     }
-
 }
-

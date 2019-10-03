@@ -8,12 +8,14 @@ import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @AllArgsConstructor
 public class ResourceCache<T extends FintMainObject & FintLinks> {
 
-    private final Map<String, List<T>> cache = Collections.synchronizedMap(new HashMap<>());
+    private final ConcurrentMap<String, List<T>> cache = new ConcurrentHashMap<>(); //Collections.synchronizedMap(new HashMap<>());
 
     private CacheService cacheService;
     private String endpoint;

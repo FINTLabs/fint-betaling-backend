@@ -1,7 +1,7 @@
 package no.fint.betaling.util;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.InvalidResponseException;
+import no.fint.betaling.exception.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;

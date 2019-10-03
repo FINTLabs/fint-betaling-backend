@@ -31,6 +31,10 @@ public class CustomerService {
     @Value("${fint.betaling.endpoints.person}")
     private String personEndpoint;
 
+    public ResourceCache<PersonResource> getPersonResourceResourceCache() {
+        return personResourceResourceCache;
+    }
+
     private ResourceCache<PersonResource> personResourceResourceCache;
 
     @PostConstruct
