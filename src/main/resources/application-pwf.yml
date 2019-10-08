@@ -27,12 +27,14 @@ fint:
   betaling:
     client-name: "FINT-Betaling"
     default-org-id: "fake.no"
+    default-school-org-id: "970123459"
     date-range: "7, 14, 30"
     endpoints:
       invoice: "https://beta1.felleskomponent.no/administrasjon/okonomi/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/administrasjon/okonomi/varelinje"
       mva-code: "https://beta1.felleskomponent.no/administrasjon/okonomi/mvakode"
       employer: "https://beta1.felleskomponent.no/administrasjon/okonomi/oppdragsgiver"
+      skole: "https://play-with-fint.felleskomponent.no/utdanning/utdanningsprogram/skole"
       student: "https://play-with-fint.felleskomponent.no/utdanning/elev/elev"
       basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
       undervisningsgruppe: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"

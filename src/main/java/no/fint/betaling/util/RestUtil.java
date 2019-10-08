@@ -11,16 +11,35 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
 public class RestUtil {
+    private final RestTemplate restTemplate;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    public RestUtil(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Value("${fint.betaling.client-name}")
     private String clientName;
+
+    private final Map<String, Long> lastUpdatedMap = Collections.synchronizedMap(new HashMap<>());
+
+    public <T> T getUpdates(Class<T> type, String url, String orgId) {
+        String key = orgId + "_" + url;
+        long lastUpdated = Long.parseLong(get(Map.class, url + "/last-updated", orgId).get("lastUpdated").toString());
+        long since = lastUpdatedMap.getOrDefault(key, -1L) + 1L;
+        log.info("{}: Fetching {} since {}, last updated {} ...", orgId, url, since, lastUpdated);
+        T result = get(type, UriComponentsBuilder.fromUriString(url).queryParam("sinceTimeStamp", since).build().toUriString(), orgId);
+        lastUpdatedMap.put(key, lastUpdated);
+        return result;
+    }
 
     public <T> T get(Class<T> type, String url, String orgId) {
         try {
@@ -48,7 +67,6 @@ public class RestUtil {
             throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
         }
     }
-
 
     private HttpHeaders getHeaders(String orgId) {
         HttpHeaders headers = new HttpHeaders();

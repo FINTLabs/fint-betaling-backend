@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class ScheduleService {
+    private final InvoiceRepository invoiceRepository;
 
-    @Autowired
-    private InvoiceRepository invoiceRepository;
+    public ScheduleService(InvoiceRepository invoiceRepository) {
+        this.invoiceRepository = invoiceRepository;
+    }
 
     @Value("${fint.betaling.default-org-id}")
     private String orgId;
