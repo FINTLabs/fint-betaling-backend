@@ -22,6 +22,7 @@ public class CustomerService {
         this.cacheManager = cacheManager;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Kunde> getCustomers(String orgId, String filter) {
         Cache cache = cacheManager.getCache("customers");
         Map<Link, Kunde> customers = (Map<Link, Kunde>) cache.get(orgId).get();
@@ -30,9 +31,7 @@ public class CustomerService {
 
         String finalFilter = filter.toLowerCase();
         return customers.values().stream()
-                .filter(customer ->
-                        customer.getFulltNavn().toLowerCase()
-                                .contains(finalFilter))
+                .filter(customer -> customer.getFulltNavn().toLowerCase().contains(finalFilter))
                 .collect(Collectors.toList());
     }
 }
