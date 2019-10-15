@@ -5,6 +5,7 @@ import no.fint.betaling.exception.ResourceNotFoundException;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.*;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
@@ -46,8 +47,10 @@ public class GroupService {
         Cache fintCache = cacheManager.getCache("basisGroups");
         BasisgruppeResources resources = fintCache.get(orgId, BasisgruppeResources.class);
 
+        if (resources == null) return Collections.emptyList();
+
         return resources.getContent().stream()
-                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElseGet(Link::new)))
+                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElse(null)))
                 .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
                 .collect(Collectors.toList());
     }
@@ -58,8 +61,10 @@ public class GroupService {
         Cache fintCache = cacheManager.getCache("teachingGroups");
         UndervisningsgruppeResources resources = fintCache.get(orgId, UndervisningsgruppeResources.class);
 
+        if (resources == null) return Collections.emptyList();
+
         return resources.getContent().stream()
-                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElseGet(Link::new)))
+                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElse(null)))
                 .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
                 .collect(Collectors.toList());
     }
@@ -68,13 +73,17 @@ public class GroupService {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Cache fintCache = cacheManager.getCache("contactTeacherGroups");
-        KontaktlarergruppeResources kontaktlarergruppeResources = fintCache.get(orgId, KontaktlarergruppeResources.class);
+        KontaktlarergruppeResources resources = fintCache.get(orgId, KontaktlarergruppeResources.class);
 
-        return kontaktlarergruppeResources.getContent().stream()
-                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElseGet(Link::new)))
+        if (resources == null) return Collections.emptyList();
+
+        return resources.getContent().stream()
+                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElse(null)))
                 .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
                 .collect(Collectors.toList());
     }
+
+    //TODO static method factory - CustomerGroup.ofSchool, ofGroup
 
     private KundeGruppe createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
         KundeGruppe kundeGruppe = new KundeGruppe();
@@ -86,9 +95,22 @@ public class GroupService {
 
     @SuppressWarnings("unchecked")
     private List<Kunde> getCustomersForGroup(String orgId, List<Link> elevforhold) {
-        Cache cache = cacheManager.getCache("customers");
-        Map<Link, Kunde> customers = (Map<Link, Kunde>) cache.get(orgId).get();
+        Cache studentsMapCache = cacheManager.getCache("studentsMap");
+        Map<Link, PersonResource> students = (Map<Link, PersonResource>) studentsMapCache.get(orgId).get();
 
-        return elevforhold.stream().map(customers::get).collect(Collectors.toList());
+        Cache studentRelationsMapCache = cacheManager.getCache("studentRelationsMap");
+        Map<Link, ElevforholdResource> studentRelations = (Map<Link, ElevforholdResource>) studentRelationsMapCache.get(orgId).get();
+
+        return elevforhold.stream()
+                .map(studentRelations::get)
+                .map(this::getStudentLink)
+                .filter(Objects::nonNull)
+                .map(students::get)
+                .map(Kunde::of)
+                .collect(Collectors.toList());
+    }
+
+    private Link getStudentLink(ElevforholdResource resource) {
+        return resource.getElev().stream().findAny().orElse(null);
     }
 }

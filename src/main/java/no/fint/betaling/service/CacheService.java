@@ -2,40 +2,24 @@ package no.fint.betaling.service;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeFactory;
 import no.fint.betaling.util.RestUtil;
-import no.fint.model.FintMainObject;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
-import no.fint.model.resource.AbstractCollectionResources;
-import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
 import no.fint.model.resource.utdanning.elev.*;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
-import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
-import no.fint.model.utdanning.utdanningsprogram.Skole;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.interceptor.CacheOperation;
-import org.springframework.cache.interceptor.CacheableOperation;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -84,7 +68,8 @@ public class CacheService {
             updateContactTeacherGroups(orgId);
             updatePersons(orgId);
             updateStudentRelations(orgId);
-            buildCustomerBase(orgId);
+            buildStudentRelationsMap(orgId);
+            buildStudentsMap(orgId);
         }
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
@@ -175,26 +160,33 @@ public class CacheService {
         }
     }
 
-    private void buildCustomerBase(String orgId) {
-        Cache studentRelationCache = cacheManager.getCache("studentRelations");
-        ElevforholdResources studentRelations = studentRelationCache.get(orgId, ElevforholdResources.class);
+    private void buildStudentRelationsMap(String orgId) {
+        Cache cache = cacheManager.getCache("studentRelations");
+        ElevforholdResources resources = cache.get(orgId, ElevforholdResources.class);
 
-        Cache personCache = cacheManager.getCache("persons");
-        PersonResources persons = personCache.get(orgId, PersonResources.class);
+        Map<Link, ElevforholdResource> map = resources.getContent().stream()
+                .collect(Collectors.toMap(this::getSelfLink, Function.identity(), (a, b) -> a));
 
-        Map<Link, Kunde> customerMap = studentRelations.getContent()
-                .stream()
-                .collect(Collectors.toMap(
-                        s -> s.getSelfLinks().stream().findAny().orElseGet(Link::new),
-                        s -> {
-                            Link student = s.getElev().stream().findAny().orElseGet(Link::new);
-                            return persons.getContent().stream()
-                                    .filter(p -> p.getElev().contains(student))
-                                    .findAny()
-                                    .map(kundeFactory::getKunde)
-                                    .orElseGet(Kunde::new);
-                        }));
+        Cache cacheMap = cacheManager.getCache("studentRelationsMap");
+        cacheMap.put(orgId, map);
+    }
 
-        cacheManager.getCache("customers").put(orgId, customerMap);
+    private void buildStudentsMap(String orgId) {
+        Cache cache = cacheManager.getCache("persons");
+        PersonResources resources = cache.get(orgId, PersonResources.class);
+
+        Map<Link, PersonResource> map = resources.getContent().stream()
+                .collect(Collectors.toMap(this::getStudentLink, Function.identity(), (a, b) -> a));
+
+        Cache cacheMap = cacheManager.getCache("studentsMap");
+        cacheMap.put(orgId, map);
+    }
+
+    private Link getSelfLink(ElevforholdResource resource) {
+        return resource.getSelfLinks().stream().findAny().orElse(null);
+    }
+
+    private Link getStudentLink(PersonResource resource) {
+        return resource.getElev().stream().findAny().orElse(null);
     }
 }

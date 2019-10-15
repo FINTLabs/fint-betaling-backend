@@ -3,6 +3,7 @@ package no.fint.betaling.service;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Kunde;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.felles.PersonResource;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
@@ -24,14 +25,17 @@ public class CustomerService {
 
     @SuppressWarnings("unchecked")
     public List<Kunde> getCustomers(String orgId, String filter) {
-        Cache cache = cacheManager.getCache("customers");
-        Map<Link, Kunde> customers = (Map<Link, Kunde>) cache.get(orgId).get();
+        Cache cache = cacheManager.getCache("studentsMap");
+        Map<Link, PersonResource> customers = (Map<Link, PersonResource>) cache.get(orgId).get();
 
-        if (StringUtils.isEmpty(filter)) return new ArrayList<>(customers.values());
+        if (StringUtils.isEmpty(filter))
+            return customers.values().stream()
+                    .map(Kunde::of)
+                    .collect(Collectors.toList());
 
-        String finalFilter = filter.toLowerCase();
         return customers.values().stream()
-                .filter(customer -> customer.getFulltNavn().toLowerCase().contains(finalFilter))
+                .map(Kunde::of)
+                .filter(customer -> customer.getFulltNavn().toLowerCase().contains(filter.toLowerCase()))
                 .collect(Collectors.toList());
     }
 }

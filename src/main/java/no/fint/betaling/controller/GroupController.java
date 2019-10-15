@@ -3,7 +3,6 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.KundeGruppe;
 import no.fint.betaling.service.GroupService;
-import org.springframework.cache.CacheManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,16 +15,13 @@ import static no.fint.betaling.config.HeaderConstants.*;
 @RequestMapping(value = "/api/group")
 public class GroupController {
 
-    private final CacheManager cacheManager;
-
     private final GroupService groupService;
 
-    public GroupController(CacheManager cacheManager, GroupService groupService) {
-        this.cacheManager = cacheManager;
+    public GroupController(GroupService groupService) {
         this.groupService = groupService;
     }
 
-    //TODO Change to @PathVariable
+    //TODO Consider @PathVariable
 
     @GetMapping("/skole")
     public KundeGruppe getCustomerGroupBySchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
