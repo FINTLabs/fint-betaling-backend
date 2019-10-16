@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@SuppressWarnings("unchecked")
 public class CustomerService {
     private final CacheManager cacheManager;
 
@@ -23,9 +24,8 @@ public class CustomerService {
         this.cacheManager = cacheManager;
     }
 
-    @SuppressWarnings("unchecked")
     public List<Kunde> getCustomers(String orgId, String filter) {
-        Cache cache = cacheManager.getCache("studentsMap");
+        Cache cache = cacheManager.getCache("studentCache");
         Map<Link, PersonResource> customers = (Map<Link, PersonResource>) cache.get(orgId).get();
 
         if (StringUtils.isEmpty(filter))

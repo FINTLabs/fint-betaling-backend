@@ -4,12 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.ResourceNotFoundException;
 import no.fint.betaling.model.Kunde;
 import no.fint.betaling.model.KundeGruppe;
+import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.*;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
+import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
-import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@SuppressWarnings("unchecked")
 public class GroupService {
+
     private final CacheManager cacheManager;
 
     public GroupService(CacheManager cacheManager) {
@@ -27,12 +29,14 @@ public class GroupService {
     }
 
     private SkoleResource getSchool(String orgId, String schoolId) {
-        Cache fintCache = cacheManager.getCache("schools");
-        SkoleResources resources = fintCache.get(orgId, SkoleResources.class);
+        Cache cache = cacheManager.getCache("schoolCache");
+        Map<String, SkoleResource> schools = (Map<String, SkoleResource>) cache.get(orgId).get();
 
-        return resources.getContent().stream()
-                .filter(s -> s.getOrganisasjonsnummer().getIdentifikatorverdi().equals(schoolId))
-                .findAny().orElseThrow(ResourceNotFoundException::new);
+        SkoleResource school = schools.get(schoolId);
+
+        if (school == null) throw new ResourceNotFoundException();
+
+        return school;
     }
 
     public KundeGruppe getCustomerGroupBySchool(String orgId, String schoolId) {
@@ -44,46 +48,47 @@ public class GroupService {
     public List<KundeGruppe> getCustomerGroupsByBasisGroup(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
-        Cache fintCache = cacheManager.getCache("basisGroups");
-        BasisgruppeResources resources = fintCache.get(orgId, BasisgruppeResources.class);
+        Link schoolLink = getSelfLink(school);
 
-        if (resources == null) return Collections.emptyList();
+        Cache cache = cacheManager.getCache("basisGroupCache");
+        Map<Link, List<BasisgruppeResource>> resources = (Map<Link, List<BasisgruppeResource>>) cache.get(orgId).get();
 
-        return resources.getContent().stream()
-                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElse(null)))
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
+        List<BasisgruppeResource> basisGroups = resources.get(schoolLink);
+
+        return basisGroups.stream()
+                .map(b -> createCustomerGroup(orgId, b.getNavn(), b.getBeskrivelse(), b.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
     public List<KundeGruppe> getCustomerGroupsByTeachingGroup(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
-        Cache fintCache = cacheManager.getCache("teachingGroups");
-        UndervisningsgruppeResources resources = fintCache.get(orgId, UndervisningsgruppeResources.class);
+        Link schoolLink = getSelfLink(school);
 
-        if (resources == null) return Collections.emptyList();
+        Cache cache = cacheManager.getCache("teachingGroupCache");
+        Map<Link, List<UndervisningsgruppeResource>> resources = (Map<Link, List<UndervisningsgruppeResource>>) cache.get(orgId).get();
 
-        return resources.getContent().stream()
-                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElse(null)))
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
+        List<UndervisningsgruppeResource> teachingGroups = resources.get(schoolLink);
+
+        return teachingGroups.stream()
+                .map(t -> createCustomerGroup(orgId, t.getNavn(), t.getBeskrivelse(), t.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
     public List<KundeGruppe> getCustomerGroupsByContactTeacherGroup(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
-        Cache fintCache = cacheManager.getCache("contactTeacherGroups");
-        KontaktlarergruppeResources resources = fintCache.get(orgId, KontaktlarergruppeResources.class);
+        Link schoolLink = getSelfLink(school);
 
-        if (resources == null) return Collections.emptyList();
+        Cache cache = cacheManager.getCache("contactTeacherGroupCache");
+        Map<Link, List<KontaktlarergruppeResource>> resources = (Map<Link, List<KontaktlarergruppeResource>>) cache.get(orgId).get();
 
-        return resources.getContent().stream()
-                .filter(r -> r.getSkole().contains(school.getSelfLinks().stream().findAny().orElse(null)))
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
+        List<KontaktlarergruppeResource> contactTeacherGroups = resources.get(schoolLink);
+
+        return contactTeacherGroups.stream()
+                .map(c -> createCustomerGroup(orgId, c.getNavn(), c.getBeskrivelse(), c.getElevforhold()))
                 .collect(Collectors.toList());
     }
-
-    //TODO static method factory - CustomerGroup.ofSchool, ofGroup
 
     private KundeGruppe createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
         KundeGruppe kundeGruppe = new KundeGruppe();
@@ -93,13 +98,12 @@ public class GroupService {
         return kundeGruppe;
     }
 
-    @SuppressWarnings("unchecked")
     private List<Kunde> getCustomersForGroup(String orgId, List<Link> elevforhold) {
-        Cache studentsMapCache = cacheManager.getCache("studentsMap");
-        Map<Link, PersonResource> students = (Map<Link, PersonResource>) studentsMapCache.get(orgId).get();
+        Cache studentCache = cacheManager.getCache("studentCache");
+        Map<Link, PersonResource> students = (Map<Link, PersonResource>) studentCache.get(orgId).get();
 
-        Cache studentRelationsMapCache = cacheManager.getCache("studentRelationsMap");
-        Map<Link, ElevforholdResource> studentRelations = (Map<Link, ElevforholdResource>) studentRelationsMapCache.get(orgId).get();
+        Cache studentRelationCache = cacheManager.getCache("studentRelationCache");
+        Map<Link, ElevforholdResource> studentRelations = (Map<Link, ElevforholdResource>) studentRelationCache.get(orgId).get();
 
         return elevforhold.stream()
                 .map(studentRelations::get)
@@ -112,5 +116,9 @@ public class GroupService {
 
     private Link getStudentLink(ElevforholdResource resource) {
         return resource.getElev().stream().findAny().orElse(null);
+    }
+
+    private<T extends FintLinks> Link getSelfLink(T resource) {
+        return resource.getSelfLinks().stream().findAny().orElse(null);
     }
 }

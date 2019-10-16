@@ -5,7 +5,7 @@ import no.fint.test.utils.MockMvcSpecification
 class MeControllerSpec extends MockMvcSpecification {
     def "Get me returns user"() {
         given:
-        def controller = new MeController()
+        def controller = new MeController(, cacheManager)
         def mockMvc = standaloneSetup(controller)
 
         when:

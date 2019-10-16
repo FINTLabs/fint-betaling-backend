@@ -21,8 +21,6 @@ public class GroupController {
         this.groupService = groupService;
     }
 
-    //TODO Consider @PathVariable
-
     @GetMapping("/skole")
     public KundeGruppe getCustomerGroupBySchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                                 @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
