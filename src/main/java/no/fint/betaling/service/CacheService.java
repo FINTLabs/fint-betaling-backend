@@ -56,6 +56,9 @@ public class CacheService {
     @Value("${fint.betaling.endpoints.elevforhold}")
     private String elevforholdEndpoint;
 
+    @Value("${fint.betaling.endpoints.skoleressurs}")
+    private String skoleressursEndpoint;
+
     @Scheduled(initialDelay = 1000, fixedRate = 3600000)
     public void init() {
         for (String orgId : orgs) {
@@ -67,6 +70,7 @@ public class CacheService {
             updateContactTeacherGroupCache(orgId);
             updateStudentCache(orgId);
             updateStudentRelationCache(orgId);
+            updateSchoolResourceCache(orgId);
             Instant finish = Instant.now();
             log.info("{}: finished updating caches after {} milliseconds", orgId, Duration.between(start, finish).toMillis());
         }
@@ -156,8 +160,24 @@ public class CacheService {
         cache.putIfAbsent(orgId, Collections.emptyMap());
     }
 
-    private<T extends FintLinks> Link getSelfLink(T resource) {
-        return resource.getSelfLinks().stream().findAny().orElse(null);
+    private void updateSchoolResourceCache(String orgId) {
+        Cache cache = cacheManager.getCache("schoolResourceCache");
+
+        SkoleressursResources resources = restUtil.get(SkoleressursResources.class, skoleressursEndpoint, orgId);
+
+        if (resources != null) {
+            Map<String, SkoleressursResource> schoolResources = resources.getContent().stream()
+                    .collect(Collectors.toMap(this::getFeideName, Function.identity(), (a, b) -> a));
+            cache.put(orgId, schoolResources);
+        }
+
+        cache.putIfAbsent(orgId, Collections.emptyMap());
+    }
+
+    private String getOrganizationNumber(SkoleResource resource) {
+        if (resource.getOrganisasjonsnummer() == null) return null;
+
+        return resource.getOrganisasjonsnummer().getIdentifikatorverdi();
     }
 
     private<T extends FintLinks> Link getSchoolLink(T resource) {
@@ -168,7 +188,13 @@ public class CacheService {
         return resource.getElev().stream().findAny().orElse(null);
     }
 
-    private String getOrganizationNumber(SkoleResource resource) {
-        return resource.getOrganisasjonsnummer().getIdentifikatorverdi();
+    private Link getSelfLink(ElevforholdResource resource) {
+        return resource.getSelfLinks().stream().findAny().orElse(null);
+    }
+
+    private String getFeideName(SkoleressursResource resource) {
+        if (resource.getFeidenavn() == null) return null;
+
+        return resource.getFeidenavn().getIdentifikatorverdi();
     }
 }

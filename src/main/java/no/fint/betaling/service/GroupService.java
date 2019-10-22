@@ -114,11 +114,11 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    private Link getStudentLink(ElevforholdResource resource) {
-        return resource.getElev().stream().findAny().orElse(null);
-    }
-
     private<T extends FintLinks> Link getSelfLink(T resource) {
         return resource.getSelfLinks().stream().findAny().orElse(null);
+    }
+
+    private Link getStudentLink(ElevforholdResource resource) {
+        return resource.getElev().stream().findAny().orElse(null);
     }
 }

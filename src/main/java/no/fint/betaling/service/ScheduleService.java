@@ -19,6 +19,7 @@ public class ScheduleService {
     @Value("${fint.betaling.default-org-id}")
     private String orgId;
 
+    /*
     @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.invoice-send-rate}")
     public void sendInvoices(){
         log.info("Sending invoices...");
@@ -28,7 +29,7 @@ public class ScheduleService {
             log.error("Error caught when sending invoices!", e);
         }
     }
-
+     */
 
     @Scheduled(initialDelay = 20000, fixedRateString = "${fint.betaling.invoice-update-rate}")
     public void updateInvoices(){

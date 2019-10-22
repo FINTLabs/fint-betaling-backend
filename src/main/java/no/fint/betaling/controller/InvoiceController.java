@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
 import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 
@@ -26,10 +28,19 @@ public class InvoiceController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/send")
+    public ResponseEntity sendInvoices(@RequestHeader(name = ORG_ID, defaultValue = HeaderConstants.DEFAULT_VALUE_ORG_ID) String orgId,
+                                       @RequestBody List<Long> ordrenummer) {
+        invoiceRepository.sendInvoices(orgId, ordrenummer);
+        return ResponseEntity.noContent().build();
+    }
+
+    /*
     @GetMapping("/send")
     public ResponseEntity sendInvoices(@RequestHeader(name = ORG_ID, defaultValue = HeaderConstants.DEFAULT_VALUE_ORG_ID) String orgId) {
         log.info("Send Invoices for {}", orgId);
         invoiceRepository.sendInvoices(orgId);
         return ResponseEntity.noContent().build();
     }
+     */
 }

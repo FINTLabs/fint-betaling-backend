@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,8 +36,25 @@ public class InvoiceRepository {
     @Autowired
     private MongoRepository mongoRepository;
 
+    /*
     public void sendInvoices(String orgId) {
         List<Betaling> payments = getUnsentPayments(orgId);
+        for (Betaling payment : payments) {
+            ResponseEntity response = setInvoice(orgId, payment.getFakturagrunnlag());
+            payment.setLocation(response.getHeaders().getLocation().toString());
+            updatePaymentLocation(orgId, payment);
+        }
+    }
+
+     */
+
+    public void sendInvoices(String orgId, List<Long> ordrenummer) {
+        List<Betaling> unsentPayments = getUnsentPayments(orgId);
+
+        List<Betaling> payments = unsentPayments.stream()
+                .filter(b -> ordrenummer.contains(b.getOrdrenummer()))
+                .collect(Collectors.toList());
+
         for (Betaling payment : payments) {
             ResponseEntity response = setInvoice(orgId, payment.getFakturagrunnlag());
             payment.setLocation(response.getHeaders().getLocation().toString());
