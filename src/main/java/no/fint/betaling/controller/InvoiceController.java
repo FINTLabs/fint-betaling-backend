@@ -2,8 +2,10 @@ package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.HeaderConstants;
+import no.fint.betaling.model.User;
 import no.fint.betaling.repository.InvoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +33,7 @@ public class InvoiceController {
     @PostMapping("/send")
     public ResponseEntity sendInvoices(@RequestHeader(name = ORG_ID, defaultValue = HeaderConstants.DEFAULT_VALUE_ORG_ID) String orgId,
                                        @RequestBody List<Long> ordrenummer) {
-        invoiceRepository.sendInvoices(orgId, ordrenummer);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(invoiceRepository.sendInvoices(orgId, ordrenummer));
     }
 
     /*

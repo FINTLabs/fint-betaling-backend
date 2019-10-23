@@ -1,7 +1,9 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.model.Betaling;
+import no.fint.betaling.model.vocab.BetalingStatus;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
@@ -9,12 +11,15 @@ import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,9 +28,11 @@ import java.util.stream.Collectors;
 @Service
 public class InvoiceRepository {
 
-    public static final String SENDT_TIL_EKSTERNT_SYSTEM = "sentTilEksterntSystem";
-    public static final String ORDRENUMMER = "ordrenummer";
-    public static final String LOCATION = "location";
+    private static final String SENDT_TIL_EKSTERNT_SYSTEM = "sentTilEksterntSystem";
+    private static final String ORDRENUMMER = "ordrenummer";
+    private static final String LOCATION = "location";
+    private static final String STATUS = "status";
+    private static final String ERROR = "error";
 
     @Value("${fint.betaling.endpoints.invoice}")
     private String invoiceEndpoint;
@@ -45,21 +52,33 @@ public class InvoiceRepository {
             updatePaymentLocation(orgId, payment);
         }
     }
-
      */
 
-    public void sendInvoices(String orgId, List<Long> ordrenummer) {
-        List<Betaling> unsentPayments = getUnsentPayments(orgId);
-
-        List<Betaling> payments = unsentPayments.stream()
+    public List<Betaling> sendInvoices(String orgId, List<Long> ordrenummer) {
+        List<Betaling> unsentPayments = getUnsentPayments(orgId).stream()
                 .filter(b -> ordrenummer.contains(b.getOrdrenummer()))
                 .collect(Collectors.toList());
 
-        for (Betaling payment : payments) {
-            ResponseEntity response = setInvoice(orgId, payment.getFakturagrunnlag());
-            payment.setLocation(response.getHeaders().getLocation().toString());
-            updatePaymentLocation(orgId, payment);
-        }
+        List<Betaling> sentPayments = new ArrayList<>();
+
+        unsentPayments.forEach(payment -> {
+            try {
+                ResponseEntity responseEntity = setInvoice(orgId, payment.getFakturagrunnlag());
+                payment.setLocation(responseEntity.getHeaders().getLocation().toString());
+                payment.setStatus(BetalingStatus.SENT);
+                payment.setError(null);
+                payment.setSentTilEksterntSystem(true);
+                updatePaymentOnSuccess(orgId, payment);
+                sentPayments.add(payment);
+            } catch (InvalidResponseException ex) {
+                payment.setStatus(BetalingStatus.ERROR);
+                payment.setError(ex.getLocalizedMessage());
+                updatePaymentOnError(orgId, payment);
+                sentPayments.add(payment);
+            }
+        });
+
+        return sentPayments;
     }
 
     public void updateInvoiceStatus(String orgId) {
@@ -89,10 +108,23 @@ public class InvoiceRepository {
         return getPayments(orgId, query);
     }
 
-    private void updatePaymentLocation(String orgId, Betaling payment) {
+    private void updatePaymentOnSuccess(String orgId, Betaling payment) {
         Update update = new Update();
         update.set(LOCATION, payment.getLocation());
+        update.set(STATUS, BetalingStatus.SENT);
         update.set(SENDT_TIL_EKSTERNT_SYSTEM, true);
+        update.unset(ERROR);
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
+        query.addCriteria(Criteria.where(ORDRENUMMER).is(payment.getOrdrenummer()));
+        updatePayment(orgId, query, update);
+    }
+
+    private void updatePaymentOnError(String orgId, Betaling payment) {
+        Update update = new Update();
+        update.set(STATUS, BetalingStatus.ERROR);
+        update.set(ERROR, payment.getError());
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));

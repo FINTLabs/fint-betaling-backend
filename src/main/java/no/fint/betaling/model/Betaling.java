@@ -1,6 +1,7 @@
 package no.fint.betaling.model;
 
 import lombok.Data;
+import no.fint.betaling.model.vocab.BetalingStatus;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource;
 
@@ -17,5 +18,7 @@ public class Betaling {
     private String location;
     private FakturagrunnlagResource fakturagrunnlag;
     private List<OrderLine> varelinjer;
+    private BetalingStatus status;
+    private String error = null;
     private boolean sentTilEksterntSystem = false;
 }
