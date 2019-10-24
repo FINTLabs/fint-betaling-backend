@@ -65,17 +65,16 @@ public class InvoiceRepository {
             try {
                 ResponseEntity responseEntity = setInvoice(orgId, payment.getFakturagrunnlag());
                 payment.setLocation(responseEntity.getHeaders().getLocation().toString());
+                payment.setSentTilEksterntSystem(true);
                 payment.setStatus(BetalingStatus.SENT);
                 payment.setError(null);
-                payment.setSentTilEksterntSystem(true);
                 updatePaymentOnSuccess(orgId, payment);
-                sentPayments.add(payment);
             } catch (InvalidResponseException ex) {
                 payment.setStatus(BetalingStatus.ERROR);
                 payment.setError(ex.getLocalizedMessage());
                 updatePaymentOnError(orgId, payment);
-                sentPayments.add(payment);
             }
+            sentPayments.add(payment);
         });
 
         return sentPayments;

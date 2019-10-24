@@ -70,7 +70,7 @@ public class CacheService {
             updateContactTeacherGroupCache(orgId);
             updateStudentCache(orgId);
             updateStudentRelationCache(orgId);
-            updateSchoolResourceCache(orgId);
+            //updateSchoolResourceCache(orgId);
             Instant finish = Instant.now();
             log.info("{}: finished updating caches after {} milliseconds", orgId, Duration.between(start, finish).toMillis());
         }
@@ -160,6 +160,7 @@ public class CacheService {
         cache.putIfAbsent(orgId, Collections.emptyMap());
     }
 
+    /*
     private void updateSchoolResourceCache(String orgId) {
         Cache cache = cacheManager.getCache("schoolResourceCache");
 
@@ -173,6 +174,7 @@ public class CacheService {
 
         cache.putIfAbsent(orgId, Collections.emptyMap());
     }
+     */
 
     private String getOrganizationNumber(SkoleResource resource) {
         if (resource.getOrganisasjonsnummer() == null) return null;
@@ -192,9 +194,11 @@ public class CacheService {
         return resource.getSelfLinks().stream().findAny().orElse(null);
     }
 
+    /*
     private String getFeideName(SkoleressursResource resource) {
         if (resource.getFeidenavn() == null) return null;
 
         return resource.getFeidenavn().getIdentifikatorverdi();
     }
+     */
 }
