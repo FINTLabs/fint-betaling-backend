@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: betaling
-          image: fintlabs.azurecr.io/betaling:build.10
+          image: fintlabs.azurecr.io/betaling:PR-10.2
           resources:
             limits:
               memory: "2Gi"

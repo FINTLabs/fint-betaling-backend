@@ -88,6 +88,10 @@ public class InvoiceRepository {
         try {
             updateInvoice(orgId, getStatus(orgId, payment));
             log.info("Updated {}", payment.getOrdrenummer());
+        } catch (InvalidResponseException e) {
+            payment.setStatus(BetalingStatus.ERROR);
+            payment.setError(e.getMessage());
+            updatePaymentOnError(orgId, payment);
         } catch (Exception e) {
             log.warn("Error updating {}: {}", payment.getOrdrenummer(), e.getMessage());
         }

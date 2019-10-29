@@ -2,14 +2,13 @@ package no.fint.betaling.util;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -49,8 +48,8 @@ public class RestUtil {
                     new HttpEntity<>(getHeaders(orgId)),
                     type
             ).getBody();
-        } catch (RestClientException e) {
-            throw new InvalidResponseException(String.format("Unable to get %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
+        } catch (RestClientResponseException e) {
+            throw new InvalidResponseException(e.getResponseBodyAsString(), e);
         }
     }
 
@@ -63,7 +62,7 @@ public class RestUtil {
                     new HttpEntity<>(content, getHeaders(orgId)),
                     type
             );
-        } catch (RestClientException e) {
+        } catch (RestClientResponseException e) {
             throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
         }
     }

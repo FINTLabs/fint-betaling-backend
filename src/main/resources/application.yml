@@ -24,6 +24,8 @@ fint:
   betaling:
     client-name: "FINT-Betaling"
     default-org-id: "fintlabs.no"
+    org-ids: "fintlabs.no"
+    default-school-org-id: "970123459"
     date-range: "7, 14, 30"
     invoice-send-rate: "60000"
     invoice-update-rate: "150000"
@@ -38,6 +40,7 @@ fint:
       kontaktlarergruppe: "https://beta.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
       person: "https://beta.felleskomponent.no/utdanning/elev/person"
       elevforhold: "https://beta.felleskomponent.no/utdanning/elev/elevforhold"
+      skoleressurs: "https://beta.felleskomponent.no/utdanning/elev/skoleressurs"
     endpoints-pwf:
       invoice: "https://beta1.felleskomponent.no/betaling/fakturagrunnlag"
       order-line: "https://beta1.felleskomponent.no/betaling/varelinje"
@@ -49,4 +52,4 @@ fint:
       kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
       person: "https://play-with-fint.felleskomponent.no/utdanning/elev/person"
       elevforhold: "https://play-with-fint.felleskomponent.no/utdanning/elev/elevforhold"
-
+      skoleressurs: "https://play-with-fint.felleskomponent.no/utdanning/elev/skoleressurs"
