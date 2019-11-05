@@ -7,3 +7,4 @@ out
 *.iml
 application-tfk.yml
 application-rfk.yml
+application-fake.yml

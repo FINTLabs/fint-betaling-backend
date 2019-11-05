@@ -1,6 +1,6 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.model.Organization;
+import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,22 +20,22 @@ public class MeController {
 
         User user = new User();
 
-        user.setName("Navn Navnesen");
+        user.setDisplayName("Navn Navnesen");
 
-        Organization schoolOwner = new Organization();
+        Organisation schoolOwner = new Organisation();
         schoolOwner.setName("Telemark fylkeskommune");
-        schoolOwner.setOrganizationNumber("");
-        user.setOrganization(schoolOwner);
+        schoolOwner.setOrganisationNumber("");
+        user.setOrganisation(schoolOwner);
 
-        Organization school1 = new Organization();
+        Organisation school1 = new Organisation();
         school1.setName("Skien videregående skole");
-        school1.setOrganizationNumber("974568039");
+        school1.setOrganisationNumber("974568039");
 
-        Organization school2 = new Organization();
+        Organisation school2 = new Organisation();
         school2.setName("Notodden videregående skole");
-        school2.setOrganizationNumber("974568012");
+        school2.setOrganisationNumber("974568012");
 
-        user.setSchools(Arrays.asList(school1, school2));
+        user.setOrganisationUnits(Arrays.asList(school1, school2));
 
         return user;
     }

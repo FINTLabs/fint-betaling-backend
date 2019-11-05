@@ -1,7 +1,7 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.model.Kunde
-import no.fint.betaling.model.KundeFactory
+import no.fint.betaling.factory.CustomerFactory
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
@@ -13,7 +13,7 @@ class CustomerServiceSpec extends Specification {
 
     private CustomerService customerService
     private CacheService cacheService
-    private KundeFactory kundeFactory
+    private CustomerFactory kundeFactory
     private String orgId
 
     void setup() {
@@ -33,7 +33,7 @@ class CustomerServiceSpec extends Specification {
 
         then:
         1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
-        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
+        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Testesen')
         listCustomers.size() == 1
     }
 
@@ -45,9 +45,9 @@ class CustomerServiceSpec extends Specification {
 
         then:
         1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3, lastnames)
-        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Feilsen')
-        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Testesen')
-        1 * kundeFactory.getKunde(_ as PersonResource) >> createKunde('Rettsen')
+        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Feilsen')
+        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Testesen')
+        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Rettsen')
         listCustomers.size() == 1
         listCustomers.get(0).navn.etternavn == 'Rettsen'
     }

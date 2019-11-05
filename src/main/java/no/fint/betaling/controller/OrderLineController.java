@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
@@ -24,7 +25,7 @@ public class OrderLineController {
 
 
     @Value("${fint.betaling.endpoints.order-line}")
-    private String orderLineEndpoint;
+    private URI orderLineEndpoint;
 
     @Autowired
     private RestUtil restUtil;

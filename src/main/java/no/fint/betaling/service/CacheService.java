@@ -17,9 +17,12 @@ import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,25 +42,25 @@ public class CacheService {
     private List<String> orgs;
 
     @Value("${fint.betaling.endpoints.skole}")
-    private String skoleEndpoint;
+    private URI skoleEndpoint;
 
     @Value("${fint.betaling.endpoints.basisgruppe}")
-    private String basisgruppeEndpoint;
+    private URI basisgruppeEndpoint;
 
     @Value("${fint.betaling.endpoints.undervisningsgruppe}")
-    private String undervisningsgruppeEndpoint;
+    private URI undervisningsgruppeEndpoint;
 
     @Value("${fint.betaling.endpoints.kontaktlarergruppe}")
-    private String kontaktlarergruppeEndpoint;
+    private URI kontaktlarergruppeEndpoint;
 
     @Value("${fint.betaling.endpoints.person}")
-    private String personEndpoint;
+    private URI personEndpoint;
 
     @Value("${fint.betaling.endpoints.elevforhold}")
-    private String elevforholdEndpoint;
+    private URI elevforholdEndpoint;
 
     @Value("${fint.betaling.endpoints.skoleressurs}")
-    private String skoleressursEndpoint;
+    private URI skoleressursEndpoint;
 
     @Scheduled(initialDelay = 1000, fixedRate = 3600000)
     public void init() {
@@ -182,8 +185,12 @@ public class CacheService {
         return resource.getOrganisasjonsnummer().getIdentifikatorverdi();
     }
 
-    private<T extends FintLinks> Link getSchoolLink(T resource) {
-        return resource.getLinks().get("skole").stream().findAny().orElse(null);
+    private <T extends FintLinks> Link getSchoolLink(T resource) {
+        if (resource.getLinks().containsKey("skole")) {
+            return resource.getLinks().get("skole").stream().findAny().orElse(null);
+        }
+        log.warn("Unable to find school link");
+        return new Link();
     }
 
     private Link getStudentLink(PersonResource resource) {

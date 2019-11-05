@@ -5,7 +5,6 @@ import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResources
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -53,7 +52,7 @@ class InvoiceRepositorySpec extends Specification {
 
     def "Set invoice given valid invoice returns valid response"() {
         when:
-        def response = invoiceRepository.setInvoice('valid.org', createInvoice())
+        def response = invoiceRepository.submitClaim('valid.org', createInvoice())
 
         then:
         response.getStatusCode().is2xxSuccessful()

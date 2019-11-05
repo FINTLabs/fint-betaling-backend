@@ -2,7 +2,6 @@ package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.repository.InvoiceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class ScheduleService {
      */
 
     @Scheduled(initialDelay = 20000, fixedRateString = "${fint.betaling.invoice-update-rate}")
-    public void updateInvoices(){
+    public void updateInvoices() {
         log.info("Updating invoices...");
         try {
             invoiceRepository.updateInvoiceStatus(orgId);

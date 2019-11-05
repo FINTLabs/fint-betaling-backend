@@ -1,6 +1,6 @@
 package no.fint.betaling.model
 
-
+import no.fint.betaling.factory.InvoiceFactory
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
@@ -17,7 +17,7 @@ class InvoiceFactorySpec extends Specification {
 
     def "Get invoice given valid payment returns invoice"() {
         when:
-        def invoice = invoiceFactory.getInvoice(createPayment())
+        def invoice = invoiceFactory.createInvoice(createPayment())
 
         then:
         invoice.ordrenummer.identifikatorverdi == '123'

@@ -1,8 +1,8 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Betaling;
-import no.fint.betaling.model.Payment;
+import no.fint.betaling.model.Claim;
+import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,26 +27,26 @@ public class PaymentController {
 
     @RequestMapping(method = POST)
     public ResponseEntity setPayment(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                     @RequestBody Payment payment) {
-        log.info("{}: Received payment {}", orgId, payment);
+                                     @RequestBody Order order) {
+        log.info("{}: Received payment {}", orgId, order);
         // TODO missing location header?
-        return ResponseEntity.status(HttpStatus.CREATED).body(paymentRepository.setPayment(orgId, payment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentRepository.setPayment(orgId, order));
     }
 
     @RequestMapping(method = GET)
-    public List<Betaling> getAllPayments(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+    public List<Claim> getAllPayments(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
         return paymentRepository.getAllPayments(orgId);
     }
 
     @GetMapping("/navn/{navn}")
-    public List<Betaling> getPaymentByName(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                           @PathVariable(value = "navn") String name) {
+    public List<Claim> getPaymentByName(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                        @PathVariable(value = "navn") String name) {
         return paymentRepository.getPaymentsByCustomerName(orgId, name);
     }
 
     @GetMapping("/ordrenummer/{ordrenummer}")
-    public List<Betaling> getPaymentByOrderNumber(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                                  @PathVariable(value = "ordrenummer") String orderNumber) {
+    public List<Claim> getPaymentByOrderNumber(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                               @PathVariable(value = "ordrenummer") String orderNumber) {
         return paymentRepository.getPaymentsByOrdernumber(orgId, orderNumber);
     }
 }

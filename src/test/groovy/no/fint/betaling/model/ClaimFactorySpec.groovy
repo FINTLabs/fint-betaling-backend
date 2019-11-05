@@ -1,5 +1,7 @@
 package no.fint.betaling.model
 
+import no.fint.betaling.factory.ClaimFactory
+import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.repository.OrderNumberRepository
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
@@ -10,27 +12,27 @@ import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
 import spock.lang.Specification
 
-class BetalingFactorySpec extends Specification {
+class ClaimFactorySpec extends Specification {
     private OrderNumberRepository orderNumberRepository
     private InvoiceFactory invoiceFactory
-    private BetalingFactory betalingFactory
+    private ClaimFactory betalingFactory
 
     void setup() {
         orderNumberRepository = Mock(OrderNumberRepository)
         invoiceFactory = Mock(InvoiceFactory) {
-            getInvoice(_ as Betaling) >>
+            createInvoice(_ as Betaling) >>
                     new FakturagrunnlagResource(
                             fakturalinjer: [new FakturalinjeResource(pris: 100L, antall: 2, fritekst: ['test'])],
                             ordrenummer: new Identifikator(identifikatorverdi: 'validorg0'),
                             netto: 200L
                     )
         }
-        betalingFactory = new BetalingFactory(orderNumberRepository: orderNumberRepository, invoiceFactory: invoiceFactory)
+        betalingFactory = new ClaimFactory(orderNumberRepository: orderNumberRepository, invoiceFactory: invoiceFactory)
     }
 
     def "Get betaling given valid payment returns betaling"() {
         when:
-        def betaling = betalingFactory.getBetaling(createPayment(), 'valid.org')
+        def betaling = betalingFactory.createClaim(createPayment(), 'valid.org')
 
         then:
         1 * orderNumberRepository.getOrderNumber(_ as String) >> 123

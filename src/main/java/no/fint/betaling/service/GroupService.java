@@ -2,8 +2,9 @@ package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.ResourceNotFoundException;
-import no.fint.betaling.model.Kunde;
-import no.fint.betaling.model.KundeGruppe;
+import no.fint.betaling.factory.CustomerFactory;
+import no.fint.betaling.model.Customer;
+import no.fint.betaling.model.CustomerGroup;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
@@ -39,13 +40,13 @@ public class GroupService {
         return school;
     }
 
-    public KundeGruppe getCustomerGroupBySchool(String orgId, String schoolId) {
+    public CustomerGroup getCustomerGroupBySchool(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         return createCustomerGroup(orgId, school.getNavn(), null, school.getElevforhold());
     }
 
-    public List<KundeGruppe> getCustomerGroupsByBasisGroup(String orgId, String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByBasisGroup(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Link schoolLink = getSelfLink(school);
@@ -60,7 +61,7 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    public List<KundeGruppe> getCustomerGroupsByTeachingGroup(String orgId, String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByTeachingGroup(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Link schoolLink = getSelfLink(school);
@@ -75,7 +76,7 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    public List<KundeGruppe> getCustomerGroupsByContactTeacherGroup(String orgId, String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroup(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Link schoolLink = getSelfLink(school);
@@ -90,15 +91,15 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    private KundeGruppe createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
-        KundeGruppe kundeGruppe = new KundeGruppe();
-        kundeGruppe.setNavn(navn);
-        kundeGruppe.setBeskrivelse(beskrivelse);
-        kundeGruppe.setKundeliste(getCustomersForGroup(orgId, elevforhold));
+    private CustomerGroup createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
+        CustomerGroup kundeGruppe = new CustomerGroup();
+        kundeGruppe.setName(navn);
+        kundeGruppe.setDescription(beskrivelse);
+        kundeGruppe.setCustomers(getCustomersForGroup(orgId, elevforhold));
         return kundeGruppe;
     }
 
-    private List<Kunde> getCustomersForGroup(String orgId, List<Link> elevforhold) {
+    private List<Customer> getCustomersForGroup(String orgId, List<Link> elevforhold) {
         Cache studentCache = cacheManager.getCache("studentCache");
         Map<Link, PersonResource> students = (Map<Link, PersonResource>) studentCache.get(orgId).get();
 
@@ -110,7 +111,7 @@ public class GroupService {
                 .map(this::getStudentLink)
                 .filter(Objects::nonNull)
                 .map(students::get)
-                .map(Kunde::of)
+                .map(CustomerFactory::toCustomer)
                 .collect(Collectors.toList());
     }
 

@@ -1,9 +1,8 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Kunde;
+import no.fint.betaling.model.Customer;
 import no.fint.betaling.service.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,8 +22,8 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<Kunde> getCustomers(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                    @RequestParam(value = "navn", required = false) String name) {
+    public List<Customer> getCustomers(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                       @RequestParam(value = "navn", required = false) String name) {
         return customerService.getCustomers(orgId, name);
     }
 }
