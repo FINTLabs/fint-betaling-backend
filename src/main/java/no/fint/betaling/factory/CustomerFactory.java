@@ -38,9 +38,9 @@ public enum CustomerFactory {
         customer.setDisplayName(getDisplayName(person.getNavn()));
         customer.setEmail(person.getKontaktinformasjon().getEpostadresse());
         customer.setMobile(person.getKontaktinformasjon().getMobiltelefonnummer());
-        customer.setCity(person.getBostedsadresse().getPoststed());
-        person.getBostedsadresse().getAdresselinje().stream().findFirst().ifPresent(customer::setPostalAddress);
-        customer.setPostalCode(person.getBostedsadresse().getPostnummer());
+        customer.setCity(person.getPostadresse().getPoststed());
+        person.getPostadresse().getAdresselinje().stream().findFirst().ifPresent(customer::setPostalAddress);
+        customer.setPostalCode(person.getPostadresse().getPostnummer());
         person.getSelfLinks().stream().map(Link::getHref).map(URI::create).findAny().ifPresent(customer::setPerson);
         return customer;
     }

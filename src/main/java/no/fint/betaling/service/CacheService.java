@@ -186,11 +186,7 @@ public class CacheService {
     }
 
     private <T extends FintLinks> Link getSchoolLink(T resource) {
-        if (resource.getLinks().containsKey("skole")) {
-            return resource.getLinks().get("skole").stream().findAny().orElse(null);
-        }
-        log.warn("Unable to find school link");
-        return new Link();
+        return resource.getLinks().get("skole").stream().findAny().orElse(null);
     }
 
     private Link getStudentLink(PersonResource resource) {
