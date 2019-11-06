@@ -17,14 +17,14 @@ public class ClaimFactory {
     private OrderNumberRepository orderNumberRepository;
 
     public List<Claim> createClaim(Order order, String orgId) {
-        return order.getCustomers().stream().map(customer -> {
-            Claim claim = new Claim();
-            claim.setOrderNumber(orderNumberRepository.getOrderNumber(orgId));
-            claim.setCustomer(customer);
-            claim.setPrincipalUri(order.getPrincipalUri());
-            claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
-            claim.setOriginalAmountDue(order.sum());
-            claim.setClaimStatus(ClaimStatus.STORED);
+            return order.getCustomers().stream().map(customer -> {
+                Claim claim = new Claim();
+                claim.setOrderNumber(orderNumberRepository.getOrderNumber(orgId));
+                claim.setCustomer(customer);
+                claim.setPrincipalUri(order.getPrincipalUri());
+                claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
+                claim.setOriginalAmountDue(order.sum());
+                claim.setClaimStatus(ClaimStatus.STORED);
             return claim;
         }).collect(Collectors.toList());
     }
