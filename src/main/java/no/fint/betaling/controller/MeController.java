@@ -20,7 +20,7 @@ public class MeController {
 
         User user = new User();
 
-        user.setDisplayName("Navn Navnesen");
+        user.setName("Navn Navnesen");
 
         Organisation schoolOwner = new Organisation();
         schoolOwner.setName("Telemark fylkeskommune");

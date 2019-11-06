@@ -35,7 +35,7 @@ public class CustomerService {
 
         return customers.values().stream()
                 .map(CustomerFactory::toCustomer)
-                .filter(customer -> customer.getDisplayName().toLowerCase().contains(filter.toLowerCase()))
+                .filter(customer -> customer.getName().toLowerCase().contains(filter.toLowerCase()))
                 .collect(Collectors.toList());
     }
 }

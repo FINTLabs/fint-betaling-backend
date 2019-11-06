@@ -34,8 +34,8 @@ public enum CustomerFactory {
 
     public static Customer toCustomer(PersonResource person) {
         Customer customer = new Customer();
-        customer.setCustomerId(getCustomerId(person.getFodselsnummer().getIdentifikatorverdi()));
-        customer.setDisplayName(getDisplayName(person.getNavn()));
+        customer.setId(getCustomerId(person.getFodselsnummer().getIdentifikatorverdi()));
+        customer.setName(getDisplayName(person.getNavn()));
         customer.setEmail(person.getKontaktinformasjon().getEpostadresse());
         customer.setMobile(person.getKontaktinformasjon().getMobiltelefonnummer());
         customer.setCity(person.getPostadresse().getPoststed());
