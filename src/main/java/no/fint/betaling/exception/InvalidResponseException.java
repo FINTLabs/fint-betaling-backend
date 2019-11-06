@@ -1,4 +1,4 @@
-package no.fint.betaling.model;
+package no.fint.betaling.exception;
 
 public class InvalidResponseException extends RuntimeException {
     public InvalidResponseException(String message, Throwable cause) {

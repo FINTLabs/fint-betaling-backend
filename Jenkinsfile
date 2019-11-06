@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 withDockerRegistry([credentialsId: 'fintlabs.azurecr.io', url: 'https://fintlabs.azurecr.io']) {
-                    sh "docker pull fintlabs.azurecr.io/fordring:latest"
+                    sh "docker pull fintlabs.azurecr.io/betaling-frontend:latest"
                     sh "docker build --tag ${GIT_COMMIT} ."
                 }
             }

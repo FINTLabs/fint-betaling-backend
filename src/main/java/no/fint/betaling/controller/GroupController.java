@@ -1,42 +1,47 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.model.KundeGruppe;
+import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.model.CustomerGroup;
 import no.fint.betaling.service.GroupService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
-import static no.fint.betaling.config.HeaderConstants.ORG_ID;
+import static no.fint.betaling.config.HeaderConstants.*;
 
+@Slf4j
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/group")
 public class GroupController {
 
+    private final GroupService groupService;
 
-    @Autowired
-    private GroupService groupService;
-
-    @GetMapping
-    public List<KundeGruppe> getAllCustomerGroups(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return groupService.getAllCustomerGroups(orgId);
+    public GroupController(GroupService groupService) {
+        this.groupService = groupService;
     }
 
-    @GetMapping("/basisgruppe")
-    public List<KundeGruppe> getCustomerGroupsFromBasisgruppe(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return groupService.getCustomerGroupListFromBasisgruppe(orgId);
+    @GetMapping("/skole")
+    public CustomerGroup getCustomerGroupBySchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                                  @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupBySchool(orgId, schoolId);
     }
 
-    @GetMapping("/undervisningsgruppe")
-    public List<KundeGruppe> getCustomerGroupsFromFag(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return groupService.getCustomerGroupListFromUndervisningsgruppe(orgId);
+    @GetMapping("basisgruppe")
+    public List<CustomerGroup> getCustomerGroupsByBasisGroup(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                                             @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupsByBasisGroup(orgId, schoolId);
     }
 
-    @GetMapping("/kontaktlarergruppe")
-    public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return groupService.getCustomerGroupListFromKontaktlarergruppe(orgId);
+    @GetMapping("undervisningsgruppe")
+    public List<CustomerGroup> getCustomerGroupsByTeachingGroup(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                                                @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupsByTeachingGroup(orgId, schoolId);
     }
 
+    @GetMapping("kontaktlarergruppe")
+    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroup(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
+                                                                      @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupsByContactTeacherGroup(orgId, schoolId);
+    }
 }

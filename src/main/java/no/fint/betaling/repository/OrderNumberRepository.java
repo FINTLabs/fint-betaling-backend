@@ -1,6 +1,6 @@
 package no.fint.betaling.repository;
 
-import no.fint.betaling.model.OrgConfig;
+import no.fint.betaling.config.OrganisationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,28 +15,29 @@ public class OrderNumberRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public long getOrderNumber(String orgId) {
+    public String getOrderNumber(String orgId) {
         return getAndUpdateLastOrderNumber(orgId);
     }
 
-    private long getAndUpdateLastOrderNumber(String orgId) {
+    private String getAndUpdateLastOrderNumber(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("orgId").is(orgId));
-        query.addCriteria(Criteria.where("_class").is(OrgConfig.class.getName()));
+        query.addCriteria(Criteria.where("_class").is(OrganisationConfig.class.getName()));
 
         Update update = new Update();
-        update.inc("nesteOrdrenummer", 1);
+        update.inc("nextOrderNumberForOrganisation  ", 1);
 
         FindAndModifyOptions.options().returnNew(false);
-        OrgConfig orgConfig = mongoTemplate.findAndModify(query, update, OrgConfig.class, orgId);
+        OrganisationConfig organisationConfig =
+                mongoTemplate.findAndModify(query, update, OrganisationConfig.class, orgId);
 
-        if (orgConfig == null) {
-            orgConfig = new OrgConfig();
-            orgConfig.setOrgId(orgId);
-            orgConfig.setNesteOrdrenummer(100000L * (1 + mongoTemplate.count(null, OrgConfig.class)));
-            mongoTemplate.save(orgConfig, orgId);
-            orgConfig = mongoTemplate.findAndModify(query, update, OrgConfig.class, orgId);
+        if (organisationConfig == null) {
+            organisationConfig = new OrganisationConfig();
+            organisationConfig.setOrgId(orgId);
+            organisationConfig.setNextOrderNumberForOrganisation(100000L * (1 + mongoTemplate.count(null, OrganisationConfig.class)));
+            mongoTemplate.save(organisationConfig, orgId);
+            organisationConfig = mongoTemplate.findAndModify(query, update, OrganisationConfig.class, orgId);
         }
-        return orgConfig.getNesteOrdrenummer();
+        return organisationConfig.getNextOrderNumberForOrganisation().toString();
     }
 }

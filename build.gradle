@@ -38,9 +38,11 @@ dependencies {
     compile("no.fint:fint-okonomi-model-java:${apiVersion}")
     compile('no.fint:fint-utdanning-resource-model-java:3.1.0')
     compile('no.fint:fint-oauth-token-service:1.4.0')
+    compile('no.fint:fint-betaling-model:1.0.0-alpha-3')
 
     compile('org.jooq:jool-java-8:0.9.14')
     compile('org.springframework.boot:spring-boot-starter')
+    compile('org.springframework.boot:spring-boot-starter-cache')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile("org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}")
     compile('org.springframework.plugin:spring-plugin-core')

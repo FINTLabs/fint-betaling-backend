@@ -5,3 +5,6 @@ classes/
 out
 .DS_Store
 *.iml
+application-tfk.yml
+application-rfk.yml
+application-fake.yml

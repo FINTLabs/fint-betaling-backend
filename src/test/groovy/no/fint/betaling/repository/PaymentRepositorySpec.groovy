@@ -1,5 +1,6 @@
 package no.fint.betaling.repository
 
+import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
@@ -14,13 +15,13 @@ class PaymentRepositorySpec extends Specification {
     private String orgId
     private MongoRepository mongoRepository
     private PaymentRepository paymentRepository
-    private BetalingFactory betalingFactory
+    private ClaimFactory betalingFactory
 
     void setup() {
         orgId = 'test.no'
         mongoRepository = Mock(MongoRepository)
-        betalingFactory = Mock(BetalingFactory)
-        paymentRepository = new PaymentRepository(mongoRepository: mongoRepository, betalingFactory: betalingFactory)
+        betalingFactory = Mock(ClaimFactory)
+        paymentRepository = new PaymentRepository(mongoRepository: mongoRepository, claimFactory: betalingFactory)
     }
 
     def "Get all payments given valid orgId returns list"() {
@@ -67,7 +68,7 @@ class PaymentRepositorySpec extends Specification {
         def response = paymentRepository.setPayment(orgId, payment)
 
         then:
-        1 * betalingFactory.getBetaling(_ as Payment, 'test.no') >> [createPayment(123,'Testesen')]
+        1 * betalingFactory.createClaim(_ as Payment, 'test.no') >> [createPayment(123,'Testesen')]
         1 * mongoRepository.setPayment('test.no', _ as Betaling)
         response.size() == 1
         response.get(0).varelinjer.size() == 1

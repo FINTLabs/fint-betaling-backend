@@ -3,7 +3,6 @@ package no.fint.betaling.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import no.fint.oauth.OAuthConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +14,11 @@ import javax.annotation.PostConstruct;
 @Configuration
 @Import(OAuthConfig.class)
 public class Config {
+    private final ObjectMapper objectMapper;
+
+    public Config(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @ConditionalOnProperty(
             name = {"fint.oauth.enabled"},
@@ -25,9 +29,6 @@ public class Config {
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @PostConstruct
     public void init() {

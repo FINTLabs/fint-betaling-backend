@@ -1,6 +1,6 @@
 package no.fint.betaling.util
 
-import no.fint.betaling.model.InvalidResponseException
+import no.fint.betaling.exception.InvalidResponseException
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.utdanning.elev.ElevResource
 import org.springframework.http.HttpEntity

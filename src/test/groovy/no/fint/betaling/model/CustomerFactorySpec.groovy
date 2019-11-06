@@ -1,5 +1,6 @@
 package no.fint.betaling.model
 
+import no.fint.betaling.factory.CustomerFactory
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
@@ -9,15 +10,15 @@ import no.fint.model.resource.felles.PersonResource
 import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
 import spock.lang.Specification
 
-class KundeFactorySpec extends Specification {
+class CustomerFactorySpec extends Specification {
 
     private RestUtil restUtil
-    private KundeFactory factory
+    private CustomerFactory factory
     private String orgId
 
     void setup() {
         restUtil = Mock(RestUtil)
-        factory = new KundeFactory()
+        factory = new CustomerFactory()
         orgId = 'test.no'
     }
 
@@ -26,7 +27,7 @@ class KundeFactorySpec extends Specification {
         def person = createPerson('12345678901', 'Oslo', 'test@test.com')
 
         when:
-        def kunde = factory.getKunde(person)
+        def kunde = factory.toCustomer(person)
 
         then:
         kunde.kundenummer == '21i3v9'
@@ -37,7 +38,7 @@ class KundeFactorySpec extends Specification {
         def nin = "12345678901"
 
         when:
-        def id = KundeFactory.getCustomerId(nin)
+        def id = CustomerFactory.getCustomerId(nin)
 
         then:
         id == '21i3v9'
@@ -57,7 +58,7 @@ class KundeFactorySpec extends Specification {
         }
 
         when:
-        def result = KundeFactory.getPersonnavnAsString(navn)
+        def result = CustomerFactory.getDisplayName(navn)
 
         then:
         result == personnavn

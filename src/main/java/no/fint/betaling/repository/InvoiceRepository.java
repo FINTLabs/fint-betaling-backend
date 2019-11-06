@@ -1,7 +1,10 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Betaling;
+import no.fint.betaling.exception.InvalidResponseException;
+import no.fint.betaling.factory.InvoiceFactory;
+import no.fint.betaling.model.Claim;
+import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
@@ -15,19 +18,24 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class InvoiceRepository {
 
-    public static final String SENDT_TIL_EKSTERNT_SYSTEM = "sentTilEksterntSystem";
-    public static final String ORDRENUMMER = "ordrenummer";
-    public static final String LOCATION = "location";
+    private static final String CLAIM_STATUS = "claimStatus";
+    private static final String ORDER_NUMBER = "orderNumber";
+    private static final String INVOICE_URI = "invoiceUri";
+    private static final String STATUS = "status";
+    private static final String STATUS_MESSAGE = "statusMessage";
 
     @Value("${fint.betaling.endpoints.invoice}")
-    private String invoiceEndpoint;
+    private URI invoiceEndpoint;
 
     @Autowired
     private RestUtil restUtil;
@@ -35,77 +43,125 @@ public class InvoiceRepository {
     @Autowired
     private MongoRepository mongoRepository;
 
-    public void sendInvoices(String orgId) {
-        List<Betaling> payments = getUnsentPayments(orgId);
-        for (Betaling payment : payments) {
-            ResponseEntity response = setInvoice(orgId, payment.getFakturagrunnlag());
-            payment.setLocation(response.getHeaders().getLocation().toString());
-            updatePaymentLocation(orgId, payment);
-        }
+    public List<Claim> sendInvoices(String orgId, List<String> orderNumbers) {
+        List<Claim> unsentClaims = getUnsentPayments(orgId).stream()
+                .filter(b -> orderNumbers.contains(b.getOrderNumber()))
+                .collect(Collectors.toList());
+
+        List<Claim> sentPayments = new ArrayList<>();
+
+        unsentClaims.forEach(claim -> {
+            try {
+                URI invoiceUri = submitClaim(orgId, InvoiceFactory.createInvoice(claim));
+                claim.setInvoiceUri(invoiceUri);
+                claim.setClaimStatus(ClaimStatus.SENT);
+                updatePaymentOnSuccess(orgId, claim);
+            } catch (InvalidResponseException e) {
+                claim.setClaimStatus(ClaimStatus.ERROR);
+                claim.setStatusMessage(e.getMessage());
+                updatePaymentOnError(orgId, claim);
+            }
+            sentPayments.add(claim);
+        });
+
+        return sentPayments;
     }
 
     public void updateInvoiceStatus(String orgId) {
         getSentPayments(orgId).forEach(Consumer2.from(this::getPaymentStatus).acceptPartially(orgId));
     }
 
-    private void getPaymentStatus(String orgId, Betaling payment) {
+    private void getPaymentStatus(String orgId, Claim claim) {
         try {
-            updateInvoice(orgId, getStatus(orgId, payment));
-            log.info("Updated {}", payment.getOrdrenummer());
+            updateInvoice(orgId, getStatus(orgId, claim));
+            log.info("Updated {}", claim.getOrderNumber());
+        } catch (InvalidResponseException e) {
+            claim.setClaimStatus(ClaimStatus.ERROR);
+            claim.setStatusMessage(e.getMessage());
+            updatePaymentOnError(orgId, claim);
         } catch (Exception e) {
-            log.warn("Error updating {}: {}", payment.getOrdrenummer(), e.getMessage());
+            log.warn("Error updating {}: {}", claim.getOrderNumber(), e.getMessage());
         }
     }
 
-    private List<Betaling> getUnsentPayments(String orgId) {
+    private List<Claim> getUnsentPayments(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where(SENDT_TIL_EKSTERNT_SYSTEM).is(false));
+        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(CLAIM_STATUS).is(false));
         return getPayments(orgId, query);
     }
 
-    private List<Betaling> getSentPayments(String orgId) {
+    private List<Claim> getSentPayments(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where(SENDT_TIL_EKSTERNT_SYSTEM).is(true));
+        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(CLAIM_STATUS).is(ClaimStatus.SENT));
         return getPayments(orgId, query);
     }
 
-    private void updatePaymentLocation(String orgId, Betaling payment) {
+    private void updatePaymentOnSuccess(String orgId, Claim payment) {
         Update update = new Update();
-        update.set(LOCATION, payment.getLocation());
-        update.set(SENDT_TIL_EKSTERNT_SYSTEM, true);
+        update.set(INVOICE_URI, payment.getInvoiceUri());
+        update.set(STATUS, ClaimStatus.SENT);
+        update.set(CLAIM_STATUS, ClaimStatus.SENT);
+        update.unset(STATUS_MESSAGE);
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where(ORDRENUMMER).is(payment.getOrdrenummer()));
+        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORDER_NUMBER).is(payment.getAmountDue()));
         updatePayment(orgId, query, update);
     }
 
-    public ResponseEntity setInvoice(String orgId, FakturagrunnlagResource invoice) {
-        return restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
+    private void updatePaymentOnError(String orgId, Claim claim) {
+        Update update = new Update();
+        update.set(STATUS, ClaimStatus.ERROR);
+        update.set(STATUS_MESSAGE, claim.getStatusMessage());
+
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORDER_NUMBER).is(claim.getOrderNumber()));
+        updatePayment(orgId, query, update);
     }
 
-    public FakturagrunnlagResource getStatus(String orgId, Betaling payment) {
-        return restUtil.get(FakturagrunnlagResource.class, payment.getLocation(), orgId);
+    public URI submitClaim(String orgId, FakturagrunnlagResource invoice) {
+        ResponseEntity<FakturagrunnlagResource> responseEntity =
+                restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
+        return responseEntity.getHeaders().getLocation();
+    }
+
+    public FakturagrunnlagResource getStatus(String orgId, Claim claim) {
+        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri(), orgId);
     }
 
     public void updateInvoice(String orgId, FakturagrunnlagResource invoice) {
         Update update = new Update();
         Consumer2<String, Object> updater = Consumer2.from(update::set);
         updater.accept("fakturagrunnlag", invoice);
-        invoice.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(updater.acceptPartially(LOCATION));
-        Optional.ofNullable(invoice.getFakturanummer()).map(Identifikator::getIdentifikatorverdi).map(Long::valueOf).ifPresent(updater.acceptPartially("fakturanummer"));
-        Optional.ofNullable(invoice.getTotal()).map(String::valueOf).ifPresent(updater.acceptPartially("restBelop"));
+        invoice.getSelfLinks()
+                .stream()
+                .map(Link::getHref)
+                .findAny()
+                .ifPresent(updater.acceptPartially(INVOICE_URI));
+        Optional.ofNullable(invoice.getFakturanummer())
+                .map(Identifikator::getIdentifikatorverdi)
+                .map(Long::valueOf)
+                .ifPresent(updater.acceptPartially("invoiceNumber"));
+        Optional.ofNullable(invoice.getTotal())
+                .map(String::valueOf)
+                .ifPresent(updater.acceptPartially("restBelop"));
 
         Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Betaling.class.getName()));
-        query.addCriteria(Criteria.where(ORDRENUMMER).is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
+        query.addCriteria(Criteria.where("_class")
+                .is(Claim.class.getName())
+        );
+        query.addCriteria(Criteria
+                .where(ORDER_NUMBER)
+                .is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi()))
+        );
 
         mongoRepository.updatePayment(orgId, query, update);
     }
 
-    public List<Betaling> getPayments(String orgId, Query query) {
+    public List<Claim> getPayments(String orgId, Query query) {
         return mongoRepository.getPayments(orgId, query);
     }
 

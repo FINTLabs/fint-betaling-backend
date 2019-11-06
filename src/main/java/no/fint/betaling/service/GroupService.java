@@ -1,125 +1,125 @@
 package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Kunde;
-import no.fint.betaling.model.KundeGruppe;
-import no.fint.betaling.util.ResourceCache;
+import no.fint.betaling.exception.ResourceNotFoundException;
+import no.fint.betaling.factory.CustomerFactory;
+import no.fint.betaling.model.Customer;
+import no.fint.betaling.model.CustomerGroup;
+import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.utdanning.elev.BasisgruppeResource;
-import no.fint.model.resource.utdanning.elev.BasisgruppeResources;
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResource;
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResources;
+import no.fint.model.resource.felles.PersonResource;
+import no.fint.model.resource.utdanning.elev.*;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
+import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
+@SuppressWarnings("unchecked")
 public class GroupService {
 
-    @Value(("${fint.betaling.endpoints.basisgruppe}"))
-    private String basisgruppeEndpoint;
+    private final CacheManager cacheManager;
 
-    @Value("${fint.betaling.endpoints.undervisningsgruppe}")
-    private String undervisningsgruppeEndpoint;
-
-    @Value("${fint.betaling.endpoints.kontaktlarergruppe}")
-    private String kontaktlarergruppeEndpoint;
-
-    @Autowired
-    private CacheService cacheService;
-
-    @Autowired
-    private MembershipService membershipService;
-
-    @Autowired
-    private CustomerService customerService;
-
-    @Autowired
-    private StudentRelationService studentRelationService;
-
-    private ResourceCache<BasisgruppeResource> basisgruppeResourceResourceCache;
-    private ResourceCache<KontaktlarergruppeResource> kontaktlarergruppeResourceResourceCache;
-    private ResourceCache<UndervisningsgruppeResource> undervisningsgruppeResourceResourceCache;
-
-    @PostConstruct
-    public void init() {
-        basisgruppeResourceResourceCache = new ResourceCache<>(cacheService, basisgruppeEndpoint, BasisgruppeResources.class);
-        kontaktlarergruppeResourceResourceCache = new ResourceCache<>(cacheService, kontaktlarergruppeEndpoint, KontaktlarergruppeResources.class);
-        undervisningsgruppeResourceResourceCache = new ResourceCache<>(cacheService, undervisningsgruppeEndpoint, UndervisningsgruppeResources.class);
+    public GroupService(CacheManager cacheManager) {
+        this.cacheManager = cacheManager;
     }
 
-    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.refresh-rate:360000}")
-    public void updateCaches() {
-        basisgruppeResourceResourceCache.updateCaches();
-        kontaktlarergruppeResourceResourceCache.updateCaches();
-        undervisningsgruppeResourceResourceCache.updateCaches();
+    private SkoleResource getSchool(String orgId, String schoolId) {
+        Cache cache = cacheManager.getCache("schoolCache");
+        Map<String, SkoleResource> schools = (Map<String, SkoleResource>) cache.get(orgId).get();
+
+        SkoleResource school = schools.get(schoolId);
+
+        if (school == null) throw new ResourceNotFoundException();
+
+        return school;
     }
 
+    public CustomerGroup getCustomerGroupBySchool(String orgId, String schoolId) {
+        SkoleResource school = getSchool(orgId, schoolId);
 
-    public List<KundeGruppe> getAllCustomerGroups(String orgId) {
-        List<KundeGruppe> allGroups = new ArrayList<>();
-        allGroups.addAll(getCustomerGroupListFromBasisgruppe(orgId));
-        allGroups.addAll(getCustomerGroupListFromKontaktlarergruppe(orgId));
-        allGroups.addAll(getCustomerGroupListFromUndervisningsgruppe(orgId));
-        return allGroups;
+        return createCustomerGroup(orgId, school.getNavn(), null, school.getElevforhold());
     }
 
-    public List<KundeGruppe> getCustomerGroupListFromBasisgruppe(String orgId) {
-        List<BasisgruppeResource> basisgruppeResources = basisgruppeResourceResourceCache.getResources(orgId);
-        log.info(String.format("Found %s basic groups", basisgruppeResources.size()));
-        return basisgruppeResources
-                .stream()
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
+    public List<CustomerGroup> getCustomerGroupsByBasisGroup(String orgId, String schoolId) {
+        SkoleResource school = getSchool(orgId, schoolId);
+
+        Link schoolLink = getSelfLink(school);
+
+        Cache cache = cacheManager.getCache("basisGroupCache");
+        Map<Link, List<BasisgruppeResource>> resources = (Map<Link, List<BasisgruppeResource>>) cache.get(orgId).get();
+
+        List<BasisgruppeResource> basisGroups = resources.get(schoolLink);
+
+        return basisGroups.stream()
+                .map(b -> createCustomerGroup(orgId, b.getNavn(), b.getBeskrivelse(), b.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
-    public List<KundeGruppe> getCustomerGroupListFromKontaktlarergruppe(String orgId) {
-        List<KontaktlarergruppeResource> kontaktlarergruppeResources = kontaktlarergruppeResourceResourceCache.getResources(orgId);
-        log.info(String.format("Found %s contact groups", kontaktlarergruppeResources.size()));
-        return kontaktlarergruppeResources
-                .stream()
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
+    public List<CustomerGroup> getCustomerGroupsByTeachingGroup(String orgId, String schoolId) {
+        SkoleResource school = getSchool(orgId, schoolId);
+
+        Link schoolLink = getSelfLink(school);
+
+        Cache cache = cacheManager.getCache("teachingGroupCache");
+        Map<Link, List<UndervisningsgruppeResource>> resources = (Map<Link, List<UndervisningsgruppeResource>>) cache.get(orgId).get();
+
+        List<UndervisningsgruppeResource> teachingGroups = resources.get(schoolLink);
+
+        return teachingGroups.stream()
+                .map(t -> createCustomerGroup(orgId, t.getNavn(), t.getBeskrivelse(), t.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
-    public List<KundeGruppe> getCustomerGroupListFromUndervisningsgruppe(String orgId) {
-        List<UndervisningsgruppeResource> undervisningsgruppeResources = undervisningsgruppeResourceResourceCache.getResources(orgId);
-        log.info(String.format("Found %s lesson groups", undervisningsgruppeResources.size()));
-        return undervisningsgruppeResources
-                .stream()
-                .map(g -> createCustomerGroup(orgId, g.getNavn(), g.getBeskrivelse(), g.getElevforhold()))
+    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroup(String orgId, String schoolId) {
+        SkoleResource school = getSchool(orgId, schoolId);
+
+        Link schoolLink = getSelfLink(school);
+
+        Cache cache = cacheManager.getCache("contactTeacherGroupCache");
+        Map<Link, List<KontaktlarergruppeResource>> resources = (Map<Link, List<KontaktlarergruppeResource>>) cache.get(orgId).get();
+
+        List<KontaktlarergruppeResource> contactTeacherGroups = resources.get(schoolLink);
+
+        return contactTeacherGroups.stream()
+                .map(c -> createCustomerGroup(orgId, c.getNavn(), c.getBeskrivelse(), c.getElevforhold()))
                 .collect(Collectors.toList());
     }
 
-    private KundeGruppe createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
-        KundeGruppe kundeGruppe = new KundeGruppe();
-        kundeGruppe.setNavn(navn);
-        kundeGruppe.setBeskrivelse(beskrivelse);
-        kundeGruppe.setKundeliste(getCustomersForGroup(orgId, elevforhold).collect(Collectors.toList()));
+    private CustomerGroup createCustomerGroup(String orgId, String navn, String beskrivelse, List<Link> elevforhold) {
+        CustomerGroup kundeGruppe = new CustomerGroup();
+        kundeGruppe.setName(navn);
+        kundeGruppe.setDescription(beskrivelse);
+        kundeGruppe.setCustomers(getCustomersForGroup(orgId, elevforhold));
         return kundeGruppe;
     }
 
-    private Stream<Kunde> getCustomersForGroup(String orgId, List<Link> elevforhold) {
-        Map<Link, Kunde> memberToCustomerMap = customerService.getCustomers(orgId, null).stream()
-                .collect(Collectors.toMap(Kunde::getElev, Function.identity(), (a, b) -> a));
-        Map<Link, Link> studentRelationToStudentMap = studentRelationService.getStudentRelationships(orgId);
+    private List<Customer> getCustomersForGroup(String orgId, List<Link> elevforhold) {
+        Cache studentCache = cacheManager.getCache("studentCache");
+        Map<Link, PersonResource> students = (Map<Link, PersonResource>) studentCache.get(orgId).get();
 
-        return elevforhold
-                .stream()
-                .map(studentRelationToStudentMap::get)
-                .map(memberToCustomerMap::get);
+        Cache studentRelationCache = cacheManager.getCache("studentRelationCache");
+        Map<Link, ElevforholdResource> studentRelations = (Map<Link, ElevforholdResource>) studentRelationCache.get(orgId).get();
+
+        return elevforhold.stream()
+                .map(studentRelations::get)
+                .map(this::getStudentLink)
+                .filter(Objects::nonNull)
+                .map(students::get)
+                .map(CustomerFactory::toCustomer)
+                .collect(Collectors.toList());
     }
 
+    private<T extends FintLinks> Link getSelfLink(T resource) {
+        return resource.getSelfLinks().stream().findAny().orElse(null);
+    }
+
+    private Link getStudentLink(ElevforholdResource resource) {
+        return resource.getElev().stream().findAny().orElse(null);
+    }
 }

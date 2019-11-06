@@ -1,11 +1,10 @@
 package no.fint.betaling.controller;
 
+import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -13,10 +12,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeController {
 
     @GetMapping
-    public ResponseEntity getMe(){
+    public User getMe(@RequestHeader(name = "x-ePPN", required = false) String ePPN) {
+
+        //TODO  Get name, school owner (and schools?) from Feide/LDAP
+        //      How to map from Feide orgId to Fint orgId
+        //      systemid - 10261j
+
         User user = new User();
-        user.setName("Ola Nordmann");
-        user.setOrganisation("Rogaland fylkeskommune");
-        return ResponseEntity.ok(user);
+
+        user.setDisplayName("Navn Navnesen");
+
+        Organisation schoolOwner = new Organisation();
+        schoolOwner.setName("Telemark fylkeskommune");
+        schoolOwner.setOrganisationNumber("");
+        user.setOrganisation(schoolOwner);
+
+        Organisation school1 = new Organisation();
+        school1.setName("Skien videregående skole");
+        school1.setOrganisationNumber("974568039");
+
+        Organisation school2 = new Organisation();
+        school2.setName("Notodden videregående skole");
+        school2.setOrganisationNumber("974568012");
+
+        user.setOrganisationUnits(Arrays.asList(school1, school2));
+
+        return user;
     }
 }
