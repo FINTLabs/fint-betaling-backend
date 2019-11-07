@@ -92,7 +92,7 @@ public class ClaimService {
         }
     }
 
-    public List<Claim> getUnsentClaims(String orgId) {
+    private List<Claim> getUnsentClaims(String orgId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()).orOperator(
                 Criteria.where(CLAIM_STATUS).is(ClaimStatus.STORED),
