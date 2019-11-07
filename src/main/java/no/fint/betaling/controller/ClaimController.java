@@ -26,7 +26,7 @@ public class ClaimController {
     @Autowired
     private ClaimService claimService;
 
-    @RequestMapping(method = POST)
+    @PostMapping
     public ResponseEntity setClaim(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                    @RequestBody Order order) {
         log.info("{}: Received claim {}", orgId, order);
@@ -34,7 +34,7 @@ public class ClaimController {
         return ResponseEntity.status(HttpStatus.CREATED).body(claimService.setClaim(orgId, order));
     }
 
-    @RequestMapping(method = GET)
+    @GetMapping
     public List<Claim> getAllClaims(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
         return claimService.getAllClaims(orgId);
     }
