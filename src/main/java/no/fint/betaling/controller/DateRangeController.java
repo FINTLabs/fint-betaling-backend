@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api/dato")
+@RequestMapping(value = "/api/dateRange")
 public class DateRangeController {
 
     @Value("${fint.betaling.date-range}")

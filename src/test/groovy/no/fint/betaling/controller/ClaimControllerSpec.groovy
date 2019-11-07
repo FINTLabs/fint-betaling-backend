@@ -4,21 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import no.fint.betaling.model.Betaling
 import no.fint.betaling.model.Kunde
 import no.fint.betaling.model.Payment
-import no.fint.betaling.repository.PaymentRepository
+
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.hamcrest.CoreMatchers
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 
-class PaymentControllerSpec extends MockMvcSpecification {
+class ClaimControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
-    private PaymentController paymentController
+    private ClaimController paymentController
     private PaymentRepository paymentRepository
 
     void setup() {
         paymentRepository = Mock(PaymentRepository)
-        paymentController = new PaymentController(paymentRepository: paymentRepository)
+        paymentController = new ClaimController(paymentRepository: paymentRepository)
         mockMvc = standaloneSetup(paymentController)
     }
 

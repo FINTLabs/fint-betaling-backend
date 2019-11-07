@@ -15,17 +15,17 @@ import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api/oppdragsgiver")
-public class EmployerController {
+@RequestMapping(value = "/api/principal")
+public class PrincipalController {
 
     @Autowired
     private RestUtil restUtil;
 
-    @Value("${fint.betaling.endpoints.employer}")
-    private URI employerEndpoint;
+    @Value("${fint.betaling.endpoints.principal}")
+    private URI principalEndpoint;
 
     @GetMapping
-    public List<OppdragsgiverResource> getEmployers(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restUtil.get(OppdragsgiverResources.class, employerEndpoint, orgId).getContent();
+    public List<OppdragsgiverResource> getPrincipals(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return restUtil.get(OppdragsgiverResources.class, principalEndpoint, orgId).getContent();
     }
 }

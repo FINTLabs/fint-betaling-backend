@@ -15,6 +15,11 @@ import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 @CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/customer")
 public class CustomerController {
+
+    /*
+    To be deleted???
+     */
+
     private final CustomerService customerService;
 
     public CustomerController(CustomerService customerService) {
@@ -23,7 +28,7 @@ public class CustomerController {
 
     @GetMapping
     public List<Customer> getCustomers(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                       @RequestParam(value = "navn", required = false) String name) {
+                                       @RequestParam(value = "name", required = false) String name) {
         return customerService.getCustomers(orgId, name);
     }
 }
