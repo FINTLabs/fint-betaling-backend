@@ -11,21 +11,21 @@ import java.util.Optional;
 
 public enum CustomerFactory {
     ;
-    private static final String SURNAME_GIVENNAME_MIDDLENAME = "%s, %s %s";
-    private static final String SURNAME_GIVENNAME = "%s, %s";
+    private static final String LASTNAME_FIRSTNAME_MIDDLENAME = "%s, %s %s";
+    private static final String LASTNAME_FIRSTNAME = "%s, %s";
 
-    public static String getDisplayName(Personnavn navn) {
-        if (navn == null) return null;
+    public static String getDisplayName(Personnavn name) {
+        if (name == null) return null;
 
-        Optional<String> fornavn = getValue(navn.getFornavn());
-        Optional<String> mellomnavn = getValue(navn.getMellomnavn());
-        Optional<String> etternavn = getValue(navn.getEtternavn());
+        Optional<String> firstName = getValue(name.getFornavn());
+        Optional<String> middleName = getValue(name.getMellomnavn());
+        Optional<String> lastName = getValue(name.getEtternavn());
 
-        if (fornavn.isPresent() && mellomnavn.isPresent() && etternavn.isPresent()) {
-            return String.format(SURNAME_GIVENNAME_MIDDLENAME, etternavn.get(), fornavn.get(), mellomnavn.get());
-        } else if (fornavn.isPresent() && etternavn.isPresent()) {
-            return String.format(SURNAME_GIVENNAME, etternavn.get(), fornavn.get());
-        } else return etternavn.orElse("");
+        if (firstName.isPresent() && middleName.isPresent() && lastName.isPresent()) {
+            return String.format(LASTNAME_FIRSTNAME_MIDDLENAME, lastName.get(), firstName.get(), middleName.get());
+        } else if (firstName.isPresent() && lastName.isPresent()) {
+            return String.format(LASTNAME_FIRSTNAME, lastName.get(), firstName.get());
+        } else return lastName.orElse("");
     }
 
     private static Optional<String> getValue(String value) {
