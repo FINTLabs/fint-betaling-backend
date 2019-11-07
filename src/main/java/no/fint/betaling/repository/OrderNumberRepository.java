@@ -25,7 +25,7 @@ public class OrderNumberRepository {
         query.addCriteria(Criteria.where("_class").is(OrganisationConfig.class.getName()));
 
         Update update = new Update();
-        update.inc("nextOrderNumberForOrganisation  ", 1);
+        update.inc("nextOrderNumberForOrganisation", 1);
 
         FindAndModifyOptions.options().returnNew(false);
         OrganisationConfig organisationConfig =
