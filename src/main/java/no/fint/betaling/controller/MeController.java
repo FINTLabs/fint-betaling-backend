@@ -14,9 +14,8 @@ public class MeController {
     @GetMapping
     public User getMe(@RequestHeader(name = "x-ePPN", required = false) String ePPN) {
 
-        //TODO  Get name, school owner (and schools?) from Feide/LDAP
-        //      How to map from Feide orgId to Fint orgId
-        //      systemid - 10261j
+        //TODO Get name, school owner and schools from Feide/LDAP
+        //TODO Implement lookup service for Fint Person
 
         User user = new User();
 

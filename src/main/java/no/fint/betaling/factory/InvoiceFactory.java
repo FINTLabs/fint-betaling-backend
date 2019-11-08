@@ -13,18 +13,18 @@ public enum InvoiceFactory {
     ;
 
     public static FakturagrunnlagResource createInvoice(Claim claim) {
-        List<FakturalinjeResource> paymentLines = claim.getOrderLines().stream().map(orderLine -> {
-            FakturalinjeResource paymentLine = new FakturalinjeResource();
-            paymentLine.setPris(orderLine.getItemPrice());
-            paymentLine.setAntall(orderLine.getNumberOfItems() / 1.0f);
-            paymentLine.setFritekst(Collections.singletonList(orderLine.getDescription()));
-            paymentLine.addVarelinje(Link.with(orderLine.getItemUri().toString()));
-            return paymentLine;
+        List<FakturalinjeResource> invoiceLines = claim.getOrderLines().stream().map(orderLine -> {
+            FakturalinjeResource invoiceLine = new FakturalinjeResource();
+            invoiceLine.setPris(orderLine.getItemPrice());
+            invoiceLine.setAntall(orderLine.getNumberOfItems() / 1.0f);
+            invoiceLine.setFritekst(Collections.singletonList(orderLine.getDescription()));
+            invoiceLine.addVarelinje(Link.with(orderLine.getItemUri().toString()));
+            return invoiceLine;
         }).collect(Collectors.toList());
 
 
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
-        invoice.setFakturalinjer(paymentLines);
+        invoice.setFakturalinjer(invoiceLines);
         invoice.setFakturadato(new Date());
         GregorianCalendar calendar = new GregorianCalendar();
         calendar.add(Calendar.DATE, Integer.parseInt(claim.getRequestedNumberOfDaysToPaymentDeadline()));

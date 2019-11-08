@@ -12,6 +12,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class OrderNumberRepository {
 
+    private static final String NEXT_ORDER_NUMBER_FOR_ORGANISATION = "nextOrderNumberForOrganisation";
+    private static final String ORG_ID = "orgId";
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
@@ -21,11 +24,11 @@ public class OrderNumberRepository {
 
     private String getAndUpdateLastOrderNumber(String orgId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("orgId").is(orgId));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where("_class").is(OrganisationConfig.class.getName()));
 
         Update update = new Update();
-        update.inc("nextOrderNumberForOrganisation", 1);
+        update.inc(NEXT_ORDER_NUMBER_FOR_ORGANISATION, 1);
 
         FindAndModifyOptions.options().returnNew(false);
         OrganisationConfig organisationConfig =

@@ -7,14 +7,14 @@ import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResources
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
 
-class EmployerControllerSpec extends MockMvcSpecification {
-    private EmployerController controller
+class PrincipalControllerSpec extends MockMvcSpecification {
+    private PrincipalController controller
     private RestUtil restUtil
     private MockMvc mockMvc
 
     void setup() {
         restUtil = Mock(RestUtil)
-        controller = new EmployerController(restUtil: restUtil, employerEndpoint: 'endpoints/employer')
+        controller = new PrincipalController(restUtil: restUtil, principalEndpoint: 'endpoints/employer')
         mockMvc = standaloneSetup(controller)
     }
 

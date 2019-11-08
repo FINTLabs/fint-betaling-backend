@@ -46,7 +46,7 @@ public class GroupService {
         return createCustomerGroup(orgId, school.getNavn(), null, school.getElevforhold());
     }
 
-    public List<CustomerGroup> getCustomerGroupsByBasisGroup(String orgId, String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Link schoolLink = getSelfLink(school);
@@ -61,7 +61,7 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    public List<CustomerGroup> getCustomerGroupsByTeachingGroup(String orgId, String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Link schoolLink = getSelfLink(school);
@@ -76,7 +76,7 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroup(String orgId, String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(String orgId, String schoolId) {
         SkoleResource school = getSchool(orgId, schoolId);
 
         Link schoolLink = getSelfLink(school);

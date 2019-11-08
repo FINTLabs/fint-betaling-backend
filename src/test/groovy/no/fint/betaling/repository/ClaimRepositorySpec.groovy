@@ -10,16 +10,16 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import spock.lang.Specification
 
-class MongoRepositorySpec extends Specification {
+class ClaimRepositorySpec extends Specification {
 
     private String orgId
     private MongoTemplate mongoTemplate
-    private MongoRepository mongoRepository
+    private ClaimRepository mongoRepository
 
     void setup() {
         orgId = 'test.no'
         mongoTemplate = Mock(MongoTemplate)
-        mongoRepository = new MongoRepository(mongoTemplate: mongoTemplate)
+        mongoRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
     }
 
     def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
@@ -28,7 +28,7 @@ class MongoRepositorySpec extends Specification {
         def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
 
         when:
-        mongoRepository.setPayment(orgId, new Betaling(fakturagrunnlag: fakturagrunnlag, kunde: kunde))
+        mongoRepository.setClaim(orgId, new Betaling(fakturagrunnlag: fakturagrunnlag, kunde: kunde))
 
         then:
         1 * mongoTemplate.save(_ as Betaling, 'test.no')
@@ -40,7 +40,7 @@ class MongoRepositorySpec extends Specification {
         query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
 
         when:
-        def listBetaling = mongoRepository.getPayments(orgId, query)
+        def listBetaling = mongoRepository.getClaims(orgId, query)
 
         then:
         1 * mongoTemplate.find(_ as Query, Betaling.class, 'test.no') >> [new Betaling()]
@@ -56,7 +56,7 @@ class MongoRepositorySpec extends Specification {
         update.set('someValue','testValue')
 
         when:
-        mongoRepository.updatePayment('test.no', query, update)
+        mongoRepository.updateClaim('test.no', query, update)
 
         then:
         1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as String)

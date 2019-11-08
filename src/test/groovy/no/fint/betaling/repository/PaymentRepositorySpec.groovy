@@ -13,15 +13,15 @@ import spock.lang.Specification
 
 class PaymentRepositorySpec extends Specification {
     private String orgId
-    private MongoRepository mongoRepository
+    private ClaimRepository mongoRepository
     private PaymentRepository paymentRepository
     private ClaimFactory betalingFactory
 
     void setup() {
         orgId = 'test.no'
-        mongoRepository = Mock(MongoRepository)
+        mongoRepository = Mock(ClaimRepository)
         betalingFactory = Mock(ClaimFactory)
-        paymentRepository = new PaymentRepository(mongoRepository: mongoRepository, claimFactory: betalingFactory)
+        paymentRepository = new PaymentRepository(claimRepository: mongoRepository, claimFactory: betalingFactory)
     }
 
     def "Get all payments given valid orgId returns list"() {
@@ -29,7 +29,7 @@ class PaymentRepositorySpec extends Specification {
         def listBetaling = paymentRepository.getAllPayments(orgId)
 
         then:
-        1 * mongoRepository.getPayments('test.no', _) >> [new Betaling(), new Betaling()]
+        1 * mongoRepository.getClaims('test.no', _) >> [new Betaling(), new Betaling()]
         listBetaling.size() == 2
     }
 
@@ -38,7 +38,7 @@ class PaymentRepositorySpec extends Specification {
         def listBetaling = paymentRepository.getPaymentsByCustomerName(orgId, 'Correctlastname')
 
         then:
-        1 * mongoRepository.getPayments('test.no', _) >> [createPayment(123, 'Correctlastname')]
+        1 * mongoRepository.getClaims('test.no', _) >> [createPayment(123, 'Correctlastname')]
         listBetaling.size() == 1
         listBetaling.get(0).kunde.navn.etternavn == 'Correctlastname'
     }
@@ -48,7 +48,7 @@ class PaymentRepositorySpec extends Specification {
         def listBetaling = paymentRepository.getPaymentsByOrdernumber(orgId, '5')
 
         then:
-        1 * mongoRepository.getPayments('test.no', _ as Query) >> [createPayment(124, 'Testesen')]
+        1 * mongoRepository.getClaims('test.no', _ as Query) >> [createPayment(124, 'Testesen')]
         listBetaling.size() == 1
         listBetaling.get(0).ordrenummer == 124
     }
@@ -69,7 +69,7 @@ class PaymentRepositorySpec extends Specification {
 
         then:
         1 * betalingFactory.createClaim(_ as Payment, 'test.no') >> [createPayment(123,'Testesen')]
-        1 * mongoRepository.setPayment('test.no', _ as Betaling)
+        1 * mongoRepository.setClaim('test.no', _ as Betaling)
         response.size() == 1
         response.get(0).varelinjer.size() == 1
         response.get(0).ordrenummer == 123

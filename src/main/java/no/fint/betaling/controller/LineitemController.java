@@ -18,25 +18,17 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api/orderline")
-public class OrderLineController {
+@RequestMapping(value = "/api/lineitem")
+public class LineitemController {
 
-    @Value("${fint.betaling.endpoints.order-line}")
-    private URI orderLineEndpoint;
+    @Value("${fint.betaling.endpoints.lineitem}")
+    private URI lineitemEndpoint;
 
     @Autowired
     private RestUtil restUtil;
 
-    @RequestMapping(method = GET)
-    public List<VarelinjeResource> getAllOrderLines(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restUtil.get(VarelinjeResources.class, orderLineEndpoint, orgId).getContent();
+    @GetMapping
+    public List<VarelinjeResource> getAllLineitems(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
+        return restUtil.get(VarelinjeResources.class, lineitemEndpoint, orgId).getContent();
     }
-
-    /*
-    @RequestMapping(method = POST)
-    public ResponseEntity setOrderLine(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                       @RequestBody VarelinjeResource orderLine) {
-        return restUtil.post(VarelinjeResource.class, orderLineEndpoint, orderLine, orgId);
-    }
-     */
 }

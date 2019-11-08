@@ -14,15 +14,15 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
-class OrderLineControllerSpec extends MockMvcSpecification {
+class LineitemControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
     private RestUtil restUtil
-    private OrderLineController orderLineController
+    private LineitemController orderLineController
     private ObjectMapper mapper
 
     void setup() {
         restUtil = Mock(RestUtil)
-        orderLineController = new OrderLineController(restUtil: restUtil, orderLineEndpoint: 'endpoints/orderLine')
+        orderLineController = new LineitemController(restUtil: restUtil, LineitemEndpoint: 'endpoints/orderLine')
 
         def converter = new MappingJackson2HttpMessageConverter()
         mapper = new ObjectMapper()
