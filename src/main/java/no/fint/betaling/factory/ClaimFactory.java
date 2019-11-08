@@ -24,6 +24,7 @@ public class ClaimFactory {
                 claim.setPrincipalUri(order.getPrincipalUri());
                 claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
                 claim.setOriginalAmountDue(order.sum());
+                claim.setOrderLines(order.getOrderLines());
                 claim.setClaimStatus(ClaimStatus.STORED);
             return claim;
         }).collect(Collectors.toList());

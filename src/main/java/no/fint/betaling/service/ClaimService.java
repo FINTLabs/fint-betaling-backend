@@ -194,7 +194,7 @@ public class ClaimService {
 
     public List<Claim> setClaim(String orgId, Order order) {
         List<Claim> claims = claimFactory.createClaim(order, orgId);
-        claims.forEach(p -> claimRepository.setClaim(orgId, p));
+        claims.forEach(claim -> claimRepository.setClaim(orgId, claim));
         return claims;
     }
 }
