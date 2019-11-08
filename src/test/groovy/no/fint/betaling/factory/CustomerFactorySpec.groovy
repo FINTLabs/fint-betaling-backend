@@ -1,6 +1,5 @@
-package no.fint.betaling.model
+package no.fint.betaling.factory
 
-import no.fint.betaling.factory.CustomerFactory
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
@@ -27,10 +26,10 @@ class CustomerFactorySpec extends Specification {
         def person = createPerson('12345678901', 'Oslo', 'test@test.com')
 
         when:
-        def kunde = factory.toCustomer(person)
+        def customer = factory.toCustomer(person)
 
         then:
-        kunde.kundenummer == '21i3v9'
+        customer.id == '21i3v9'
     }
 
     def "Determine customer ID from NIN"() {
@@ -46,19 +45,19 @@ class CustomerFactorySpec extends Specification {
 
     def "Get Personnavn as String"() {
         given:
-        def navn = new Personnavn()
+        def name = new Personnavn()
         if (fornavn) {
-            navn.setFornavn(fornavn)
+            name.setFornavn(fornavn)
         }
         if (mellomnavn) {
-            navn.setMellomnavn(mellomnavn)
+            name.setMellomnavn(mellomnavn)
         }
         if (etternavn) {
-            navn.setEtternavn(etternavn)
+            name.setEtternavn(etternavn)
         }
 
         when:
-        def result = CustomerFactory.getDisplayName(navn)
+        def result = CustomerFactory.getDisplayName(name)
 
         then:
         result == personnavn
@@ -71,25 +70,25 @@ class CustomerFactorySpec extends Specification {
         null    | null        | null      || ''
     }
 
-    private static PersonResource createPerson(String kundenummer, String poststed, String epostadresse) {
-        def fodselsnummer = new Identifikator()
-        fodselsnummer.setIdentifikatorverdi(kundenummer)
+    private static PersonResource createPerson(String id, String city, String email) {
+        def nin = new Identifikator()
+        nin.setIdentifikatorverdi(id)
 
-        def personnavn = new Personnavn()
-        personnavn.setFornavn('Ola')
-        personnavn.setEtternavn('Testesen')
+        def name = new Personnavn()
+        name.setFornavn('Ola')
+        name.setEtternavn('Testesen')
 
-        def kontaktinformasjon = new Kontaktinformasjon()
-        kontaktinformasjon.setEpostadresse(epostadresse)
+        def contactInformation = new Kontaktinformasjon()
+        contactInformation.setEpostadresse(email)
 
-        def adresse = new AdresseResource()
-        adresse.setPoststed(poststed)
+        def address = new AdresseResource()
+        address.setPoststed(city)
 
         def person = new PersonResource()
-        person.setFodselsnummer(fodselsnummer)
-        person.setNavn(personnavn)
-        person.setKontaktinformasjon(kontaktinformasjon)
-        person.setPostadresse(adresse)
+        person.setFodselsnummer(nin)
+        person.setNavn(name)
+        person.setKontaktinformasjon(contactInformation)
+        person.setPostadresse(address)
 
         person.addLink('self', new Link('person.self'))
 
