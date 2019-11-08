@@ -1,6 +1,6 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.model.Kunde
+import no.fint.betaling.model.Customer
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
@@ -17,26 +17,16 @@ class GroupServiceSpec extends Specification {
     private CacheService cacheService
     private GroupService groupService
     private CustomerService customerService
-    private MembershipService membershipService
-    private StudentRelationService studentRelationService
 
     void setup() {
-        def kunde = new Kunde(
+        def kunde = new Customer(
                 navn: new Personnavn(etternavn: 'Testesen', fornavn: 'Test'),
                 person: Link.with('link.to.PersonResource'),
                 elev: Link.with('link.to.ElevResource'),
                 kundenummer: '12345678901')
 
-        membershipService = Mock(MembershipService) {
-            getMemberships(_ as String) >> []
-        }
-
         customerService = Mock(CustomerService) {
             getCustomers(_ as String, _) >> [kunde]
-        }
-
-        studentRelationService = Mock(StudentRelationService) {
-            getStudentRelationships(_) >> [(Link.with('link.to.ElevforholdResource')): Link.with('link.to.ElevResource')]
         }
 
         cacheService = Mock()

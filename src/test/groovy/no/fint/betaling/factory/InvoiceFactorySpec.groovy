@@ -11,15 +11,9 @@ import spock.lang.Specification
 
 class InvoiceFactorySpec extends Specification {
 
-    private InvoiceFactory invoiceFactory
-
-    void setup() {
-        invoiceFactory = new InvoiceFactory()
-    }
-
     def "Get invoice given valid payment returns invoice"() {
         when:
-        def invoice = invoiceFactory.createInvoice(createPayment())
+        def invoice = InvoiceFactory.createInvoice(createPayment())
 
         then:
         invoice.ordrenummer.identifikatorverdi == '123'

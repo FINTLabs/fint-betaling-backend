@@ -1,9 +1,7 @@
 package no.fint.betaling.repository
 
-import no.fint.betaling.model.Betaling
-import no.fint.betaling.model.Kunde
-import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
+import no.fint.betaling.model.Claim
+import no.fint.betaling.model.Customer
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -14,24 +12,23 @@ class ClaimRepositorySpec extends Specification {
 
     private String orgId
     private MongoTemplate mongoTemplate
-    private ClaimRepository mongoRepository
+    private ClaimRepository claimRepository
 
     void setup() {
         orgId = 'test.no'
         mongoTemplate = Mock(MongoTemplate)
-        mongoRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
+        claimRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
     }
 
     def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
         given:
-        def fakturagrunnlag = new FakturagrunnlagResource(total: 1000)
-        def kunde = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
+        def customer = new Customer(name: 'Testesen')
 
         when:
-        mongoRepository.setClaim(orgId, new Betaling(fakturagrunnlag: fakturagrunnlag, kunde: kunde))
+        claimRepository.setClaim(orgId, new Claim(invoiceUri: 'link.to.FakturagrunnlagResource'.toURI(), customer: customer))
 
         then:
-        1 * mongoTemplate.save(_ as Betaling, 'test.no')
+        1 * mongoTemplate.save(_ as Claim, 'test.no')
     }
 
     def "Get payment returns list"() {
@@ -40,11 +37,11 @@ class ClaimRepositorySpec extends Specification {
         query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
 
         when:
-        def listBetaling = mongoRepository.getClaims(orgId, query)
+        def claims = claimRepository.getClaims(orgId, query)
 
         then:
-        1 * mongoTemplate.find(_ as Query, Betaling.class, 'test.no') >> [new Betaling()]
-        listBetaling.size() == 1
+        1 * mongoTemplate.find(_ as Query, Claim.class, 'test.no') >> [new Claim()]
+        claims.size() == 1
     }
 
     def "Update payment given valid org id, valid update and valid query"() {
@@ -56,7 +53,7 @@ class ClaimRepositorySpec extends Specification {
         update.set('someValue','testValue')
 
         when:
-        mongoRepository.updateClaim('test.no', query, update)
+        claimRepository.updateClaim('test.no', query, update)
 
         then:
         1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as String)

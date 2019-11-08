@@ -12,12 +12,10 @@ import spock.lang.Specification
 class CustomerFactorySpec extends Specification {
 
     private RestUtil restUtil
-    private CustomerFactory factory
     private String orgId
 
     void setup() {
         restUtil = Mock(RestUtil)
-        factory = new CustomerFactory()
         orgId = 'test.no'
     }
 
@@ -26,7 +24,7 @@ class CustomerFactorySpec extends Specification {
         def person = createPerson('12345678901', 'Oslo', 'test@test.com')
 
         when:
-        def customer = factory.toCustomer(person)
+        def customer = CustomerFactory.toCustomer(person)
 
         then:
         customer.id == '21i3v9'

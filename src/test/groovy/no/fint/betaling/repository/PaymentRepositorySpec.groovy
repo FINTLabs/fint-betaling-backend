@@ -2,6 +2,7 @@ package no.fint.betaling.repository
 
 import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.model.*
+import no.fint.betaling.service.ClaimService
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
@@ -13,88 +14,83 @@ import spock.lang.Specification
 
 class PaymentRepositorySpec extends Specification {
     private String orgId
-    private ClaimRepository mongoRepository
-    private PaymentRepository paymentRepository
-    private ClaimFactory betalingFactory
+    private ClaimRepository claimRepository
+    private ClaimService claimService
+    private ClaimFactory claimFactory
 
     void setup() {
         orgId = 'test.no'
-        mongoRepository = Mock(ClaimRepository)
-        betalingFactory = Mock(ClaimFactory)
-        paymentRepository = new PaymentRepository(claimRepository: mongoRepository, claimFactory: betalingFactory)
+        claimRepository = Mock(ClaimRepository)
+        claimFactory = Mock(ClaimFactory)
+        claimService = new ClaimService(claimRepository: claimRepository, claimFactory: claimFactory)
     }
 
     def "Get all payments given valid orgId returns list"() {
         when:
-        def listBetaling = paymentRepository.getAllPayments(orgId)
+        def claims = claimService.getAllClaims(orgId)
 
         then:
-        1 * mongoRepository.getClaims('test.no', _) >> [new Betaling(), new Betaling()]
-        listBetaling.size() == 2
+        1 * claimRepository.getClaims('test.no', _) >> [new Claim(), new Claim()]
+        claims.size() == 2
     }
 
     def "Get payment by name given valid lastname returns list with payments matching given lastname"() {
         when:
-        def listBetaling = paymentRepository.getPaymentsByCustomerName(orgId, 'Correctlastname')
+        def claims = claimService.getClaimsByCustomerName(orgId, 'Correctlastname')
 
         then:
-        1 * mongoRepository.getClaims('test.no', _) >> [createPayment(123, 'Correctlastname')]
-        listBetaling.size() == 1
-        listBetaling.get(0).kunde.navn.etternavn == 'Correctlastname'
+        1 * claimRepository.getClaims('test.no', _) >> [createPayment('123', 'Correctlastname')]
+        claims.size() == 1
+        claims.get(0).customer.name == 'Correctlastname'
     }
 
     def "Get payment given valid ordernumber returns list with payments matching given ordernumber"() {
         when:
-        def listBetaling = paymentRepository.getPaymentsByOrdernumber(orgId, '5')
+        def claims = claimService.getClaimsByOrderNumber(orgId, '5')
 
         then:
-        1 * mongoRepository.getClaims('test.no', _ as Query) >> [createPayment(124, 'Testesen')]
-        listBetaling.size() == 1
-        listBetaling.get(0).ordrenummer == 124
+        1 * claimRepository.getClaims('test.no', _ as Query) >> [createPayment('124', 'Testesen')]
+        claims.size() == 1
+        claims.get(0).orderNumber == '124'
     }
 
     def "Save payment given valid data returns void"() {
         given:
         def orderLine = new OrderLine(
-                orderLine: new VarelinjeResource(pris: 100L, enhet: "enhet", kontering: new KontostrengResource()),
-                amount: 1,
+                itemUri: '/varelinje/123'.toURI(),
+                numberOfItems: 1,
                 description: 'test'
         )
-        def customer = new Kunde(navn: new Personnavn(fornavn: 'Ola', etternavn: 'Testesen'))
-        def employer = new OppdragsgiverResource(navn: 'Emp Loyer', systemId: new Identifikator(identifikatorverdi: 'test'))
-        def payment = new Payment(employer: employer, orderLines: [orderLine], customers: [customer], timeFrameDueDate: 7L)
+        def customer = new Customer(name: 'Testesen')
+        def order = new Order(principalUri: 'link.to.Oppdragsgiver'.toURI(), orderLines: [orderLine], customers: [customer], requestedNumberOfDaysToPaymentDeadline: 7L)
 
         when:
-        def response = paymentRepository.setPayment(orgId, payment)
+        def response = claimService.setClaim(orgId, order)
 
         then:
-        1 * betalingFactory.createClaim(_ as Payment, 'test.no') >> [createPayment(123,'Testesen')]
-        1 * mongoRepository.setClaim('test.no', _ as Betaling)
+        1 * claimFactory.createClaim(_ as Claim, 'test.no') >> [createPayment('123','Testesen')]
+        1 * claimRepository.setClaim('test.no', _ as Claim)
         response.size() == 1
-        response.get(0).varelinjer.size() == 1
-        response.get(0).ordrenummer == 123
-        response.get(0).kunde.navn.etternavn == 'Testesen'
+        response.get(0).orderLines.size() == 1
+        response.get(0).orderNumber == '123'
+        response.get(0).customer.name == 'Testesen'
     }
 
-    private static Betaling createPayment(long ordernumber, String lastname) {
-        def employer = new OppdragsgiverResource()
-        employer.setNavn('test employer')
-        employer.addLink('self', new Link('link.to.Oppdragsgiver'))
+    private static Claim createPayment(String orderNumber, String name) {
         def varelinjeResource = new VarelinjeResource()
-        varelinjeResource.setEnhet('enhet')
+        varelinjeResource.setEnhet('unit')
         varelinjeResource.setKontering(new KontostrengResource())
         varelinjeResource.setPris(1L)
-        def orderLine = new OrderLine(orderLine: varelinjeResource, amount: 1, description: 'test')
-        def customer = new Kunde(
-                navn: new Personnavn(fornavn: 'Test', etternavn: lastname)
-        )
-        return new Betaling(
-                varelinjer: [orderLine],
-                kunde: customer,
-                ordrenummer: ordernumber,
-                oppdragsgiver: employer,
-                timeFrameDueDate: '7'
+        varelinjeResource.addLink('self', new Link('link.to.VarelinjeResource'))
+        def orderLine = new OrderLine(numberOfItems: 1L, itemUri: 'link.to.VarelinjeResource'.toURI(), itemPrice: 1L, description: 'test')
+        def customer = new Customer(name: name, person: 'link.to.PersonResource'.toURI())
+
+        return new Claim(
+                orderLines: [orderLine],
+                customer: customer,
+                orderNumber: orderNumber,
+                principalUri: 'link.to.Oppdragsgiver'.toURI(),
+                requestedNumberOfDaysToPaymentDeadline: '7'
         )
     }
-
 }

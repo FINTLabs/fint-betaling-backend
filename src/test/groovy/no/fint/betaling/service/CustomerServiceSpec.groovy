@@ -1,7 +1,7 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.model.Kunde
 import no.fint.betaling.factory.CustomerFactory
+import no.fint.betaling.model.Customer
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
@@ -29,7 +29,7 @@ class CustomerServiceSpec extends Specification {
         def personResources = createPersonResources(1, ['Testesen'])
 
         when:
-        List<Kunde> listCustomers = customerService.getCustomers(orgId, "")
+        List<Customer> listCustomers = customerService.getCustomers(orgId, "")
 
         then:
         1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
@@ -52,8 +52,8 @@ class CustomerServiceSpec extends Specification {
         listCustomers.get(0).navn.etternavn == 'Rettsen'
     }
 
-    private static Kunde createKunde(String lastname){
-        return new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: lastname), fulltNavn: "${lastname}, Test")
+    private static Customer createKunde(String lastname){
+        return new Customer(navn: new Personnavn(fornavn: 'Test', etternavn: lastname), fulltNavn: "${lastname}, Test")
     }
 
     private static PersonResources createPersonResources(int resources, List<String> lastnames) {
