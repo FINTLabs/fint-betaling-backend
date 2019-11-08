@@ -41,26 +41,26 @@ public class CacheService {
     @Value("${fint.betaling.org-ids}")
     private List<String> orgs;
 
-    @Value("${fint.betaling.endpoints.skole}")
-    private URI skoleEndpoint;
+    @Value("${fint.betaling.endpoints.school}")
+    private URI schoolEndpoint;
 
-    @Value("${fint.betaling.endpoints.basisgruppe}")
-    private URI basisgruppeEndpoint;
+    @Value("${fint.betaling.endpoints.basis-group}")
+    private URI basisGroupEndpoint;
 
-    @Value("${fint.betaling.endpoints.undervisningsgruppe}")
-    private URI undervisningsgruppeEndpoint;
+    @Value("${fint.betaling.endpoints.teaching-group}")
+    private URI teachingGroupEndpoint;
 
-    @Value("${fint.betaling.endpoints.kontaktlarergruppe}")
-    private URI kontaktlarergruppeEndpoint;
+    @Value("${fint.betaling.endpoints.contact-teacher-group}")
+    private URI contactTeacherGroupEndpoint;
 
     @Value("${fint.betaling.endpoints.person}")
     private URI personEndpoint;
 
-    @Value("${fint.betaling.endpoints.elevforhold}")
-    private URI elevforholdEndpoint;
+    @Value("${fint.betaling.endpoints.student-relation}")
+    private URI studentRelationEndpoint;
 
-    @Value("${fint.betaling.endpoints.skoleressurs}")
-    private URI skoleressursEndpoint;
+    @Value("${fint.betaling.endpoints.school-resource}")
+    private URI schoolResourceEndpoint;
 
     @Scheduled(initialDelay = 1000, fixedRate = 3600000)
     public void init() {
@@ -82,7 +82,7 @@ public class CacheService {
     private void updateSchoolCache(String orgId) {
         Cache cache = cacheManager.getCache("schoolCache");
 
-        SkoleResources resources = restUtil.get(SkoleResources.class, skoleEndpoint, orgId);
+        SkoleResources resources = restUtil.get(SkoleResources.class, schoolEndpoint, orgId);
 
         if (resources != null) {
             Map<String, SkoleResource> schools = resources.getContent().stream()
@@ -96,7 +96,7 @@ public class CacheService {
     private void updateBasisGroupCache(String orgId) {
         Cache cache = cacheManager.getCache("basisGroupCache");
 
-        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisgruppeEndpoint, orgId);
+        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint, orgId);
 
         if (resources != null) {
             Map<Link, List<BasisgruppeResource>> basisGroups = resources.getContent().stream()
@@ -110,7 +110,7 @@ public class CacheService {
     private void updateTeachingGroupCache(String orgId) {
         Cache cache = cacheManager.getCache("teachingGroupCache");
 
-        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, undervisningsgruppeEndpoint, orgId);
+        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint, orgId);
 
         if (resources != null) {
             Map<Link, List<UndervisningsgruppeResource>> teachingGroups = resources.getContent().stream()
@@ -124,7 +124,7 @@ public class CacheService {
     private void updateContactTeacherGroupCache(String orgId) {
         Cache cache = cacheManager.getCache("contactTeacherGroupCache");
 
-        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, kontaktlarergruppeEndpoint, orgId);
+        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint, orgId);
 
         if (resources != null) {
             Map<Link, List<KontaktlarergruppeResource>> contactTeacherGroups = resources.getContent().stream()
@@ -152,7 +152,7 @@ public class CacheService {
     private void updateStudentRelationCache(String orgId) {
         Cache cache = cacheManager.getCache("studentRelationCache");
 
-        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, elevforholdEndpoint, orgId);
+        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint, orgId);
 
         if (resources != null) {
             Map<Link, ElevforholdResource> studentRelations = resources.getContent().stream()
