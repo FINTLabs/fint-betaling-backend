@@ -33,6 +33,7 @@ class InvoiceFactorySpec extends Specification {
         return new Claim(
                 orderLines: [orderLine],
                 customer: customer,
+                originalAmountDue: 1L,
                 orderNumber: '123',
                 principalUri: 'link.to.Oppdragsgiver'.toURI(),
                 requestedNumberOfDaysToPaymentDeadline: '7'

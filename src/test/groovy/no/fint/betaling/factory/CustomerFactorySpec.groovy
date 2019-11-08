@@ -80,6 +80,7 @@ class CustomerFactorySpec extends Specification {
         contactInformation.setEpostadresse(email)
 
         def address = new AdresseResource()
+        address.setAdresselinje(["gatenavn"])
         address.setPoststed(city)
 
         def person = new PersonResource()
