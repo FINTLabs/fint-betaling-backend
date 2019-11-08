@@ -3,6 +3,7 @@ package no.fint.betaling.controller
 import no.fint.test.utils.MockMvcSpecification
 
 class MeControllerSpec extends MockMvcSpecification {
+
     def "Get me returns user"() {
         given:
         def controller = new MeController()

@@ -14,7 +14,7 @@ class PrincipalControllerSpec extends MockMvcSpecification {
 
     void setup() {
         restUtil = Mock(RestUtil)
-        controller = new PrincipalController(restUtil: restUtil, principalEndpoint: 'endpoints/employer')
+        controller = new PrincipalController(restUtil: restUtil, principalEndpoint: 'endpoints/principal'.toURI())
         mockMvc = standaloneSetup(controller)
     }
 
@@ -24,7 +24,7 @@ class PrincipalControllerSpec extends MockMvcSpecification {
         oppdragsgiverResources.addResource(new OppdragsgiverResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test')))
 
         when:
-        def response = mockMvc.perform(get('/api/oppdragsgiver')
+        def response = mockMvc.perform(get('/api/principal')
                 .header('x-org-id', 'valid.org'))
 
         then:
