@@ -3,6 +3,7 @@ package no.fint.betaling.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.Customer
+import no.fint.betaling.model.Order
 import no.fint.betaling.service.ClaimService
 import no.fint.test.utils.MockMvcSpecification
 import org.hamcrest.CoreMatchers
@@ -34,13 +35,13 @@ class ClaimControllerSpec extends MockMvcSpecification {
     def "Set payment given valid payment returns status ok"() {
         given:
         def objectMapper = new ObjectMapper()
-        def jsonPayment = objectMapper.writeValueAsString(new Claim())
+        def jsonOrder = objectMapper.writeValueAsString(new Order())
 
         when:
-        def response = mockMvc.perform(post('/api/claim').content(jsonPayment).contentType(MediaType.APPLICATION_JSON).header('x-org-id', 'test.no'))
+        def response = mockMvc.perform(post('/api/claim').content(jsonOrder).contentType(MediaType.APPLICATION_JSON).header('x-org-id', 'test.no'))
 
         then:
-        1 * claimService.setClaim('test.no', _ as Claim)
+        1 * claimService.setClaim('test.no', _ as Order)
         response.andExpect(status().is(201))
     }
 
@@ -63,16 +64,20 @@ class ClaimControllerSpec extends MockMvcSpecification {
         1 * claimService.getClaimsByOrderNumber(_, '123') >> [createClaim('123', 'Testesen')]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPath('$[0].orderNumber', CoreMatchers.equalTo(123)))
+                .andExpect(jsonPath('$[0].orderNumber', CoreMatchers.equalTo('123')))
     }
 
     def "Send invoices given valid org id sends invoices"() {
+        given:
+        def objectMapper = new ObjectMapper()
+        def jsonOrderNumbers = objectMapper.writeValueAsString(["123", "123"])
+
         when:
-        def response = mockMvc.perform(get('/api/claim/send').header('x-org-id', 'valid.org'))
+        def response = mockMvc.perform(post('/api/claim/send').content(jsonOrderNumbers).contentType(MediaType.APPLICATION_JSON).header('x-org-id', 'valid.org'))
 
         then:
-        1 * claimService.sendClaims('valid.org')
-        response.andExpect(status().isNoContent())
+        1 * claimService.sendClaims('valid.org', _ as List)
+        response.andExpect(status().is(201))
     }
 
     def "Update invoices given valid org id updates invoices"() {

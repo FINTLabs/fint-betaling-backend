@@ -14,7 +14,6 @@ class MeControllerSpec extends MockMvcSpecification {
 
         then:
         response.andExpect(status().isOk())
-                .andExpect(jsonPathEquals('$.name', 'Ola Nordmann'))
-                .andExpect(jsonPathEquals('$.organisation', 'Rogaland fylkeskommune'))
+                .andExpect(jsonPathEquals('$.name', 'Navn Navnesen'))
     }
 }

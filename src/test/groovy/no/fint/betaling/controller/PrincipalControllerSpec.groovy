@@ -14,22 +14,21 @@ class PrincipalControllerSpec extends MockMvcSpecification {
 
     void setup() {
         restUtil = Mock(RestUtil)
-        controller = new PrincipalController(restUtil: restUtil, principalEndpoint: 'endpoints/principal'.toURI())
+        controller = new PrincipalController(restUtil: restUtil)
         mockMvc = standaloneSetup(controller)
     }
 
     def "Get employers given valid org id returns list"() {
         given:
         def oppdragsgiverResources = new OppdragsgiverResources()
-        oppdragsgiverResources.addResource(new OppdragsgiverResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test')))
+        def oppdragsgiverResource = new OppdragsgiverResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test'))
+        oppdragsgiverResources.addResource(oppdragsgiverResource)
 
         when:
-        def response = mockMvc.perform(get('/api/principal')
-                .header('x-org-id', 'valid.org'))
+        def response = mockMvc.perform(get('/api/principal').header('x-org-id', 'valid.org'))
 
         then:
-        1 * restUtil.get(_ as Class<OppdragsgiverResources>, _ as String, _ as String) >>
-                oppdragsgiverResources
+        1 * restUtil.get(_, _, _) >> oppdragsgiverResources
 
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))

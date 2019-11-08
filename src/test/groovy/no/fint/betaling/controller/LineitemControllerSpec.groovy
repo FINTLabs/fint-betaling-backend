@@ -22,7 +22,7 @@ class LineitemControllerSpec extends MockMvcSpecification {
 
     void setup() {
         restUtil = Mock(RestUtil)
-        lineitemController = new LineitemController(restUtil: restUtil, lineitemEndpoint: 'endpoints/lineitem'.toURI())
+        lineitemController = new LineitemController(restUtil: restUtil)
 
         def converter = new MappingJackson2HttpMessageConverter()
         mapper = new ObjectMapper()
@@ -41,24 +41,10 @@ class LineitemControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/lineitem').header('x-org-id', 'test.org'))
 
         then:
-        1 * restUtil.get(_, _, 'test.org') >> resources
+        1 * restUtil.get(_, _, _) >> resources
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testOrder'))
-    }
-
-    def "Set order line given valid order line returns order line"() {
-        given:
-        def jsonLineitem = mapper.writeValueAsString(createOrderLineResource())
-
-        when:
-        def response = mockMvc.perform(post('/api/lineitem').content(jsonLineitem).contentType(MediaType.APPLICATION_JSON)
-                .header('x-org-id', 'test.org'))
-        System.out.println(response)
-
-        then:
-        1 * restUtil.post(_, _, _, 'test.org') >> ResponseEntity.ok().build()
-        response.andExpect(status().isOk())
     }
 
     private static VarelinjeResource createOrderLineResource() {

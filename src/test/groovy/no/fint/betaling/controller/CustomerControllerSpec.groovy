@@ -2,7 +2,6 @@ package no.fint.betaling.controller
 
 import no.fint.betaling.model.Customer
 import no.fint.betaling.service.CustomerService
-import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
 
@@ -13,7 +12,7 @@ class CustomerControllerSpec extends MockMvcSpecification {//TODO: finn ut hvord
 
     void setup() {
         customerService = Mock(CustomerService)
-        customerController = new CustomerController(customerService: customerService)
+        customerController = new CustomerController(customerService)
         mockMvc = standaloneSetup(customerController)
     }
 
@@ -30,7 +29,7 @@ class CustomerControllerSpec extends MockMvcSpecification {//TODO: finn ut hvord
 
     def "Get customers given filter keyword returns filtered list"() {
         when:
-        def response = mockMvc.perform(get('/api/customer').param('lastName', 'r'))
+        def response = mockMvc.perform(get('/api/customer').param('name', 'r'))
 
         then:
         1 * customerService.getCustomers(_, _) >> [new Customer(name: 'Røttsen')]

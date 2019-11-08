@@ -9,7 +9,7 @@ class DateRangeControllerSpec extends MockMvcSpecification {
         def mockMvc = standaloneSetup(controller)
 
         when:
-        def response = mockMvc.perform(get('/api/dato'))
+        def response = mockMvc.perform(get('/api/date-range'))
 
         then:
         response.andExpect(status().isOk())
