@@ -22,13 +22,13 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 public class LineitemController {
 
     @Value("${fint.betaling.endpoints.lineitem}")
-    private URI LineitemEndpoint;
+    private URI lineitemEndpoint;
 
     @Autowired
     private RestUtil restUtil;
 
     @GetMapping
     public List<VarelinjeResource> getAllLineitems(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restUtil.get(VarelinjeResources.class, LineitemEndpoint, orgId).getContent();
+        return restUtil.get(VarelinjeResources.class, lineitemEndpoint, orgId).getContent();
     }
 }

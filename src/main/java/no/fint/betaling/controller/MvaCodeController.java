@@ -15,7 +15,7 @@ import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(value = "/api/mvaCode")
+@RequestMapping(value = "/api/mva-code")
 public class MvaCodeController {
 
     @Autowired

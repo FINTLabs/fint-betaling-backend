@@ -45,9 +45,9 @@ public class ClaimController {
         return claimService.getClaimsByCustomerName(orgId, name);
     }
 
-    @GetMapping("/orderNumber/{orderNumber}")
+    @GetMapping("/order-number/{order-number}")
     public List<Claim> getClaimsByOrderNumber(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                              @PathVariable(value = "orderNumber") String orderNumber) {
+                                              @PathVariable(value = "order-number") String orderNumber) {
         return claimService.getClaimsByOrderNumber(orgId, orderNumber);
     }
 

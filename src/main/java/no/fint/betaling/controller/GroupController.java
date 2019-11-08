@@ -27,19 +27,19 @@ public class GroupController {
         return groupService.getCustomerGroupBySchool(orgId, schoolId);
     }
 
-    @GetMapping("basisGroup")
+    @GetMapping("basis-group")
     public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                                              @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
         return groupService.getCustomerGroupsByBasisGroupsAndSchool(orgId, schoolId);
     }
 
-    @GetMapping("teachingGroup")
+    @GetMapping("teaching-group")
     public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                                                 @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
         return groupService.getCustomerGroupsByTeachingGroupsAndSchool(orgId, schoolId);
     }
 
-    @GetMapping("contactTeacherGroup")
+    @GetMapping("contact-teacher-group")
     public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
                                                                       @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
         return groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(orgId, schoolId);
