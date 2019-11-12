@@ -197,6 +197,10 @@ public class CacheService {
         return resource.getSelfLinks().stream().findAny().orElse(null);
     }
 
+    public Map getCache(String cache, String orgId) {
+        return cacheManager.getCache(cache).get(orgId, Map.class);
+    }
+
     /*
     private String getFeideName(SkoleressursResource resource) {
         if (resource.getFeidenavn() == null) return null;

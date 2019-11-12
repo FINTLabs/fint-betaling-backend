@@ -23,15 +23,14 @@ public class CustomerService {
     To be deleted???
      */
 
-    private final CacheManager cacheManager;
+    private final CacheService cacheService;
 
-    public CustomerService(CacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public CustomerService(CacheService cacheService) {
+        this.cacheService = cacheService;
     }
 
     public List<Customer> getCustomers(String orgId, String filter) {
-        Cache cache = cacheManager.getCache("studentCache");
-        Map<Link, PersonResource> customers = (Map<Link, PersonResource>) cache.get(orgId).get();
+        Map<Link, PersonResource> customers = cacheService.getCache("studentCache", orgId);
 
         if (StringUtils.isEmpty(filter))
             return customers.values().stream()

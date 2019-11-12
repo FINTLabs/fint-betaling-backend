@@ -1,105 +1,110 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.model.Customer
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.Link
-import no.fint.model.resource.utdanning.elev.BasisgruppeResource
+import no.fint.betaling.util.FintObjectFactory
 import no.fint.model.resource.utdanning.elev.BasisgruppeResources
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResource
 import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResources
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources
 import spock.lang.Specification
 
 class GroupServiceSpec extends Specification {
 
-    private CacheService cacheService
     private GroupService groupService
-    private CustomerService customerService
+    private CacheService cacheService
+    private FintObjectFactory fintObjectFactory
 
     void setup() {
-        def kunde = new Customer(
-                navn: new Personnavn(etternavn: 'Testesen', fornavn: 'Test'),
-                person: Link.with('link.to.PersonResource'),
-                elev: Link.with('link.to.ElevResource'),
-                kundenummer: '12345678901')
-
-        customerService = Mock(CustomerService) {
-            getCustomers(_ as String, _) >> [kunde]
-        }
-
         cacheService = Mock()
-        groupService = new GroupService(
-                cacheService: cacheService,
-                membershipService: membershipService,
-                customerService: customerService,
-                studentRelationService: studentRelationService,
-                basisgruppeEndpoint: "endpoints/basisgruppe",
-                undervisningsgruppeEndpoint: "endpoints/undervisningsgruppe",
-                kontaktlarergruppeEndpoint: "endpoints/kontaktlarergruppe"
-        )
-        groupService.init()
+        groupService = new GroupService(cacheService)
+        fintObjectFactory = new FintObjectFactory()
     }
 
-
-    def "Get customer groups from kontaktlarergruppe"() {
+    def "Get customer group from school"() {
         given:
-        def resources = new KontaktlarergruppeResources()
-        resources.addResource(populateResource(new KontaktlarergruppeResource()) as KontaktlarergruppeResource)
+        def school = fintObjectFactory.newSchool()
+        def studentRelation = fintObjectFactory.newStudentRelation()
+        def student = fintObjectFactory.newStudent()
 
         when:
-        def customerList = groupService.getCustomerGroupListFromKontaktlarergruppe('rogfk.no')
+        def customerGroup = groupService.getCustomerGroupBySchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getUpdates(KontaktlarergruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getCache("schoolCache", _ as String) >> [(school.organisasjonsnummer.identifikatorverdi): school]
+        1 * cacheService.getCache("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getCache("studentCache", _ as String) >> [(student.elev.get(0)): student]
 
-        customerList.size() == 1
-        customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
+        customerGroup.name == 'HVS'
+        customerGroup.customers.get(0).id == '21i3v9'
     }
 
-    def "Get customer groups from undervisningsgruppe"() {
+    def "Get customer groups from contact teacher groups at school"() {
         given:
-        def resources = new UndervisningsgruppeResources()
-        resources.addResource(populateResource(new UndervisningsgruppeResource()) as UndervisningsgruppeResource)
+        def school = fintObjectFactory.newSchool()
+        def contactTeacherGroup = fintObjectFactory.newContactTeacherGroup()
+        def studentRelation = fintObjectFactory.newStudentRelation()
+        def student = fintObjectFactory.newStudent()
+
+        def contactTeacherGroups = new KontaktlarergruppeResources()
+        contactTeacherGroups.addResource(contactTeacherGroup)
 
         when:
-        def customerList = groupService.getCustomerGroupListFromUndervisningsgruppe('rogfk.no')
+        def customerGroups = groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getUpdates(UndervisningsgruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getCache("schoolCache", _ as String) >> [(school.organisasjonsnummer.identifikatorverdi): school]
+        1 * cacheService.getCache("contactTeacherGroupCache", _ as String) >> [(contactTeacherGroup.skole.get(0)): contactTeacherGroups.content]
+        1 * cacheService.getCache("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getCache("studentCache", _ as String) >> [(student.elev.get(0)): student]
 
-        customerList.size() == 1
-        customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
+        customerGroups.size() == 1
+        customerGroups.get(0).name == '3T13DX'
+        customerGroups.get(0).customers.get(0).id == '21i3v9'
     }
 
-    def "Get customer groups from basisgruppe"() {
+    def "Get customer groups from teaching groups at school"() {
         given:
-        def resources = new BasisgruppeResources()
-        resources.addResource(populateResource(new BasisgruppeResource()) as BasisgruppeResource)
+        def school = fintObjectFactory.newSchool()
+        def teachingGroup = fintObjectFactory.newTeachingGroup()
+        def studentRelation = fintObjectFactory.newStudentRelation()
+        def student = fintObjectFactory.newStudent()
+
+        def teachingGroups = new UndervisningsgruppeResources()
+        teachingGroups.addResource(teachingGroup)
 
         when:
-        def customerList = groupService.getCustomerGroupListFromBasisgruppe('rogfk.no')
+        def customerList = groupService.getCustomerGroupsByTeachingGroupsAndSchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getUpdates(BasisgruppeResources, _ as String, _ as String) >> resources
+        1 * cacheService.getCache("schoolCache", _ as String) >> [(school.getOrganisasjonsnummer().getIdentifikatorverdi()): school]
+        1 * cacheService.getCache("teachingGroupCache", _ as String) >> [(teachingGroup.skole.get(0)): teachingGroups.content]
+        1 * cacheService.getCache("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getCache("studentCache", _ as String) >> [(student.elev.get(0)): student]
 
         customerList.size() == 1
-        customerList.get(0).getNavn() == 'testgruppe'
-        customerList.get(0).getKundeliste().get(0).kundenummer == '12345678901'
+        customerList.get(0).name == 'YFF4106'
+        customerList.get(0).customers.get(0).id == '21i3v9'
     }
 
-    def populateResource(def resource) {
-        resource.beskrivelse = 'test resource'
-        resource.navn = 'testgruppe'
-        resource.periode = new ArrayList<>()
-        def identifikator = new Identifikator()
-        identifikator.setIdentifikatorverdi('test')
-        resource.systemId = identifikator
-        resource.addElevforhold(Link.with('link.to.ElevforholdResource'))
-        resource.addLink("self", Link.with('link.to.Gruppe'))
-        return resource
+    def "Get customer groups from basis groups at school"() {
+        given:
+        def school = fintObjectFactory.newSchool()
+        def basisGroup = fintObjectFactory.newBasisGroup()
+        def studentRelation = fintObjectFactory.newStudentRelation()
+        def student = fintObjectFactory.newStudent()
+
+        def basisGroups = new BasisgruppeResources()
+        basisGroups.addResource(basisGroup)
+
+        when:
+        def customerList = groupService.getCustomerGroupsByBasisGroupsAndSchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
+
+        then:
+        1 * cacheService.getCache("schoolCache", _ as String) >> [(school.organisasjonsnummer.identifikatorverdi): school]
+        1 * cacheService.getCache("basisGroupCache", _ as String) >> [(basisGroup.skole.get(0)): basisGroups.content]
+        1 * cacheService.getCache("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getCache("studentCache", _ as String) >> [(student.elev.get(0)): student]
+
+        customerList.size() == 1
+        customerList.get(0).name == '1TIA'
+        customerList.get(0).customers.get(0).id == '21i3v9'
     }
 }
