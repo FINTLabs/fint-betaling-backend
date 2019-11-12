@@ -25,12 +25,12 @@ class GroupServiceSpec extends Specification {
         def student = fintObjectFactory.newStudent()
 
         when:
-        def customerGroup = groupService.getCustomerGroupBySchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
+        def customerGroup = groupService.getCustomerGroupBySchool(school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getResources("schoolCache", _ as String) >> [(school.organisasjonsnummer.identifikatorverdi): school]
-        1 * cacheService.getResources("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
-        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        1 * cacheService.getResources("schools") >> [(school.organisasjonsnummer.identifikatorverdi): school]
+        1 * cacheService.getResources("studentRelations") >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getResources("students") >> [(student.elev.get(0)): student]
 
         customerGroup.name == 'HVS'
         customerGroup.customers.get(0).id == '21i3v9'
@@ -47,13 +47,13 @@ class GroupServiceSpec extends Specification {
         contactTeacherGroups.addResource(contactTeacherGroup)
 
         when:
-        def customerGroups = groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
+        def customerGroups = groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getResources("schoolCache", _ as String) >> [(school.organisasjonsnummer.identifikatorverdi): school]
-        1 * cacheService.getResources("contactTeacherGroupCache", _ as String) >> [(contactTeacherGroup.skole.get(0)): contactTeacherGroups.content]
-        1 * cacheService.getResources("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
-        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        1 * cacheService.getResources("schools") >> [(school.organisasjonsnummer.identifikatorverdi): school]
+        1 * cacheService.getResources("contactTeacherGroups") >> [(contactTeacherGroup.skole.get(0)): contactTeacherGroups.content]
+        1 * cacheService.getResources("studentRelations") >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getResources("students") >> [(student.elev.get(0)): student]
 
         customerGroups.size() == 1
         customerGroups.get(0).name == '3T13DX'
@@ -71,13 +71,13 @@ class GroupServiceSpec extends Specification {
         teachingGroups.addResource(teachingGroup)
 
         when:
-        def customerList = groupService.getCustomerGroupsByTeachingGroupsAndSchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
+        def customerList = groupService.getCustomerGroupsByTeachingGroupsAndSchool(school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getResources("schoolCache", _ as String) >> [(school.getOrganisasjonsnummer().getIdentifikatorverdi()): school]
-        1 * cacheService.getResources("teachingGroupCache", _ as String) >> [(teachingGroup.skole.get(0)): teachingGroups.content]
-        1 * cacheService.getResources("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
-        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        1 * cacheService.getResources("schools") >> [(school.getOrganisasjonsnummer().getIdentifikatorverdi()): school]
+        1 * cacheService.getResources("teachingGroups") >> [(teachingGroup.skole.get(0)): teachingGroups.content]
+        1 * cacheService.getResources("studentRelations") >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getResources("students") >> [(student.elev.get(0)): student]
 
         customerList.size() == 1
         customerList.get(0).name == 'YFF4106'
@@ -95,13 +95,13 @@ class GroupServiceSpec extends Specification {
         basisGroups.addResource(basisGroup)
 
         when:
-        def customerList = groupService.getCustomerGroupsByBasisGroupsAndSchool(_ as String, school.organisasjonsnummer.identifikatorverdi)
+        def customerList = groupService.getCustomerGroupsByBasisGroupsAndSchool(school.organisasjonsnummer.identifikatorverdi)
 
         then:
-        1 * cacheService.getResources("schoolCache", _ as String) >> [(school.organisasjonsnummer.identifikatorverdi): school]
-        1 * cacheService.getResources("basisGroupCache", _ as String) >> [(basisGroup.skole.get(0)): basisGroups.content]
-        1 * cacheService.getResources("studentRelationCache", _ as String) >> [(studentRelation.selfLinks.get(0)): studentRelation]
-        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        1 * cacheService.getResources("schools") >> [(school.organisasjonsnummer.identifikatorverdi): school]
+        1 * cacheService.getResources("basisGroups") >> [(basisGroup.skole.get(0)): basisGroups.content]
+        1 * cacheService.getResources("studentRelations") >> [(studentRelation.selfLinks.get(0)): studentRelation]
+        1 * cacheService.getResources("students") >> [(student.elev.get(0)): student]
 
         customerList.size() == 1
         customerList.get(0).name == '1TIA'

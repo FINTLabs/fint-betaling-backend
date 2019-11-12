@@ -15,7 +15,6 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.interceptor.SimpleCacheErrorHandler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -37,9 +36,6 @@ public class CacheService {
         this.restUtil = restUtil;
         this.cacheManager = cacheManager;
     }
-
-    @Value("${fint.betaling.org-ids}")
-    private List<String> orgs;
 
     @Value("${fint.betaling.endpoints.school}")
     private URI schoolEndpoint;
@@ -64,124 +60,110 @@ public class CacheService {
 
     @Scheduled(initialDelay = 1000, fixedRate = 3600000)
     public void init() {
-        for (String orgId : orgs) {
-            updateSchoolCache(orgId);
-            updateBasisGroupCache(orgId);
-            updateTeachingGroupCache(orgId);
-            updateContactTeacherGroupCache(orgId);
-            updateStudentCache(orgId);
-            updateStudentRelationCache(orgId);
-            //updateSchoolResourceCache(orgId);
-            log.info("{}: Finished updating caches", orgId);
-        }
+        updateSchoolCache();
+        updateBasisGroupCache();
+        updateTeachingGroupCache();
+        updateContactTeacherGroupCache();
+        updateStudentCache();
+        updateStudentRelationCache();
+        //updateSchoolResourceCache(orgId);
+        log.info("Finished updating caches");
     }
 
-    private void updateSchoolCache(String orgId) {
-        Cache cache = cacheManager.getCache("schoolCache");
+    private void updateSchoolCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        SkoleResources resources = restUtil.get(SkoleResources.class, schoolEndpoint, orgId);
+        SkoleResources resources = restUtil.get(SkoleResources.class, schoolEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("schools", Collections.emptyMap());
             return;
         }
 
         Map<String, SkoleResource> schools = resources.getContent().stream()
                 .collect(Collectors.toMap(this::getOrganizationNumber, Function.identity(), (a, b) -> a));
 
-        cache.put(orgId, schools);
+        cache.put("schools", schools);
     }
 
-    private void updateBasisGroupCache(String orgId) {
-        Cache cache = cacheManager.getCache("basisGroupCache");
+    private void updateBasisGroupCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint, orgId);
+        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("basisGroups", Collections.emptyMap());
             return;
         }
 
         Map<Link, List<BasisgruppeResource>> basisGroups = resources.getContent().stream()
                 .collect(Collectors.groupingBy(this::getSchoolLink));
 
-        cache.put(orgId, basisGroups);
+        cache.put("basisGroups", basisGroups);
     }
 
-    private void updateTeachingGroupCache(String orgId) {
-        Cache cache = cacheManager.getCache("teachingGroupCache");
+    private void updateTeachingGroupCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint, orgId);
+        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("teachingGroups", Collections.emptyMap());
             return;
         }
 
         Map<Link, List<UndervisningsgruppeResource>> teachingGroups = resources.getContent().stream()
                 .collect(Collectors.groupingBy(this::getSchoolLink));
 
-        cache.put(orgId, teachingGroups);
+        cache.put("teachingGroups", teachingGroups);
     }
 
-    private void updateContactTeacherGroupCache(String orgId) {
-        Cache cache = cacheManager.getCache("contactTeacherGroupCache");
+    private void updateContactTeacherGroupCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint, orgId);
+        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("contactTeacherGroups", Collections.emptyMap());
             return;
         }
 
         Map<Link, List<KontaktlarergruppeResource>> contactTeacherGroups = resources.getContent().stream()
                 .collect(Collectors.groupingBy(this::getSchoolLink));
 
-        cache.put(orgId, contactTeacherGroups);
+        cache.put("contactTeacherGroups", contactTeacherGroups);
     }
 
-    private void updateStudentCache(String orgId) {
-        Cache cache = cacheManager.getCache("studentCache");
+    private void updateStudentCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        PersonResources resources = restUtil.get(PersonResources.class, personEndpoint, orgId);
+        PersonResources resources = restUtil.get(PersonResources.class, personEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("students", Collections.emptyMap());
             return;
         }
 
         Map<Link, PersonResource> students = resources.getContent().stream()
                 .collect(Collectors.toMap(this::getStudentLink, Function.identity(), (a, b) -> a));
 
-        cache.put(orgId, students);
+        cache.put("students", students);
     }
 
-    private void updateStudentRelationCache(String orgId) {
-        Cache cache = cacheManager.getCache("studentRelationCache");
+    private void updateStudentRelationCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint, orgId);
+        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("studentRelations", Collections.emptyMap());
             return;
         }
 
         Map<Link, ElevforholdResource> studentRelations = resources.getContent().stream()
                 .collect(Collectors.toMap(this::getSelfLink, Function.identity(), (a, b) -> a));
 
-        cache.put(orgId, studentRelations);
+        cache.put("studentRelations", studentRelations);
     }
 
     private String getOrganizationNumber(SkoleResource resource) {
@@ -203,29 +185,27 @@ public class CacheService {
 
     }
 
-    public Map getResources(String name, String orgId) {
-        Cache cache = cacheManager.getCache(name);
+    public Map getResources(String name) {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        return cache.get(orgId, Map.class);
+        return cache.get(name, Map.class);
     }
 
     /*
-    private void updateSchoolResourceCache(String orgId) {
-        Cache cache = cacheManager.getCache("schoolResourceCache");
+    private void updateSchoolResourceCache() {
+        Cache cache = cacheManager.getCache("fintCache");
 
-        log.info("{}: Updating {}", orgId, cache.getName());
-
-        SkoleressursResources resources = restUtil.get(SkoleressursResources.class, schoolResourceEndpoint, orgId);
+        SkoleressursResources resources = restUtil.get(SkoleressursResources.class, schoolResourceEndpoint, null);
 
         if (resources == null) {
-            cache.putIfAbsent(orgId, Collections.emptyMap());
+            cache.putIfAbsent("schoolResources", Collections.emptyMap());
             return;
         }
 
         Map<String, SkoleressursResource> schoolResources = resources.getContent().stream()
                 .collect(Collectors.toMap(this::getFeideName, Function.identity(), (a, b) -> a));
 
-        cache.put(orgId, schoolResources);
+        cache.put("schoolResources", schoolResources);
     }
 
     private String getFeideName(SkoleressursResource resource) {
