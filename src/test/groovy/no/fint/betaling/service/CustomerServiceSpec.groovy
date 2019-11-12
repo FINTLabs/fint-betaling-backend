@@ -1,71 +1,42 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.model.Kunde
-import no.fint.betaling.factory.CustomerFactory
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.PersonResources
+import no.fint.betaling.util.FintObjectFactory
 import spock.lang.Specification
 
 class CustomerServiceSpec extends Specification {
 
     private CustomerService customerService
     private CacheService cacheService
-    private CustomerFactory kundeFactory
-    private String orgId
+    private FintObjectFactory fintObjectFactory
 
     void setup() {
         cacheService = Mock()
-        kundeFactory = Mock()
-        customerService = new CustomerService(cacheService: cacheService, kundeFactory: kundeFactory, personEndpoint: "endpoints/person")
-        orgId = 'test.no'
-        customerService.init()
+        customerService = new CustomerService(cacheService)
+        fintObjectFactory = new FintObjectFactory()
     }
 
     def "Get customers returns list"() {
         given:
-        def personResources = createPersonResources(1, ['Testesen'])
+        def student = fintObjectFactory.newStudent()
 
         when:
-        List<Kunde> listCustomers = customerService.getCustomers(orgId, "")
+        def customers = customerService.getCustomers(_ as String, null)
 
         then:
-        1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> personResources
-        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Testesen')
-        listCustomers.size() == 1
+        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        customers.size() == 1
     }
 
     def "Get customers given filter keyword returns filtered list"() {
         given:
-        def lastnames = ['Feilsen', 'Testesen', 'Rettsen']
+        def student = fintObjectFactory.newStudent()
+
         when:
-        def listCustomers = customerService.getCustomers(orgId, 'r')
+        def customers = customerService.getCustomers(_ as String, 't')
 
         then:
-        1 * cacheService.getUpdates(_ as Class<PersonResources>, _ as String, _ as String) >> createPersonResources(3, lastnames)
-        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Feilsen')
-        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Testesen')
-        1 * kundeFactory.toCustomer(_ as PersonResource) >> createKunde('Rettsen')
-        listCustomers.size() == 1
-        listCustomers.get(0).navn.etternavn == 'Rettsen'
-    }
-
-    private static Kunde createKunde(String lastname){
-        return new Kunde(navn: new Personnavn(fornavn: 'Test', etternavn: lastname), fulltNavn: "${lastname}, Test")
-    }
-
-    private static PersonResources createPersonResources(int resources, List<String> lastnames) {
-        def personResources = new PersonResources()
-        for (int i = 0; i < resources; i++) {
-            def personResource = new PersonResource(
-                    navn: new Personnavn(fornavn: 'Ola', etternavn: lastnames.get(i)),
-                    fodselsnummer: new Identifikator(identifikatorverdi: '12345678901')
-            )
-            personResources.addResource(personResource)
-            personResource.addLink('self', Link.with('link.to.PersonResource'))
-        }
-        return personResources
+        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        customers.size() == 1
+        customers.get(0).name == 'Testesen, Ola'
     }
 }

@@ -5,8 +5,6 @@ import no.fint.betaling.factory.CustomerFactory;
 import no.fint.betaling.model.Customer;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,15 +21,14 @@ public class CustomerService {
     To be deleted???
      */
 
-    private final CacheManager cacheManager;
+    private final CacheService cacheService;
 
-    public CustomerService(CacheManager cacheManager) {
-        this.cacheManager = cacheManager;
+    public CustomerService(CacheService cacheService) {
+        this.cacheService = cacheService;
     }
 
     public List<Customer> getCustomers(String orgId, String filter) {
-        Cache cache = cacheManager.getCache("studentCache");
-        Map<Link, PersonResource> customers = (Map<Link, PersonResource>) cache.get(orgId).get();
+        Map<Link, PersonResource> customers = cacheService.getResources("studentCache", orgId);
 
         if (StringUtils.isEmpty(filter))
             return customers.values().stream()
