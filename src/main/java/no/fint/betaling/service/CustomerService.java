@@ -5,8 +5,6 @@ import no.fint.betaling.factory.CustomerFactory;
 import no.fint.betaling.model.Customer;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -30,7 +28,7 @@ public class CustomerService {
     }
 
     public List<Customer> getCustomers(String orgId, String filter) {
-        Map<Link, PersonResource> customers = cacheService.getCache("studentCache", orgId);
+        Map<Link, PersonResource> customers = cacheService.getResources("studentCache", orgId);
 
         if (StringUtils.isEmpty(filter))
             return customers.values().stream()

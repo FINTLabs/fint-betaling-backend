@@ -203,7 +203,7 @@ public class CacheService {
 
     }
 
-    public Map getCache(String name, String orgId) {
+    public Map getResources(String name, String orgId) {
         Cache cache = cacheManager.getCache(name);
 
         return cache.get(orgId, Map.class);

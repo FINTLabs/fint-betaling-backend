@@ -28,7 +28,7 @@ public class GroupService {
     }
 
     private SkoleResource getSchool(String orgId, String schoolId) {
-        Map<String, SkoleResource> schools = cacheService.getCache("schoolCache", orgId);
+        Map<String, SkoleResource> schools = cacheService.getResources("schoolCache", orgId);
 
         SkoleResource school = schools.get(schoolId);
 
@@ -51,7 +51,7 @@ public class GroupService {
 
         Link schoolLink = getSelfLink(school);
 
-        Map<Link, List<BasisgruppeResource>> resources = cacheService.getCache("basisGroupCache", orgId);
+        Map<Link, List<BasisgruppeResource>> resources = cacheService.getResources("basisGroupCache", orgId);
 
         List<BasisgruppeResource> basisGroups = resources.get(schoolLink);
 
@@ -67,7 +67,7 @@ public class GroupService {
 
         Link schoolLink = getSelfLink(school);
 
-        Map<Link, List<UndervisningsgruppeResource>> resources = cacheService.getCache("teachingGroupCache", orgId);
+        Map<Link, List<UndervisningsgruppeResource>> resources = cacheService.getResources("teachingGroupCache", orgId);
 
         List<UndervisningsgruppeResource> teachingGroups = resources.get(schoolLink);
 
@@ -83,7 +83,7 @@ public class GroupService {
 
         Link schoolLink = getSelfLink(school);
 
-        Map<Link, List<KontaktlarergruppeResource>> resources = cacheService.getCache("contactTeacherGroupCache", orgId);
+        Map<Link, List<KontaktlarergruppeResource>> resources = cacheService.getResources("contactTeacherGroupCache", orgId);
 
         List<KontaktlarergruppeResource> contactTeacherGroups = resources.get(schoolLink);
 
@@ -103,8 +103,8 @@ public class GroupService {
     }
 
     private List<Customer> getCustomersForGroup(String orgId, List<Link> studentRelationLinks) {
-        Map<Link, ElevforholdResource> studentRelations = cacheService.getCache("studentRelationCache", orgId);
-        Map<Link, PersonResource> students = cacheService.getCache("studentCache", orgId);
+        Map<Link, ElevforholdResource> studentRelations = cacheService.getResources("studentRelationCache", orgId);
+        Map<Link, PersonResource> students = cacheService.getResources("studentCache", orgId);
 
         return studentRelationLinks.stream()
                 .map(studentRelations::get)

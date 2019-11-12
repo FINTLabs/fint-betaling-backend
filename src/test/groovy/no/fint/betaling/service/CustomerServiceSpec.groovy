@@ -23,7 +23,7 @@ class CustomerServiceSpec extends Specification {
         def customers = customerService.getCustomers(_ as String, null)
 
         then:
-        1 * cacheService.getCache("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
         customers.size() == 1
     }
 
@@ -35,7 +35,7 @@ class CustomerServiceSpec extends Specification {
         def customers = customerService.getCustomers(_ as String, 't')
 
         then:
-        1 * cacheService.getCache("studentCache", _ as String) >> [(student.elev.get(0)): student]
+        1 * cacheService.getResources("studentCache", _ as String) >> [(student.elev.get(0)): student]
         customers.size() == 1
         customers.get(0).name == 'Testesen, Ola'
     }
