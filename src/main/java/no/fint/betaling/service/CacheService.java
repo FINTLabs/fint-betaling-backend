@@ -73,7 +73,7 @@ public class CacheService {
     private void updateSchoolCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        SkoleResources resources = restUtil.get(SkoleResources.class, schoolEndpoint, null);
+        SkoleResources resources = restUtil.get(SkoleResources.class, schoolEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("schools", Collections.emptyMap());
@@ -89,7 +89,7 @@ public class CacheService {
     private void updateBasisGroupCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint, null);
+        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("basisGroups", Collections.emptyMap());
@@ -105,7 +105,7 @@ public class CacheService {
     private void updateTeachingGroupCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint, null);
+        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("teachingGroups", Collections.emptyMap());
@@ -121,7 +121,7 @@ public class CacheService {
     private void updateContactTeacherGroupCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint, null);
+        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("contactTeacherGroups", Collections.emptyMap());
@@ -137,7 +137,7 @@ public class CacheService {
     private void updateStudentCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        PersonResources resources = restUtil.get(PersonResources.class, personEndpoint, null);
+        PersonResources resources = restUtil.get(PersonResources.class, personEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("students", Collections.emptyMap());
@@ -153,7 +153,7 @@ public class CacheService {
     private void updateStudentRelationCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint, null);
+        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("studentRelations", Collections.emptyMap());
@@ -182,7 +182,6 @@ public class CacheService {
 
     private Link getSelfLink(ElevforholdResource resource) {
         return resource.getSelfLinks().stream().findAny().orElse(null);
-
     }
 
     public Map getResources(String name) {
@@ -195,7 +194,7 @@ public class CacheService {
     private void updateSchoolResourceCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        SkoleressursResources resources = restUtil.get(SkoleressursResources.class, schoolResourceEndpoint, null);
+        SkoleressursResources resources = restUtil.get(SkoleressursResources.class, schoolResourceEndpoint);
 
         if (resources == null) {
             cache.putIfAbsent("schoolResources", Collections.emptyMap());

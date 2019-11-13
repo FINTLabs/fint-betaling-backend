@@ -38,10 +38,10 @@ class LineitemControllerSpec extends MockMvcSpecification {
         resources.addResource(createOrderLineResource())
 
         when:
-        def response = mockMvc.perform(get('/api/lineitem').header('x-org-id', 'test.org'))
+        def response = mockMvc.perform(get('/api/lineitem'))
 
         then:
-        1 * restUtil.get(_, _, _) >> resources
+        1 * restUtil.get(_, _) >> resources
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].navn', 'testOrder'))

@@ -28,7 +28,7 @@ public class LineitemController {
     private RestUtil restUtil;
 
     @GetMapping
-    public List<VarelinjeResource> getAllLineitems(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restUtil.get(VarelinjeResources.class, lineitemEndpoint, orgId).getContent();
+    public List<VarelinjeResource> getAllLineitems() {
+        return restUtil.get(VarelinjeResources.class, lineitemEndpoint).getContent();
     }
 }

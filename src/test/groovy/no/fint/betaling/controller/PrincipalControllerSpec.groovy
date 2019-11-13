@@ -25,10 +25,10 @@ class PrincipalControllerSpec extends MockMvcSpecification {
         oppdragsgiverResources.addResource(oppdragsgiverResource)
 
         when:
-        def response = mockMvc.perform(get('/api/principal').header('x-org-id', 'valid.org'))
+        def response = mockMvc.perform(get('/api/principal'))
 
         then:
-        1 * restUtil.get(_, _, _) >> oppdragsgiverResources
+        1 * restUtil.get(_, _) >> oppdragsgiverResources
 
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))

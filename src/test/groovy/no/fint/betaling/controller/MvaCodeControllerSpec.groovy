@@ -25,10 +25,10 @@ class MvaCodeControllerSpec extends MockMvcSpecification {
         mvaCodes.addResource(mvaCode)
 
         when:
-        def response = mockMvc.perform(get('/api/mva-code').header('x-org-id', 'test.org'))
+        def response = mockMvc.perform(get('/api/mva-code'))
 
         then:
-        1 * restUtil.get(_, _, _) >> mvaCodes
+        1 * restUtil.get(_, _) >> mvaCodes
 
         response.andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].kode', '25'))

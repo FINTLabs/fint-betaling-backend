@@ -137,7 +137,7 @@ public class ClaimService {
     }
 
     public FakturagrunnlagResource getStatus(String orgId, Claim claim) {
-        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri(), orgId);
+        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
     }
 
     public void updateClaim(String orgId, FakturagrunnlagResource invoice) {

@@ -25,12 +25,6 @@ public class RestUtil {
     @Autowired
     private RestTemplate restTemplate;
 
-    /*
-    public RestUtil(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-     */
-
     @Value("${fint.betaling.client-name}")
     private String clientName;
 
@@ -39,31 +33,24 @@ public class RestUtil {
     public <T> T getUpdates(Class<T> type, URI url, String orgId) {
         String key = orgId + "_" + url;
         long lastUpdated = Long.parseLong(
-                get(Map.class,
-                        UriComponentsBuilder
+                get(Map.class, UriComponentsBuilder
                                 .fromUri(url)
                                 .queryParam("/last-updated")
                                 .build()
-                                .toUri(),
-                        orgId)
+                                .toUri())
                         .get("lastUpdated")
                         .toString()
         );
         long since = lastUpdatedMap.getOrDefault(key, -1L) + 1L;
         log.info("{}: Fetching {} since {}, last updated {} ...", orgId, url, since, lastUpdated);
-        T result = get(type, UriComponentsBuilder.fromUri(url).queryParam("sinceTimeStamp", since).build().toUri(), orgId);
+        T result = get(type, UriComponentsBuilder.fromUri(url).queryParam("sinceTimeStamp", since).build().toUri());
         lastUpdatedMap.put(key, lastUpdated);
         return result;
     }
 
-    public <T> T get(Class<T> type, URI url, String orgId) {
+    public <T> T get(Class<T> clazz, URI url) {
         try {
-            return restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    new HttpEntity<>(getHeaders(orgId)),
-                    type
-            ).getBody();
+            return restTemplate.getForObject(url, clazz);
         } catch (RestClientResponseException e) {
             throw new InvalidResponseException(e.getResponseBodyAsString(), e);
         }
