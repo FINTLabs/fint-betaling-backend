@@ -16,18 +16,15 @@ public class ClaimRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Value("${fint.betaling.org-id}")
-    private String orgId;
-
     public void setClaim(Claim claim) {
-        mongoTemplate.save(claim, orgId);
+        mongoTemplate.save(claim);
     }
 
     public List<Claim> getClaims(Query query) {
-        return mongoTemplate.find(query, Claim.class, orgId);
+        return mongoTemplate.find(query, Claim.class);
     }
 
     public void updateClaim(Query query, Update update) {
-        mongoTemplate.upsert(query, update, orgId);
+        mongoTemplate.upsert(query, update, Claim.class);
     }
 }

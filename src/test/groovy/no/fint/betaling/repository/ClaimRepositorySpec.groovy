@@ -40,7 +40,7 @@ class ClaimRepositorySpec extends Specification {
         def claims = claimRepository.getClaims(query)
 
         then:
-        1 * mongoTemplate.find(_ as Query, Claim.class) >> [new Claim()]
+        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [new Claim()]
         claims.size() == 1
     }
 
@@ -56,6 +56,6 @@ class ClaimRepositorySpec extends Specification {
         claimRepository.updateClaim(query, update)
 
         then:
-        1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as Class)
+        1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as Class<Claim>)
     }
 }

@@ -168,7 +168,7 @@ public class ClaimService {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where(ORDER_NUMBER).is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
+        query.addCriteria(Criteria.where(ORDER_NUMBER).is(invoice.getOrdrenummer().getIdentifikatorverdi()));
 
         claimRepository.updateClaim(query, update);
     }
@@ -200,7 +200,7 @@ public class ClaimService {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where(ORDER_NUMBER).is(Long.parseLong(orderNumber)));
+        query.addCriteria(Criteria.where(ORDER_NUMBER).is(orderNumber));
         return claimRepository.getClaims(query);
     }
 
