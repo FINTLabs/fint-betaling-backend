@@ -6,7 +6,10 @@ import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
 
-import java.util.*;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public enum InvoiceFactory {
@@ -25,12 +28,7 @@ public enum InvoiceFactory {
 
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(invoiceLines);
-        invoice.setFakturadato(new Date());
-        GregorianCalendar calendar = new GregorianCalendar();
-        calendar.add(Calendar.DATE, Integer.parseInt(claim.getRequestedNumberOfDaysToPaymentDeadline()));
-
-        invoice.setForfallsdato(calendar.getTime());
-        invoice.setLeveringsdato(new Date());
+        invoice.setLeveringsdato(Date.from(claim.getCreatedDate().atStartOfDay(ZoneId.systemDefault()).toInstant()));
         invoice.setNetto(claim.getOriginalAmountDue());
         invoice.addMottaker(Link.with(claim.getCustomer().getPerson().toString()));
         invoice.addOppdragsgiver(Link.with(claim.getPrincipalUri().toString()));

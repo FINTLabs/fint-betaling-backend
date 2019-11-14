@@ -11,6 +11,7 @@ import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.administrasjon.okonomi.FakturaResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +84,7 @@ public class ClaimService {
         getSentClaims().forEach(this::getClaimStatus);
     }
 
+    /** TODO Needs to update with both {@link FakturagrunnlagResource} and {@link FakturaResource} */
     private void getClaimStatus(Claim claim) {
         try {
             updateClaim(getStatus(claim));
