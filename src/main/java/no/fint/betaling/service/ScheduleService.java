@@ -14,9 +14,6 @@ public class ScheduleService {
         this.claimService = claimService;
     }
 
-    @Value("${fint.betaling.org-id}")
-    private String orgId;
-
     /*
     @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.invoice-send-rate}")
     public void sendInvoices(){
@@ -33,7 +30,7 @@ public class ScheduleService {
     public void updateInvoices() {
         log.info("Updating invoices...");
         try {
-            claimService.updateClaimStatus(orgId);
+            claimService.updateClaimStatus();
         } catch (Exception e) {
             log.error("Error caught when updating invoices!", e);
         }

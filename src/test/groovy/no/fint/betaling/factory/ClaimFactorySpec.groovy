@@ -17,10 +17,10 @@ class ClaimFactorySpec extends Specification {
 
     def "Get betaling given valid payment returns betaling"() {
         when:
-        def claims = claimFactory.createClaim(createOrder(), 'valid.org')
+        def claims = claimFactory.createClaim(createOrder())
 
         then:
-        1 * orderNumberRepository.getOrderNumber(_ as String) >> '123'
+        1 * orderNumberRepository.getOrderNumber() >> '123'
         claims.get(0).orderNumber == '123'
         claims.get(0).originalAmountDue == 100
     }

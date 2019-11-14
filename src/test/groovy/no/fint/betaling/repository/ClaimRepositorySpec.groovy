@@ -25,10 +25,10 @@ class ClaimRepositorySpec extends Specification {
         def customer = new Customer(name: 'Testesen')
 
         when:
-        claimRepository.setClaim(orgId, new Claim(invoiceUri: 'link.to.FakturagrunnlagResource'.toURI(), customer: customer))
+        claimRepository.setClaim(new Claim(invoiceUri: 'link.to.FakturagrunnlagResource'.toURI(), customer: customer))
 
         then:
-        1 * mongoTemplate.save(_ as Claim, 'test.no')
+        1 * mongoTemplate.save(_ as Claim)
     }
 
     def "Get payment returns list"() {
@@ -37,10 +37,10 @@ class ClaimRepositorySpec extends Specification {
         query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
 
         when:
-        def claims = claimRepository.getClaims(orgId, query)
+        def claims = claimRepository.getClaims(query)
 
         then:
-        1 * mongoTemplate.find(_ as Query, Claim.class, 'test.no') >> [new Claim()]
+        1 * mongoTemplate.find(_ as Query, Claim.class) >> [new Claim()]
         claims.size() == 1
     }
 
@@ -53,9 +53,9 @@ class ClaimRepositorySpec extends Specification {
         update.set('someValue','testValue')
 
         when:
-        claimRepository.updateClaim('test.no', query, update)
+        claimRepository.updateClaim(query, update)
 
         then:
-        1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as String)
+        1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as Class)
     }
 }

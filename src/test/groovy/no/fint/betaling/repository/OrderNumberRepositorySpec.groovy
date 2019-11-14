@@ -16,7 +16,7 @@ class OrderNumberRepositorySpec extends Specification {
 
     def "Get order number given existing orgId returns valid order number"() {
         when:
-        def orderNumber = orderNumberRepository.getOrderNumber('existing.org')
+        def orderNumber = orderNumberRepository.getOrderNumber()
 
         then:
         1 * mongoTemplate.findAndModify(_, _, _, _) >> new OrganisationConfig(orgId: 'existing.org', nextOrderNumberForOrganisation: 1001L)
@@ -25,7 +25,7 @@ class OrderNumberRepositorySpec extends Specification {
 
     def "Get order number given non-existing orgId returns valid order number"() {
         when:
-        def orderNumber = orderNumberRepository.getOrderNumber('notexisting.org')
+        def orderNumber = orderNumberRepository.getOrderNumber()
 
         then:
         1 * mongoTemplate.findAndModify(_, _, _, _) >> null

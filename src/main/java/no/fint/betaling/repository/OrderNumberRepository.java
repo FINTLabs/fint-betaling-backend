@@ -2,6 +2,7 @@ package no.fint.betaling.repository;
 
 import no.fint.betaling.config.OrganisationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -18,11 +19,14 @@ public class OrderNumberRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public String getOrderNumber(String orgId) {
-        return getAndUpdateLastOrderNumber(orgId);
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
+
+    public String getOrderNumber() {
+        return getAndUpdateLastOrderNumber();
     }
 
-    private String getAndUpdateLastOrderNumber(String orgId) {
+    private String getAndUpdateLastOrderNumber() {
         Query query = new Query();
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where("_class").is(OrganisationConfig.class.getName()));

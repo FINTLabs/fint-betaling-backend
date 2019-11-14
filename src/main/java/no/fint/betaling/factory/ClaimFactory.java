@@ -5,6 +5,7 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.OrderNumberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,10 +17,14 @@ public class ClaimFactory {
     @Autowired
     private OrderNumberRepository orderNumberRepository;
 
-    public List<Claim> createClaim(Order order, String orgId) {
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
+
+    public List<Claim> createClaim(Order order) {
             return order.getCustomers().stream().map(customer -> {
                 Claim claim = new Claim();
-                claim.setOrderNumber(orderNumberRepository.getOrderNumber(orgId));
+                claim.setOrgId(orgId);
+                claim.setOrderNumber(orderNumberRepository.getOrderNumber());
                 claim.setCustomer(customer);
                 claim.setPrincipalUri(order.getPrincipalUri());
                 claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());

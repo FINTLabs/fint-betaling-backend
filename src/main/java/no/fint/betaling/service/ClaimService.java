@@ -38,9 +38,13 @@ public class ClaimService {
     private static final String AMOUNT_DUE = "amountDue";
     private static final String CLAIM_STATUS = "claimStatus";
     private static final String STATUS_MESSAGE = "statusMessage";
+    private static final String ORG_ID = "orgId";
 
     @Value("${fint.betaling.endpoints.invoice}")
     private URI invoiceEndpoint;
+
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
 
     @Autowired
     private RestUtil restUtil;
@@ -51,8 +55,8 @@ public class ClaimService {
     @Autowired
     private ClaimFactory claimFactory;
 
-    public List<Claim> sendClaims(String orgId, List<String> orderNumbers) {
-        List<Claim> unsentClaims = getUnsentClaims(orgId).stream()
+    public List<Claim> sendClaims(List<String> orderNumbers) {
+        List<Claim> unsentClaims = getUnsentClaims().stream()
                 .filter(b -> orderNumbers.contains(b.getOrderNumber()))
                 .collect(Collectors.toList());
 
@@ -60,14 +64,14 @@ public class ClaimService {
 
         unsentClaims.forEach(claim -> {
             try {
-                URI invoiceUri = submitClaim(orgId, InvoiceFactory.createInvoice(claim));
+                URI invoiceUri = submitClaim(InvoiceFactory.createInvoice(claim));
                 claim.setInvoiceUri(invoiceUri);
                 claim.setClaimStatus(ClaimStatus.SENT);
-                updateClaimOnSuccess(orgId, claim);
+                updateClaimOnSuccess(claim);
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.ERROR);
                 claim.setStatusMessage(e.getMessage());
-                updateClaimOnError(orgId, claim);
+                updateClaimOnError(claim);
             }
             sentClaims.add(claim);
         });
@@ -75,39 +79,41 @@ public class ClaimService {
         return sentClaims;
     }
 
-    public void updateClaimStatus(String orgId) {
-        getSentClaims(orgId).forEach(Consumer2.from(this::getClaimStatus).acceptPartially(orgId));
+    public void updateClaimStatus() {
+        getSentClaims().forEach(this::getClaimStatus);
     }
 
-    private void getClaimStatus(String orgId, Claim claim) {
+    private void getClaimStatus(Claim claim) {
         try {
-            updateClaim(orgId, getStatus(orgId, claim));
+            updateClaim(getStatus(claim));
             log.info("Updated {}", claim.getOrderNumber());
         } catch (InvalidResponseException e) {
             claim.setClaimStatus(ClaimStatus.ERROR);
             claim.setStatusMessage(e.getMessage());
-            updateClaimOnError(orgId, claim);
+            updateClaimOnError(claim);
         } catch (Exception e) {
             log.warn("Error updating {}: {}", claim.getOrderNumber(), e.getMessage());
         }
     }
 
-    private List<Claim> getUnsentClaims(String orgId) {
+    private List<Claim> getUnsentClaims() {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()).orOperator(
                 Criteria.where(CLAIM_STATUS).is(ClaimStatus.STORED),
                 Criteria.where(CLAIM_STATUS).is(ClaimStatus.ERROR)));
-        return getClaims(orgId, query);
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
+        return getClaims(query);
     }
 
-    private List<Claim> getSentClaims(String orgId) {
+    private List<Claim> getSentClaims() {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where(CLAIM_STATUS).is(ClaimStatus.SENT));
-        return getClaims(orgId, query);
+        return getClaims(query);
     }
 
-    private void updateClaimOnSuccess(String orgId, Claim claim) {
+    private void updateClaimOnSuccess(Claim claim) {
         Update update = new Update();
         update.set(INVOICE_URI, claim.getInvoiceUri());
         update.set(CLAIM_STATUS, ClaimStatus.SENT);
@@ -115,32 +121,34 @@ public class ClaimService {
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where(ORDER_NUMBER).is(claim.getOrderNumber()));
-        updateClaim(orgId, query, update);
+        updateClaim(query, update);
     }
 
-    private void updateClaimOnError(String orgId, Claim claim) {
+    private void updateClaimOnError(Claim claim) {
         Update update = new Update();
         update.set(CLAIM_STATUS, ClaimStatus.ERROR);
         update.set(STATUS_MESSAGE, claim.getStatusMessage());
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where(ORDER_NUMBER).is(claim.getOrderNumber()));
-        updateClaim(orgId, query, update);
+        updateClaim(query, update);
     }
 
-    public URI submitClaim(String orgId, FakturagrunnlagResource invoice) {
+    public URI submitClaim(FakturagrunnlagResource invoice) {
         ResponseEntity<FakturagrunnlagResource> responseEntity =
                 restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
         return responseEntity.getHeaders().getLocation();
     }
 
-    public FakturagrunnlagResource getStatus(String orgId, Claim claim) {
+    public FakturagrunnlagResource getStatus(Claim claim) {
         return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
     }
 
-    public void updateClaim(String orgId, FakturagrunnlagResource invoice) {
+    public void updateClaim(FakturagrunnlagResource invoice) {
         Update update = new Update();
         Consumer2<String, Object> updater = Consumer2.from(update::set);
         //updater.accept("fakturagrunnlag", invoice);
@@ -159,42 +167,46 @@ public class ClaimService {
 
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where(ORDER_NUMBER).is(Long.valueOf(invoice.getOrdrenummer().getIdentifikatorverdi())));
 
-        claimRepository.updateClaim(orgId, query, update);
+        claimRepository.updateClaim(query, update);
     }
 
-    public List<Claim> getClaims(String orgId, Query query) {
-        return claimRepository.getClaims(orgId, query);
+    public List<Claim> getClaims(Query query) {
+        return claimRepository.getClaims(query);
     }
 
-    public void updateClaim(String orgId, Query query, Update update) {
-        claimRepository.updateClaim(orgId, query, update);
+    public void updateClaim(Query query, Update update) {
+        claimRepository.updateClaim(query, update);
     }
 
-    public List<Claim> getAllClaims(String orgId) {
+    public List<Claim> getAllClaims() {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        return claimRepository.getClaims(orgId, query);
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
+        return claimRepository.getClaims(query);
     }
 
-    public List<Claim> getClaimsByCustomerName(String orgId, String name) {
+    public List<Claim> getClaimsByCustomerName(String name) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where(CUSTOMER_NAME).regex(name, "i"));
-        return claimRepository.getClaims(orgId, query);
+        return claimRepository.getClaims(query);
     }
 
-    public List<Claim> getClaimsByOrderNumber(String orgId, String orderNumber) {
+    public List<Claim> getClaimsByOrderNumber(String orderNumber) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
         query.addCriteria(Criteria.where(ORDER_NUMBER).is(Long.parseLong(orderNumber)));
-        return claimRepository.getClaims(orgId, query);
+        return claimRepository.getClaims(query);
     }
 
-    public List<Claim> setClaim(String orgId, Order order) {
-        List<Claim> claims = claimFactory.createClaim(order, orgId);
-        claims.forEach(claim -> claimRepository.setClaim(orgId, claim));
+    public List<Claim> setClaim(Order order) {
+        List<Claim> claims = claimFactory.createClaim(order);
+        claims.forEach(claim -> claimRepository.setClaim(claim));
         return claims;
     }
 }

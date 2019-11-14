@@ -33,10 +33,10 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
 
         when:
-        def claims = claimService.sendClaims(_ as String, ['12345'])
+        def claims = claimService.sendClaims(['12345'])
 
         then:
-        1 * claimRepository.getClaims(_ as String, _ as Query) >> [claim]
+        1 * claimRepository.getClaims(_ as Query) >> [claim]
         1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
             ResponseEntity.ok().headers().location(new URI('link.to.Location')).build()
         }
@@ -52,12 +52,12 @@ class ClaimServiceSpec extends Specification {
         def invoice = betalingObjectFactory.newInvoice()
 
         when:
-        claimService.updateClaimStatus(_ as String)
+        claimService.updateClaimStatus()
 
         then:
-        1 * claimRepository.getClaims(_ as String, _ as Query) >> [claim]
+        1 * claimRepository.getClaims(_ as Query) >> [claim]
         1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> invoice
-        1 * claimRepository.updateClaim(_ as String, _ as Query, _ as Update)
+        1 * claimRepository.updateClaim(_ as Query, _ as Update)
     }
 
     def "Set invoice given valid invoice returns valid response"() {
@@ -65,7 +65,7 @@ class ClaimServiceSpec extends Specification {
         def invoice = betalingObjectFactory.newInvoice()
 
         when:
-        def response = claimService.submitClaim(_ as String, invoice)
+        def response = claimService.submitClaim(invoice)
 
         then:
         1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
@@ -80,7 +80,7 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(ClaimStatus.SENT)
 
         when:
-        def invoice = claimService.getStatus(_ as String, claim)
+        def invoice = claimService.getStatus(claim)
 
         then:
         1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> betalingObjectFactory.newInvoice()
@@ -92,34 +92,34 @@ class ClaimServiceSpec extends Specification {
         def invoice = betalingObjectFactory.newInvoice()
 
         when:
-        claimService.updateClaim(_ as String, invoice)
+        claimService.updateClaim(invoice)
 
         then:
-        1 * claimRepository.updateClaim(_ as String, _ as Query, _ as Update)
+        1 * claimRepository.updateClaim(_ as Query, _ as Update)
     }
 
     def "Get payments passes arguments to mongoservice"() {
         when:
-        claimService.getClaims(_ as String, new Query())
+        claimService.getClaims(new Query())
 
         then:
-        1 * claimRepository.getClaims(_ as String, _ as Query)
+        1 * claimRepository.getClaims(_ as Query)
     }
 
     def "Update payment passes arguments to mongoservice"() {
         when:
-        claimService.updateClaim(_ as String, new Query(), new Update())
+        claimService.updateClaim(new Query(), new Update())
 
         then:
-        1 * claimRepository.updateClaim(_ as String, _ as Query, _ as Update)
+        1 * claimRepository.updateClaim(_ as Query, _ as Update)
     }
 
     def "Get all payments given valid orgId returns list"() {
         when:
-        def claims = claimService.getAllClaims(_ as String)
+        def claims = claimService.getAllClaims()
 
         then:
-        1 * claimRepository.getClaims(_ as String, _ as Query) >> [betalingObjectFactory.newClaim(ClaimStatus.STORED), betalingObjectFactory.newClaim(ClaimStatus.SENT)]
+        1 * claimRepository.getClaims(_ as Query) >> [betalingObjectFactory.newClaim(ClaimStatus.STORED), betalingObjectFactory.newClaim(ClaimStatus.SENT)]
         claims.size() == 2
     }
 
@@ -128,10 +128,10 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
 
         when:
-        def claims = claimService.getClaimsByCustomerName(_ as String, 'Ola Testesen')
+        def claims = claimService.getClaimsByCustomerName('Ola Testesen')
 
         then:
-        1 * claimRepository.getClaims(_ as String, _ as Query) >> [claim]
+        1 * claimRepository.getClaims(_ as Query) >> [claim]
         claims.size() == 1
         claims.get(0).customer.name == 'Ola Testesen'
     }
@@ -141,10 +141,10 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
 
         when:
-        def claims = claimService.getClaimsByOrderNumber(_ as String, '12')
+        def claims = claimService.getClaimsByOrderNumber('12')
 
         then:
-        1 * claimRepository.getClaims(_ as String, _ as Query) >> [claim]
+        1 * claimRepository.getClaims(_ as Query) >> [claim]
         claims.size() == 1
         claims.get(0).orderNumber == '12345'
     }
@@ -155,11 +155,11 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
 
         when:
-        def claims = claimService.setClaim(_ as String, order)
+        def claims = claimService.setClaim(order)
 
         then:
-        1 * claimFactory.createClaim(_ as Order, _ as String) >> [claim]
-        1 * claimRepository.setClaim(_ as String, _ as Claim)
+        1 * claimFactory.createClaim(_ as Order) >> [claim]
+        1 * claimRepository.setClaim(_ as Claim)
         claims.size() == 1
         claims.get(0).orderLines.size() == 1
         claims.get(0).orderNumber == '12345'

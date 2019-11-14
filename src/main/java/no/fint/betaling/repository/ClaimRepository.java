@@ -15,15 +15,15 @@ public class ClaimRepository {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public void setClaim(String orgId, Claim claim) {
-        mongoTemplate.save(claim, orgId);
+    public void setClaim(Claim claim) {
+        mongoTemplate.save(claim);
     }
 
-    public List<Claim> getClaims(String orgId, Query query) {
-        return mongoTemplate.find(query, Claim.class, orgId);
+    public List<Claim> getClaims(Query query) {
+        return mongoTemplate.find(query, Claim.class);
     }
 
-    public void updateClaim(String orgId, Query query, Update update) {
-        mongoTemplate.upsert(query, update, orgId);
+    public void updateClaim(Query query, Update update) {
+        mongoTemplate.upsert(query, update, Claim.class);
     }
 }
