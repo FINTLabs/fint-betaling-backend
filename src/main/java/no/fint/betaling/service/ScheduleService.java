@@ -14,7 +14,7 @@ public class ScheduleService {
         this.claimService = claimService;
     }
 
-    @Value("${fint.betaling.default-org-id}")
+    @Value("${fint.betaling.org-id}")
     private String orgId;
 
     /*

@@ -18,7 +18,6 @@ public class CustomerController {
 
     /*
     To be deleted???
-     */
 
     private final CustomerService customerService;
 
@@ -27,8 +26,8 @@ public class CustomerController {
     }
 
     @GetMapping
-    public List<Customer> getCustomers(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                       @RequestParam(value = "name", required = false) String name) {
-        return customerService.getCustomers(orgId, name);
+    public List<Customer> getCustomers(@RequestParam(value = "name", required = false) String name) {
+        return customerService.getCustomers(name);
     }
+     */
 }

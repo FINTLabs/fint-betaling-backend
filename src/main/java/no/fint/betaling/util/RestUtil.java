@@ -25,68 +25,43 @@ public class RestUtil {
     @Autowired
     private RestTemplate restTemplate;
 
-    /*
-    public RestUtil(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
-     */
-
-    @Value("${fint.betaling.client-name}")
-    private String clientName;
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
 
     private final Map<String, Long> lastUpdatedMap = Collections.synchronizedMap(new HashMap<>());
 
-    public <T> T getUpdates(Class<T> type, URI url, String orgId) {
+    public <T> T getUpdates(Class<T> type, URI url) {
         String key = orgId + "_" + url;
         long lastUpdated = Long.parseLong(
-                get(Map.class,
-                        UriComponentsBuilder
+                get(Map.class, UriComponentsBuilder
                                 .fromUri(url)
                                 .queryParam("/last-updated")
                                 .build()
-                                .toUri(),
-                        orgId)
+                                .toUri())
                         .get("lastUpdated")
                         .toString()
         );
         long since = lastUpdatedMap.getOrDefault(key, -1L) + 1L;
         log.info("{}: Fetching {} since {}, last updated {} ...", orgId, url, since, lastUpdated);
-        T result = get(type, UriComponentsBuilder.fromUri(url).queryParam("sinceTimeStamp", since).build().toUri(), orgId);
+        T result = get(type, UriComponentsBuilder.fromUri(url).queryParam("sinceTimeStamp", since).build().toUri());
         lastUpdatedMap.put(key, lastUpdated);
         return result;
     }
 
-    public <T> T get(Class<T> type, URI url, String orgId) {
+    public <T> T get(Class<T> clazz, URI url) {
         try {
-            return restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    new HttpEntity<>(getHeaders(orgId)),
-                    type
-            ).getBody();
+            return restTemplate.getForObject(url, clazz);
         } catch (RestClientResponseException e) {
             throw new InvalidResponseException(e.getResponseBodyAsString(), e);
         }
     }
 
-    public <T> ResponseEntity<T> post(Class<T> type, URI url, T content, String orgId) {
+    public <T> ResponseEntity<T> post(Class<T> clazz, URI url, T content) {
         try {
             log.info("POST {} {}", url, content);
-            return restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    new HttpEntity<>(content, getHeaders(orgId)),
-                    type
-            );
+            return restTemplate.postForEntity(url, content, clazz);
         } catch (RestClientResponseException e) {
-            throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
+            throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", clazz.getSimpleName(), url, e.getResponseBodyAsString()), e);
         }
-    }
-
-    private HttpHeaders getHeaders(String orgId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-org-id", orgId);
-        headers.set("x-client", clientName);
-        return headers;
     }
 }

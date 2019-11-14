@@ -22,7 +22,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/group/school'))
 
         then:
-        1 * groupService.getCustomerGroupBySchool(_ as String, _ as String) >> new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])
+        1 * groupService.getCustomerGroupBySchool(_ as String) >> new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])
         response.andExpect(status().isOk())
                 .andExpect(jsonPathEquals('$.name', 'testGroup'))
                 .andExpect(jsonPathEquals('$.customers[0].name', 'Testesen'))
@@ -33,7 +33,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/group/basis-group'))
 
         then:
-        1 * groupService.getCustomerGroupsByBasisGroupsAndSchool(_ as String, _ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
+        1 * groupService.getCustomerGroupsByBasisGroupsAndSchool(_ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].name', 'testGroup'))
@@ -45,7 +45,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/group/teaching-group'))
 
         then:
-        1 * groupService.getCustomerGroupsByTeachingGroupsAndSchool(_ as String, _ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
+        1 * groupService.getCustomerGroupsByTeachingGroupsAndSchool(_ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].name', 'testGroup'))
@@ -57,7 +57,7 @@ class GroupControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/group/contact-teacher-group'))
 
         then:
-        1 * groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(_ as String, _ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
+        1 * groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(_ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].name', 'testGroup'))

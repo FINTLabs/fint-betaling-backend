@@ -25,7 +25,7 @@ public class MvaCodeController {
     private URI mvaEndpoint;
 
     @GetMapping
-    public List<MvakodeResource> getMvaCodes(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restUtil.get(MvakodeResources.class, mvaEndpoint, orgId).getContent();
+    public List<MvakodeResource> getMvaCodes() {
+        return restUtil.get(MvakodeResources.class, mvaEndpoint).getContent();
     }
 }

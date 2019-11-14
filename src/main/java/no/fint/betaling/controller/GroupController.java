@@ -22,26 +22,22 @@ public class GroupController {
     }
 
     @GetMapping("/school")
-    public CustomerGroup getCustomerGroupBySchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                                  @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
-        return groupService.getCustomerGroupBySchool(orgId, schoolId);
+    public CustomerGroup getCustomerGroupBySchool(@RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupBySchool(schoolId);
     }
 
     @GetMapping("/basis-group")
-    public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                                             @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
-        return groupService.getCustomerGroupsByBasisGroupsAndSchool(orgId, schoolId);
+    public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(@RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupsByBasisGroupsAndSchool(schoolId);
     }
 
     @GetMapping("/teaching-group")
-    public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                                                @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
-        return groupService.getCustomerGroupsByTeachingGroupsAndSchool(orgId, schoolId);
+    public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(@RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupsByTeachingGroupsAndSchool(schoolId);
     }
 
     @GetMapping("/contact-teacher-group")
-    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                                                      @RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
-        return groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(orgId, schoolId);
+    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(@RequestHeader(name = SCHOOL_ORG_ID, defaultValue = DEFAULT_VALUE_SCHOOL_ORG_ID) String schoolId) {
+        return groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(schoolId);
     }
 }

@@ -37,7 +37,7 @@ class ClaimServiceSpec extends Specification {
 
         then:
         1 * claimRepository.getClaims(_ as String, _ as Query) >> [claim]
-        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource, _ as String) >> {
+        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
             ResponseEntity.ok().headers().location(new URI('link.to.Location')).build()
         }
 
@@ -56,7 +56,7 @@ class ClaimServiceSpec extends Specification {
 
         then:
         1 * claimRepository.getClaims(_ as String, _ as Query) >> [claim]
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _, _ as String) >> invoice
+        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> invoice
         1 * claimRepository.updateClaim(_ as String, _ as Query, _ as Update)
     }
 
@@ -68,7 +68,7 @@ class ClaimServiceSpec extends Specification {
         def response = claimService.submitClaim(_ as String, invoice)
 
         then:
-        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource, _ as String) >> {
+        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
             ResponseEntity.ok().headers().location(new URI('link.to.Location')).build()
         }
 
@@ -83,7 +83,7 @@ class ClaimServiceSpec extends Specification {
         def invoice = claimService.getStatus(_ as String, claim)
 
         then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _, _ as String) >> betalingObjectFactory.newInvoice()
+        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> betalingObjectFactory.newInvoice()
         invoice.ordrenummer.identifikatorverdi == '12345'
     }
 

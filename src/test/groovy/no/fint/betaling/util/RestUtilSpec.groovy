@@ -25,10 +25,10 @@ class RestUtilSpec extends Specification {
 
     def "Get resource given invalid response throws InvalidResponseException"() {
         when:
-        restUtil.get(String, 'http://localhost'.toURI(), 'test.no')
+        restUtil.get(String, 'http://localhost'.toURI())
 
         then:
-        1 * restTemplate.exchange('http://localhost'.toURI(), HttpMethod.GET, _ as HttpEntity, _ as Class) >> {
+        1 * restTemplate.getForObject('http://localhost'.toURI(), _ as Class<String>) >> {
             throw new InvalidResponseException('test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
@@ -36,10 +36,10 @@ class RestUtilSpec extends Specification {
 
     def "Set resource given invalid response throws InvalidResponseException"() {
         when:
-        restUtil.post(String, 'http://localhost'.toURI(), 'ping', 'test.no')
+        restUtil.post(String, 'http://localhost'.toURI(), 'ping')
 
         then:
-        1 * restTemplate.exchange('http://localhost'.toURI(), HttpMethod.POST, _ as HttpEntity, _ as Class) >> {
+        1 * restTemplate.postForEntity('http://localhost'.toURI(), _, _ as Class) >> {
             throw new InvalidResponseException('test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
@@ -47,19 +47,19 @@ class RestUtilSpec extends Specification {
 
     def "Get ElevResource given valid url returns ElevResource"() {
         when:
-        def resource = restUtil.get(ElevResource, 'http://localhost'.toURI(), 'test.no')
+        def resource = restUtil.get(ElevResource, 'http://localhost'.toURI())
 
         then:
-        1 * restTemplate.exchange('http://localhost'.toURI(), HttpMethod.GET, _ as HttpEntity, _ as Class<ElevResource>) >> ResponseEntity.ok(new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
+        1 * restTemplate.getForObject('http://localhost'.toURI(), _ as Class<ElevResource>) >> new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test'))
         resource.elevnummer.identifikatorverdi == 'test'
     }
 
     def "Post ElevResource given valid url returns valid response entity"() {
         when:
-        def response = restUtil.post(ElevResource.class, 'http://localhost'.toURI(), new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')), 'test.no')
+        def response = restUtil.post(ElevResource.class, 'http://localhost'.toURI(), new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
 
         then:
-        1 * restTemplate.exchange('http://localhost'.toURI(), HttpMethod.POST, _ as HttpEntity, _ as Class<ElevResource>) >> ResponseEntity.ok().build()
+        1 * restTemplate.postForEntity('http://localhost'.toURI(),_ , _ as Class<ElevResource>) >> ResponseEntity.ok().build()
         response.statusCode.is2xxSuccessful()
     }
 }

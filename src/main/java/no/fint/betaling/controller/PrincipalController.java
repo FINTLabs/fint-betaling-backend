@@ -25,7 +25,7 @@ public class PrincipalController {
     private URI principalEndpoint;
 
     @GetMapping
-    public List<OppdragsgiverResource> getPrincipals(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return restUtil.get(OppdragsgiverResources.class, principalEndpoint, orgId).getContent();
+    public List<OppdragsgiverResource> getPrincipals() {
+        return restUtil.get(OppdragsgiverResources.class, principalEndpoint).getContent();
     }
 }

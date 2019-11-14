@@ -132,12 +132,12 @@ public class ClaimService {
 
     public URI submitClaim(String orgId, FakturagrunnlagResource invoice) {
         ResponseEntity<FakturagrunnlagResource> responseEntity =
-                restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
+                restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
         return responseEntity.getHeaders().getLocation();
     }
 
     public FakturagrunnlagResource getStatus(String orgId, Claim claim) {
-        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri(), orgId);
+        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
     }
 
     public void updateClaim(String orgId, FakturagrunnlagResource invoice) {

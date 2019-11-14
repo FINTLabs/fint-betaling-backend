@@ -14,12 +14,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@SuppressWarnings("unchecked")
 public class CustomerService {
 
     /*
     To be deleted???
-     */
 
     private final CacheService cacheService;
 
@@ -27,8 +25,8 @@ public class CustomerService {
         this.cacheService = cacheService;
     }
 
-    public List<Customer> getCustomers(String orgId, String filter) {
-        Map<Link, PersonResource> customers = cacheService.getResources("studentCache", orgId);
+    public List<Customer> getCustomers(String filter) {
+        Map<Link, PersonResource> customers = cacheService.getResources("students");
 
         if (StringUtils.isEmpty(filter))
             return customers.values().stream()
@@ -40,4 +38,5 @@ public class CustomerService {
                 .filter(customer -> customer.getName().toLowerCase().contains(filter.toLowerCase()))
                 .collect(Collectors.toList());
     }
+     */
 }
