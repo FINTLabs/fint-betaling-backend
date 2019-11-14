@@ -28,24 +28,23 @@ public class ClaimFactory {
 
         Long orderNumber = orderNumberRepository.getHighestOrderNumber();
 
-        AtomicLong counter = new AtomicLong(1);
+        AtomicLong counter = new AtomicLong(orderNumber);
 
         order.getCustomers().forEach(customer -> {
+            counter.getAndIncrement();
             Claim claim = new Claim();
             claim.setOrgId(orgId);
-            claim.setOrderNumber(String.valueOf(orderNumber + counter.longValue()));
+            claim.setOrderNumber(counter.toString());
             claim.setCustomer(customer);
             claim.setPrincipalUri(order.getPrincipalUri());
             claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
             claim.setOriginalAmountDue(order.sum());
             claim.setOrderLines(order.getOrderLines());
             claim.setClaimStatus(ClaimStatus.STORED);
-            counter.getAndIncrement();
             claims.add(claim);
         });
         return claims;
     }
-
 
     /*
     public List<Claim> createClaim(Order order) {

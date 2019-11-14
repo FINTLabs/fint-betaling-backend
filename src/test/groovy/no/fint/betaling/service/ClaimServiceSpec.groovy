@@ -30,7 +30,7 @@ class ClaimServiceSpec extends Specification {
 
     def "Send invoices given valid orgId sends invoices and updates payments"() {
         given:
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
 
         when:
         def claims = claimService.sendClaims(['12345'])
@@ -48,7 +48,7 @@ class ClaimServiceSpec extends Specification {
 
     def "Update invoice status given valid orgId updates payments"() {
         given:
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.SENT)
+        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
         def invoice = betalingObjectFactory.newInvoice()
 
         when:
@@ -77,7 +77,7 @@ class ClaimServiceSpec extends Specification {
 
     def "Get status given payment with valid location uri returns invoice"() {
         given:
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.SENT)
+        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
 
         when:
         def invoice = claimService.getStatus(claim)
@@ -119,13 +119,13 @@ class ClaimServiceSpec extends Specification {
         def claims = claimService.getAllClaims()
 
         then:
-        1 * claimRepository.getClaims(_ as Query) >> [betalingObjectFactory.newClaim(ClaimStatus.STORED), betalingObjectFactory.newClaim(ClaimStatus.SENT)]
+        1 * claimRepository.getClaims(_ as Query) >> [betalingObjectFactory.newClaim('12345', ClaimStatus.STORED), betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)]
         claims.size() == 2
     }
 
     def "Get payment by name given valid lastname returns list with payments matching given lastname"() {
         given:
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
 
         when:
         def claims = claimService.getClaimsByCustomerName('Ola Testesen')
@@ -138,7 +138,7 @@ class ClaimServiceSpec extends Specification {
 
     def "Get payment given valid ordernumber returns list with payments matching given ordernumber"() {
         given:
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
 
         when:
         def claims = claimService.getClaimsByOrderNumber('12')
@@ -152,7 +152,7 @@ class ClaimServiceSpec extends Specification {
     def "Save payment given valid data returns void"() {
         given:
         def order = betalingObjectFactory.newOrder()
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
 
         when:
         def claims = claimService.setClaim(order)

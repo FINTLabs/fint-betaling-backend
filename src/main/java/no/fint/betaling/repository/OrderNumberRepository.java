@@ -64,10 +64,6 @@ public class OrderNumberRepository {
 
         List<Claim> claims = mongoTemplate.find(query, Claim.class);
 
-        if (claims.isEmpty()) {
-            return 100000L;
-        }
-
-        return claims.stream().map(Claim::getOrderNumber).mapToLong(Long::parseLong).max().getAsLong();
+        return claims.stream().map(Claim::getOrderNumber).mapToLong(Long::parseLong).max().orElse(100000L);
     }
 }

@@ -43,9 +43,9 @@ class BetalingObjectFactory {
         return order
     }
 
-    static Claim newClaim(ClaimStatus claimStatus) {
+    static Claim newClaim(String orderNumber, ClaimStatus claimStatus) {
         Claim claim = new Claim()
-        claim.setOrderNumber('12345');
+        claim.setOrderNumber(orderNumber);
         claim.setCustomer(newCustomer());
         claim.setPrincipalUri(newOrder().principalUri);
         claim.setRequestedNumberOfDaysToPaymentDeadline(newOrder().requestedNumberOfDaysToPaymentDeadline);
@@ -59,14 +59,15 @@ class BetalingObjectFactory {
 
     static FakturagrunnlagResource newInvoice() {
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
+        Claim claim = newClaim('12345', ClaimStatus.STORED)
         invoice.setFakturalinjer([newInvoiceLine()]);
         invoice.setFakturadato(new Date());
         invoice.setForfallsdato(new Date());
         invoice.setLeveringsdato(new Date());
-        invoice.setNetto(newClaim().getOriginalAmountDue());
-        invoice.addMottaker(Link.with(newClaim().getCustomer().getPerson().toString()));
-        invoice.addOppdragsgiver(Link.with(newClaim().getPrincipalUri().toString()));
-        invoice.setOrdrenummer(new Identifikator(identifikatorverdi: newClaim().getOrderNumber()));
+        invoice.setNetto(claim.getOriginalAmountDue());
+        invoice.addMottaker(Link.with(claim.getCustomer().getPerson().toString()));
+        invoice.addOppdragsgiver(Link.with(claim.getPrincipalUri().toString()));
+        invoice.setOrdrenummer(new Identifikator(identifikatorverdi: claim.getOrderNumber()));
         invoice.addSelf(new Link(verdi: 'link.to.Invoice'))
         return invoice
     }

@@ -32,13 +32,14 @@ class OrderNumberRepositorySpec extends Specification {
 
     def "Get highest order number"() {
         given:
-        def claim = betalingObjectFactory.newClaim(ClaimStatus.STORED)
+        def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
+        def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
 
         when:
         def orderNumber = orderNumberRepository.getHighestOrderNumber()
 
         then:
-        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [claim]
-        orderNumber == 12345
+        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [lowClaim, highClaim]
+        orderNumber == 5678
     }
 }
