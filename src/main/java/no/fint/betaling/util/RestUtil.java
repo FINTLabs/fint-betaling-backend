@@ -25,12 +25,12 @@ public class RestUtil {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Value("${fint.betaling.client-name}")
-    private String clientName;
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
 
     private final Map<String, Long> lastUpdatedMap = Collections.synchronizedMap(new HashMap<>());
 
-    public <T> T getUpdates(Class<T> type, URI url, String orgId) {
+    public <T> T getUpdates(Class<T> type, URI url) {
         String key = orgId + "_" + url;
         long lastUpdated = Long.parseLong(
                 get(Map.class, UriComponentsBuilder
@@ -56,24 +56,12 @@ public class RestUtil {
         }
     }
 
-    public <T> ResponseEntity<T> post(Class<T> type, URI url, T content, String orgId) {
+    public <T> ResponseEntity<T> post(Class<T> clazz, URI url, T content) {
         try {
             log.info("POST {} {}", url, content);
-            return restTemplate.exchange(
-                    url,
-                    HttpMethod.POST,
-                    new HttpEntity<>(content, getHeaders(orgId)),
-                    type
-            );
+            return restTemplate.postForEntity(url, content, clazz);
         } catch (RestClientResponseException e) {
-            throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", type.getSimpleName(), url, e.getMessage()), e);
+            throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", clazz.getSimpleName(), url, e.getResponseBodyAsString()), e);
         }
-    }
-
-    private HttpHeaders getHeaders(String orgId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-org-id", orgId);
-        headers.set("x-client", clientName);
-        return headers;
     }
 }

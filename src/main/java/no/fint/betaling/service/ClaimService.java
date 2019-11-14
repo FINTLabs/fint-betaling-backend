@@ -132,7 +132,7 @@ public class ClaimService {
 
     public URI submitClaim(String orgId, FakturagrunnlagResource invoice) {
         ResponseEntity<FakturagrunnlagResource> responseEntity =
-                restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice, orgId);
+                restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
         return responseEntity.getHeaders().getLocation();
     }
 

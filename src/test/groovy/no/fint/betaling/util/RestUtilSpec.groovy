@@ -36,10 +36,10 @@ class RestUtilSpec extends Specification {
 
     def "Set resource given invalid response throws InvalidResponseException"() {
         when:
-        restUtil.post(String, 'http://localhost'.toURI(), 'ping', 'test.no')
+        restUtil.post(String, 'http://localhost'.toURI(), 'ping')
 
         then:
-        1 * restTemplate.exchange('http://localhost'.toURI(), HttpMethod.POST, _ as HttpEntity, _ as Class) >> {
+        1 * restTemplate.postForEntity('http://localhost'.toURI(), _, _ as Class) >> {
             throw new InvalidResponseException('test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
@@ -56,10 +56,10 @@ class RestUtilSpec extends Specification {
 
     def "Post ElevResource given valid url returns valid response entity"() {
         when:
-        def response = restUtil.post(ElevResource.class, 'http://localhost'.toURI(), new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')), 'test.no')
+        def response = restUtil.post(ElevResource.class, 'http://localhost'.toURI(), new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
 
         then:
-        1 * restTemplate.exchange('http://localhost'.toURI(), HttpMethod.POST, _ as HttpEntity, _ as Class<ElevResource>) >> ResponseEntity.ok().build()
+        1 * restTemplate.postForEntity('http://localhost'.toURI(),_ , _ as Class<ElevResource>) >> ResponseEntity.ok().build()
         response.statusCode.is2xxSuccessful()
     }
 }
