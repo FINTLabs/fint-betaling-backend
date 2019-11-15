@@ -43,31 +43,7 @@ public class ClaimFactory {
             claim.setClaimStatus(ClaimStatus.STORED);
             claims.add(claim);
         });
+
         return claims;
     }
-
-    /*
-    public List<Claim> createClaim(Order order) {
-        List<Claim> claims = new ArrayList<>();
-
-        AtomicInteger counter = new AtomicInteger(0);
-
-        long test = orderNumberRepository.getNewOrderNumber();
-
-        order.getCustomers().(customer -> {
-            Claim claim = new Claim();
-            claim.setOrgId(orgId);
-            claim.setOrderNumber("");
-            claim.setCustomer(customer);
-            claim.setPrincipalUri(order.getPrincipalUri());
-            claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
-            claim.setOriginalAmountDue(order.sum());
-            claim.setOrderLines(order.getOrderLines());
-            claim.setClaimStatus(ClaimStatus.STORED);
-            claims.add(claim);
-        });
-        return claims;
-    }
-
-     */
 }
