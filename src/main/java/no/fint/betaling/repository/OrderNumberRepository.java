@@ -1,46 +1,35 @@
 package no.fint.betaling.repository;
 
-import no.fint.betaling.config.OrganisationConfig;
+import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
+@Slf4j
 @Repository
 public class OrderNumberRepository {
 
-    private static final String NEXT_ORDER_NUMBER_FOR_ORGANISATION = "nextOrderNumberForOrganisation";
     private static final String ORG_ID = "orgId";
 
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public String getOrderNumber(String orgId) {
-        return getAndUpdateLastOrderNumber(orgId);
-    }
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
 
-    private String getAndUpdateLastOrderNumber(String orgId) {
+    public Long getHighestOrderNumber() {
         Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where("_class").is(OrganisationConfig.class.getName()));
 
-        Update update = new Update();
-        update.inc(NEXT_ORDER_NUMBER_FOR_ORGANISATION, 1);
+        List<Claim> claims = mongoTemplate.find(query, Claim.class);
 
-        FindAndModifyOptions.options().returnNew(false);
-        OrganisationConfig organisationConfig =
-                mongoTemplate.findAndModify(query, update, OrganisationConfig.class, orgId);
-
-        if (organisationConfig == null) {
-            organisationConfig = new OrganisationConfig();
-            organisationConfig.setOrgId(orgId);
-            organisationConfig.setNextOrderNumberForOrganisation(100000L * (1 + mongoTemplate.count(null, OrganisationConfig.class)));
-            mongoTemplate.save(organisationConfig, orgId);
-            organisationConfig = mongoTemplate.findAndModify(query, update, OrganisationConfig.class, orgId);
-        }
-        return organisationConfig.getNextOrderNumberForOrganisation().toString();
+        return claims.stream().map(Claim::getOrderNumber).mapToLong(Long::parseLong).max().orElse(100000L);
     }
 }

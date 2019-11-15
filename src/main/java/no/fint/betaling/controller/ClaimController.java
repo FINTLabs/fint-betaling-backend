@@ -27,41 +27,38 @@ public class ClaimController {
     private ClaimService claimService;
 
     @PostMapping
-    public ResponseEntity setClaim(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                   @RequestBody Order order) {
-        log.info("{}: Received claim {}", orgId, order);
+    public ResponseEntity setClaim(@RequestBody Order order) {
+        log.info("Received claim {}", order);
         // TODO missing location header?
-        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.setClaim(orgId, order));
+        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.setClaim(order));
     }
 
     @GetMapping
-    public List<Claim> getAllClaims(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        return claimService.getAllClaims(orgId);
+    public List<Claim> getAllClaims() {
+        return claimService.getAllClaims();
     }
 
     @GetMapping("/name/{name}")
-    public List<Claim> getClaimsByCustomerName(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                               @PathVariable(value = "name") String name) {
-        return claimService.getClaimsByCustomerName(orgId, name);
+    public List<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
+        return claimService.getClaimsByCustomerName(name);
     }
 
     @GetMapping("/order-number/{order-number}")
-    public List<Claim> getClaimsByOrderNumber(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId,
-                                              @PathVariable(value = "order-number") String orderNumber) {
-        return claimService.getClaimsByOrderNumber(orgId, orderNumber);
+    public List<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
+        return claimService.getClaimsByOrderNumber(orderNumber);
     }
 
     @PostMapping("/send")
-    public ResponseEntity sendClaims(@RequestHeader(name = ORG_ID, defaultValue = HeaderConstants.DEFAULT_VALUE_ORG_ID) String orgId,
-                                     @RequestBody List<String> orderNumbers) {
-        log.info("Send claims for {}", orgId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.sendClaims(orgId, orderNumbers));
+    public ResponseEntity sendClaims(@RequestBody List<String> orderNumbers) {
+        log.info("Send claims for ordernumbers: {}", orderNumbers);
+        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.sendClaims(orderNumbers));
     }
 
+    /*
     @GetMapping("/update")
-    public ResponseEntity updateClaims(@RequestHeader(name = ORG_ID, defaultValue = DEFAULT_VALUE_ORG_ID) String orgId) {
-        log.info("Update Claim status for {}", orgId);
-        claimService.updateClaimStatus(orgId);
+    public ResponseEntity updateClaims() {
+        claimService.updateClaimStatus();
         return ResponseEntity.noContent().build();
     }
+     */
 }

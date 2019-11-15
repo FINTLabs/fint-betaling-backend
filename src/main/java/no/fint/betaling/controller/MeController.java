@@ -23,7 +23,7 @@ public class MeController {
 
         Organisation schoolOwner = new Organisation();
         schoolOwner.setName("Telemark fylkeskommune");
-        schoolOwner.setOrganisationNumber("");
+        schoolOwner.setOrganisationNumber("940192226");
         user.setOrganisation(schoolOwner);
 
         Organisation school1 = new Organisation();
