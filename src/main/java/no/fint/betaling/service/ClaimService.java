@@ -159,7 +159,7 @@ public class ClaimService {
                 .map(Link::getHref)
                 .findAny()
                 .ifPresent(updater.acceptPartially(INVOICE_URI));
-        Optional.ofNullable(invoice.getFakturanummer())
+        Optional.ofNullable(invoice.getOrdrenummer())
                 .map(Identifikator::getIdentifikatorverdi)
                 .map(Long::valueOf)
                 .ifPresent(updater.acceptPartially(INVOICE_NUMBER));

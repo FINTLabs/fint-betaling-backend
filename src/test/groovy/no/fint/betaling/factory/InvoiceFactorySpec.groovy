@@ -1,8 +1,10 @@
 package no.fint.betaling.factory
 
 import no.fint.betaling.model.Claim
+import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.OrderLine
+import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
 import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
@@ -10,34 +12,23 @@ import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
 import spock.lang.Specification
 
 class InvoiceFactorySpec extends Specification {
+    private BetalingObjectFactory betalingObjectFactory
+
+    void setup() {
+        betalingObjectFactory = new BetalingObjectFactory()
+    }
 
     def "Get invoice given valid payment returns invoice"() {
+        given:
+        def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
+
         when:
-        def invoice = InvoiceFactory.createInvoice(createPayment())
+        def invoice = InvoiceFactory.createInvoice(claim)
 
         then:
         invoice.ordrenummer.identifikatorverdi == '123'
-        invoice.netto == 1L
+        invoice.netto == 10000
         invoice.fakturalinjer.size() == 1
-    }
-
-    private static Claim createPayment() {
-        def varelinjeResource = new VarelinjeResource()
-        varelinjeResource.setEnhet('unit')
-        varelinjeResource.setKontering(new KontostrengResource())
-        varelinjeResource.setPris(1L)
-        varelinjeResource.addLink('self', new Link('link.to.VarelinjeResource'))
-        def orderLine = new OrderLine(numberOfItems: 1L, itemUri: 'link.to.VarelinjeResource'.toURI(), itemPrice: 1L, description: 'test')
-        def customer = new Customer(name: 'Testesen', person: 'link.to.PersonResource'.toURI())
-
-        return new Claim(
-                orderLines: [orderLine],
-                customer: customer,
-                originalAmountDue: 1L,
-                orderNumber: '123',
-                principalUri: 'link.to.Oppdragsgiver'.toURI(),
-                requestedNumberOfDaysToPaymentDeadline: '7'
-        )
     }
 }
 
