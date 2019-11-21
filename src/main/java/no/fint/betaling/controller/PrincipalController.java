@@ -1,17 +1,14 @@
 package no.fint.betaling.controller;
 
-import no.fint.betaling.util.RestUtil;
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource;
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResources;
+import no.fint.betaling.model.Principal;
+import no.fint.betaling.repository.PrincipalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.util.List;
-
-import static no.fint.betaling.config.HeaderConstants.DEFAULT_VALUE_ORG_ID;
-import static no.fint.betaling.config.HeaderConstants.ORG_ID;
+import java.util.Collection;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -19,13 +16,10 @@ import static no.fint.betaling.config.HeaderConstants.ORG_ID;
 public class PrincipalController {
 
     @Autowired
-    private RestUtil restUtil;
-
-    @Value("${fint.betaling.endpoints.principal}")
-    private URI principalEndpoint;
+    private PrincipalRepository repository;
 
     @GetMapping
-    public List<OppdragsgiverResource> getPrincipals() {
-        return restUtil.get(OppdragsgiverResources.class, principalEndpoint).getContent();
+    public Collection<Principal> getPrincipals() {
+        return repository.getPrincipals();
     }
 }
