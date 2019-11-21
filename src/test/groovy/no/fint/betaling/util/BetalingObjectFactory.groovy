@@ -10,6 +10,8 @@ import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
 import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource
 
+import java.time.LocalDate
+
 class BetalingObjectFactory {
 
     static Customer newCustomer() {
@@ -52,6 +54,7 @@ class BetalingObjectFactory {
         claim.setOriginalAmountDue(newOrder().sum());
         claim.setOrderLines(newOrder().orderLines);
         claim.setClaimStatus(claimStatus);
+        claim.setCreatedDate(LocalDate.now())
         claim.invoiceUri = 'link.to.Invoice'.toURI()
         claim.claimStatus = ClaimStatus.STORED
         return claim
@@ -61,8 +64,6 @@ class BetalingObjectFactory {
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         Claim claim = newClaim('12345', ClaimStatus.STORED)
         invoice.setFakturalinjer([newInvoiceLine()]);
-        invoice.setFakturadato(new Date());
-        invoice.setForfallsdato(new Date());
         invoice.setLeveringsdato(new Date());
         invoice.setNetto(claim.getOriginalAmountDue());
         invoice.addMottaker(Link.with(claim.getCustomer().getPerson().toString()));
