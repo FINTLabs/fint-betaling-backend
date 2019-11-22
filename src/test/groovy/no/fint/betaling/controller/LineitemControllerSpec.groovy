@@ -2,27 +2,22 @@ package no.fint.betaling.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import no.fint.betaling.util.RestUtil
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources
+import no.fint.betaling.model.Lineitem
+import no.fint.betaling.repository.LineitemRepository
 import no.fint.test.utils.MockMvcSpecification
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 class LineitemControllerSpec extends MockMvcSpecification {
     private MockMvc mockMvc
-    private RestUtil restUtil
     private LineitemController lineitemController
+    private LineitemRepository lineitemRepository
     private ObjectMapper mapper
 
     void setup() {
-        restUtil = Mock(RestUtil)
-        lineitemController = new LineitemController(restUtil: restUtil)
+        lineitemRepository = Mock()
+        lineitemController = new LineitemController(repository: lineitemRepository)
 
         def converter = new MappingJackson2HttpMessageConverter()
         mapper = new ObjectMapper()
@@ -33,29 +28,14 @@ class LineitemControllerSpec extends MockMvcSpecification {
     }
 
     def "Get all order lines returns list of Varelinje"() {
-        given:
-        def resources = new VarelinjeResources()
-        resources.addResource(createOrderLineResource())
-
         when:
         def response = mockMvc.perform(get('/api/lineitem'))
 
         then:
-        1 * restUtil.get(_, _) >> resources
+        1 * lineitemRepository.getLineitems() >> [new Lineitem(itemCode: 'XCC', description: 'Hello there', itemPrice: 12.00, taxrate: 0.25)]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].navn', 'testOrder'))
+                .andExpect(jsonPathEquals('$[0].description', 'Hello there'))
     }
 
-    private static VarelinjeResource createOrderLineResource() {
-        def orderLine = new VarelinjeResource()
-        orderLine.setNavn('testOrder')
-        orderLine.setEnhet('unit')
-        orderLine.setKontering(new KontostrengResource())
-        orderLine.setPris(1000)
-        orderLine.setKode('code')
-        def identifikator = new Identifikator(identifikatorverdi: 'test')
-        orderLine.setSystemId(identifikator)
-        return orderLine
-    }
 }

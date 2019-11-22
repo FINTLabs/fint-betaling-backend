@@ -25,6 +25,6 @@ class ClaimFactorySpec extends Specification {
         then:
         1 * orderNumberRepository.getHighestOrderNumber() >> 123L
         claims.get(0).orderNumber == '124'
-        claims.get(0).originalAmountDue == 10000
+        claims.get(0).originalAmountDue == 1000000
     }
 }
