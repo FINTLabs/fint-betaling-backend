@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,10 +35,14 @@ public class ClaimFactory {
             Claim claim = new Claim();
             claim.setOrgId(orgId);
             claim.setOrderNumber(counter.toString());
-            claim.setCustomer(customer);
-            claim.setPrincipal(order.getPrincipal());
-            claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
+            claim.setCreatedDate(LocalDate.now(ZoneId.systemDefault()));
+            claim.setLastModifiedDate(LocalDate.now(ZoneId.systemDefault()));
             claim.setOriginalAmountDue(order.sum());
+            claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
+            claim.setCustomer(customer);
+            claim.setCreatedBy(order.getCreatedBy());
+            claim.setOrganisationUnit(order.getOrganisationUnit());
+            claim.setPrincipal(order.getPrincipal());
             claim.setOrderItems(order.getOrderItems());
             claim.setClaimStatus(ClaimStatus.STORED);
             claims.add(claim);

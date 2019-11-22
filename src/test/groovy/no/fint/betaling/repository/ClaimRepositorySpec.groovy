@@ -1,7 +1,9 @@
 package no.fint.betaling.repository
 
 import no.fint.betaling.model.Claim
+import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Customer
+import no.fint.betaling.util.BetalingObjectFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -10,22 +12,22 @@ import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
 
-    private String orgId
     private MongoTemplate mongoTemplate
     private ClaimRepository claimRepository
+    private BetalingObjectFactory betalingObjectFactory;
 
     void setup() {
-        orgId = 'test.no'
         mongoTemplate = Mock(MongoTemplate)
         claimRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
+        betalingObjectFactory = new BetalingObjectFactory()
     }
 
     def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
         given:
-        def customer = new Customer(name: 'Testesen')
+        def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
 
         when:
-        claimRepository.setClaim(new Claim(invoiceUri: 'link.to.FakturagrunnlagResource'.toURI(), customer: customer))
+        claimRepository.setClaim(claim)
 
         then:
         1 * mongoTemplate.save(_ as Claim)
