@@ -16,12 +16,12 @@ public enum InvoiceFactory {
     ;
 
     public static FakturagrunnlagResource createInvoice(Claim claim) {
-        List<FakturalinjeResource> invoiceLines = claim.getOrderItems().stream().map(orderLine -> {
+        List<FakturalinjeResource> invoiceLines = claim.getOrderItems().stream().map(orderItem -> {
             FakturalinjeResource invoiceLine = new FakturalinjeResource();
-            invoiceLine.setPris(orderLine.getLineitem().getItemPrice());
-            invoiceLine.setAntall(orderLine.getItemQuantity() / 1.0f);
-            invoiceLine.setFritekst(Collections.singletonList(orderLine.getDescription()));
-            invoiceLine.addVarelinje(Link.with(orderLine.getLineitem().getUri().toString()));
+            invoiceLine.setPris(orderItem.getLineitem().getItemPrice());
+            invoiceLine.setAntall(orderItem.getItemQuantity() / 1.0f);
+            invoiceLine.setFritekst(Collections.singletonList(orderItem.getDescription()));
+            invoiceLine.addVarelinje(Link.with(orderItem.getLineitem().getUri().toString()));
             return invoiceLine;
         }).collect(Collectors.toList());
 

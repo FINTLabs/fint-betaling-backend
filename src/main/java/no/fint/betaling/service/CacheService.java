@@ -1,6 +1,7 @@
 package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.FintLinks;
@@ -73,9 +74,12 @@ public class CacheService {
     private void updateSchoolCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        SkoleResources resources = restUtil.get(SkoleResources.class, schoolEndpoint);
+        SkoleResources resources;
 
-        if (resources == null) {
+        try {
+            resources = restUtil.get(SkoleResources.class, schoolEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage());
             cache.putIfAbsent("schools", Collections.emptyMap());
             return;
         }
@@ -89,9 +93,12 @@ public class CacheService {
     private void updateBasisGroupCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        BasisgruppeResources resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint);
+        BasisgruppeResources resources;
 
-        if (resources == null) {
+        try {
+            resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage());
             cache.putIfAbsent("basisGroups", Collections.emptyMap());
             return;
         }
@@ -105,9 +112,12 @@ public class CacheService {
     private void updateTeachingGroupCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        UndervisningsgruppeResources resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint);
+        UndervisningsgruppeResources resources;
 
-        if (resources == null) {
+        try {
+            resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage());
             cache.putIfAbsent("teachingGroups", Collections.emptyMap());
             return;
         }
@@ -121,9 +131,12 @@ public class CacheService {
     private void updateContactTeacherGroupCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        KontaktlarergruppeResources resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
+        KontaktlarergruppeResources resources;
 
-        if (resources == null) {
+        try {
+            resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage());
             cache.putIfAbsent("contactTeacherGroups", Collections.emptyMap());
             return;
         }
@@ -137,9 +150,12 @@ public class CacheService {
     private void updateStudentCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        PersonResources resources = restUtil.get(PersonResources.class, personEndpoint);
+        PersonResources resources;
 
-        if (resources == null) {
+        try {
+            resources = restUtil.get(PersonResources.class, personEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage());
             cache.putIfAbsent("students", Collections.emptyMap());
             return;
         }
@@ -153,9 +169,12 @@ public class CacheService {
     private void updateStudentRelationCache() {
         Cache cache = cacheManager.getCache("fintCache");
 
-        ElevforholdResources resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint);
+        ElevforholdResources resources;
 
-        if (resources == null) {
+        try {
+            resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage());
             cache.putIfAbsent("studentRelations", Collections.emptyMap());
             return;
         }
