@@ -161,8 +161,8 @@ class ClaimServiceSpec extends Specification {
         1 * claimFactory.createClaim(_ as Order) >> [claim]
         1 * claimRepository.setClaim(_ as Claim)
         claims.size() == 1
-        claims.get(0).orderLines.size() == 1
-        claims.get(0).orderNumber == '12345'
-        claims.get(0).customer.name == 'Ola Testesen'
+        claims.every { it.orderItems.size() == 1 }
+        claims.every { it.orderNumber == '12345' }
+        claims.every { it.customer.name == 'Ola Testesen' }
     }
 }

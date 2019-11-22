@@ -32,7 +32,7 @@ class LineitemControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/lineitem'))
 
         then:
-        1 * lineitemRepository.getLineitems() >> [new Lineitem(code: 'XCC', description: 'Hello there', itemPrice: 12.00, taxrate: 0.25)]
+        1 * lineitemRepository.getLineitems() >> [new Lineitem(itemCode: 'XCC', description: 'Hello there', itemPrice: 12.00, taxrate: 0.25)]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].description', 'Hello there'))

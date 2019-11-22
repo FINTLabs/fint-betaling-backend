@@ -54,8 +54,8 @@ public class LineitemRepository {
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();
-                    lineitem.setCode(v.getKode());
-                    lineitem.setItemPrice(v.getPris() / 100.0);
+                    lineitem.setItemCode(v.getKode());
+                    lineitem.setItemPrice(v.getPris());
                     lineitem.setDescription(v.getNavn());
                     v.getSelfLinks()
                             .stream()

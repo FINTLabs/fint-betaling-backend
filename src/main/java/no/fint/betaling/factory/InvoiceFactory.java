@@ -16,12 +16,12 @@ public enum InvoiceFactory {
     ;
 
     public static FakturagrunnlagResource createInvoice(Claim claim) {
-        List<FakturalinjeResource> invoiceLines = claim.getOrderLines().stream().map(orderLine -> {
+        List<FakturalinjeResource> invoiceLines = claim.getOrderItems().stream().map(orderLine -> {
             FakturalinjeResource invoiceLine = new FakturalinjeResource();
-            invoiceLine.setPris(orderLine.getItemPrice());
-            invoiceLine.setAntall(orderLine.getNumberOfItems() / 1.0f);
+            invoiceLine.setPris(orderLine.getLineitem().getItemPrice());
+            invoiceLine.setAntall(orderLine.getItemQuantity() / 1.0f);
             invoiceLine.setFritekst(Collections.singletonList(orderLine.getDescription()));
-            invoiceLine.addVarelinje(Link.with(orderLine.getItemUri().toString()));
+            invoiceLine.addVarelinje(Link.with(orderLine.getLineitem().getUri().toString()));
             return invoiceLine;
         }).collect(Collectors.toList());
 
@@ -31,7 +31,7 @@ public enum InvoiceFactory {
         invoice.setLeveringsdato(Date.from(claim.getCreatedDate().atStartOfDay(ZoneId.systemDefault()).toInstant()));
         invoice.setNetto(claim.getOriginalAmountDue());
         invoice.addMottaker(Link.with(claim.getCustomer().getPerson().toString()));
-        invoice.addOppdragsgiver(Link.with(claim.getPrincipalUri().toString()));
+        invoice.addOppdragsgiver(Link.with(claim.getPrincipal().getUri().toString()));
 
         Identifikator identifikator = new Identifikator();
         identifikator.setIdentifikatorverdi(claim.getOrderNumber());

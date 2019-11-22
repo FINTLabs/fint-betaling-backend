@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @Service
 public class ClaimFactory {
@@ -36,10 +34,10 @@ public class ClaimFactory {
             claim.setOrgId(orgId);
             claim.setOrderNumber(counter.toString());
             claim.setCustomer(customer);
-            claim.setPrincipalUri(order.getPrincipalUri());
+            claim.setPrincipal(order.getPrincipal());
             claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
             claim.setOriginalAmountDue(order.sum());
-            claim.setOrderLines(order.getOrderLines());
+            claim.setOrderItems(order.getOrderItems());
             claim.setClaimStatus(ClaimStatus.STORED);
             claims.add(claim);
         });

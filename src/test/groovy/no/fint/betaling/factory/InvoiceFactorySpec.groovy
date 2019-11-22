@@ -1,14 +1,8 @@
 package no.fint.betaling.factory
 
-import no.fint.betaling.model.Claim
+
 import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.Customer
-import no.fint.betaling.model.OrderLine
 import no.fint.betaling.util.BetalingObjectFactory
-import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.kompleksedatatyper.KontostrengResource
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
 import spock.lang.Specification
 
 class InvoiceFactorySpec extends Specification {
@@ -27,7 +21,7 @@ class InvoiceFactorySpec extends Specification {
 
         then:
         invoice.ordrenummer.identifikatorverdi == '123'
-        invoice.netto == 10000
+        invoice.netto == 1000000
         invoice.fakturalinjer.size() == 1
     }
 }

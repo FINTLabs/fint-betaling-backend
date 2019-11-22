@@ -29,6 +29,6 @@ class PrincipalRepositorySpec extends Specification {
         then:
         result.size() == 1
         1 * restUtil.getUpdates(OppdragsgiverResources, endpoint) >> oppdragsgiverResources
-        1 * lineitemRepository.getLineitemByUri(_ as URI) >> new Lineitem(code: 'abc')
+        1 * lineitemRepository.getLineitemByUri(_ as URI) >> new Lineitem(itemCode: 'abc')
     }
 }

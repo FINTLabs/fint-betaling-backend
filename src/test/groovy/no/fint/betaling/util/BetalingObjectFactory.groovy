@@ -1,14 +1,9 @@
 package no.fint.betaling.util
 
-import no.fint.betaling.model.Claim
-import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.Customer
-import no.fint.betaling.model.Order
-import no.fint.betaling.model.OrderLine
-import no.fint.model.felles.kompleksedatatyper.Identifikator
+import no.fint.betaling.factory.InvoiceFactory
+import no.fint.betaling.model.*
 import no.fint.model.resource.Link
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
-import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource
 
 import java.time.LocalDate
 
@@ -27,58 +22,58 @@ class BetalingObjectFactory {
         return customer
     }
 
-    static OrderLine newOrderLine() {
-        OrderLine orderLine = new OrderLine()
-        orderLine.setItemUri('link.to.Item'.toURI())
-        orderLine.setDescription('Apple MacBook Pro')
-        orderLine.setNumberOfItems(1)
-        orderLine.setItemPrice(10000)
-        return orderLine
+    static Principal newPrincipal() {
+        return new Principal(
+                uri: 'https://www.imdb.com/title/tt0093780/'.toURI(),
+                description: 'The Principal (1987)',
+                code: 'tt0093780',
+                lineitems: [newLineitem()]
+        )
+    }
+
+    static OrderItem newOrderItem() {
+        return new OrderItem(
+                lineitem: newLineitem(),
+                description: 'Monkeyballs',
+                itemQuantity: 1
+        )
+    }
+
+    static Lineitem newLineitem() {
+        return new Lineitem(
+                description: 'Apple MacBook Pro',
+                itemPrice: 1000000,
+                itemCode: 'MBP',
+                uri: 'link.to.Item'.toURI())
     }
 
     static Order newOrder() {
-        Order order = new Order()
-        order.setCustomers([newCustomer()])
-        order.setPrincipalUri('link.to.Principal'.toURI())
-        order.setOrderLines([newOrderLine()])
-        order.setRequestedNumberOfDaysToPaymentDeadline('7')
-        return order
+        return new Order(
+                customers: [newCustomer()],
+                principal: newPrincipal(),
+                orderItems: [newOrderItem()],
+                requestedNumberOfDaysToPaymentDeadline: '7'
+        )
     }
 
     static Claim newClaim(String orderNumber, ClaimStatus claimStatus) {
-        Claim claim = new Claim()
-        claim.setOrderNumber(orderNumber);
-        claim.setCustomer(newCustomer());
-        claim.setPrincipalUri(newOrder().principalUri);
-        claim.setRequestedNumberOfDaysToPaymentDeadline(newOrder().requestedNumberOfDaysToPaymentDeadline);
-        claim.setOriginalAmountDue(newOrder().sum());
-        claim.setOrderLines(newOrder().orderLines);
-        claim.setClaimStatus(claimStatus);
-        claim.setCreatedDate(LocalDate.now())
-        claim.invoiceUri = 'link.to.Invoice'.toURI()
-        claim.claimStatus = ClaimStatus.STORED
-        return claim
+        def order = newOrder()
+        return new Claim(
+                orderNumber: orderNumber,
+                customer: newCustomer(),
+                principal: newPrincipal(),
+                requestedNumberOfDaysToPaymentDeadline: order.requestedNumberOfDaysToPaymentDeadline,
+                originalAmountDue: order.sum(),
+                orderItems: order.orderItems,
+                claimStatus: claimStatus,
+                createdDate: LocalDate.now(),
+                invoiceUri: 'link.to.Invoice'.toURI(),
+        )
     }
 
     static FakturagrunnlagResource newInvoice() {
-        FakturagrunnlagResource invoice = new FakturagrunnlagResource();
-        Claim claim = newClaim('12345', ClaimStatus.STORED)
-        invoice.setFakturalinjer([newInvoiceLine()]);
-        invoice.setLeveringsdato(new Date());
-        invoice.setNetto(claim.getOriginalAmountDue());
-        invoice.addMottaker(Link.with(claim.getCustomer().getPerson().toString()));
-        invoice.addOppdragsgiver(Link.with(claim.getPrincipalUri().toString()));
-        invoice.setOrdrenummer(new Identifikator(identifikatorverdi: claim.getOrderNumber()));
-        invoice.addSelf(new Link(verdi: 'link.to.Invoice'))
+        def invoice = InvoiceFactory.createInvoice(newClaim('12345', ClaimStatus.STORED))
+        invoice.addSelf(Link.with('link.to.Invoice'))
         return invoice
-    }
-
-    static FakturalinjeResource newInvoiceLine() {
-        FakturalinjeResource invoiceLine = new FakturalinjeResource();
-        invoiceLine.setPris(newOrderLine().getItemPrice());
-        invoiceLine.setAntall(newOrderLine().getNumberOfItems());
-        invoiceLine.setFritekst([newOrderLine().getDescription()]);
-        invoiceLine.addVarelinje(Link.with(newOrderLine().getItemUri().toString()));
-        return invoiceLine;
     }
 }

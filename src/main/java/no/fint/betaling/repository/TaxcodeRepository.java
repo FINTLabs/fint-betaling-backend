@@ -52,7 +52,7 @@ public class TaxcodeRepository {
                 .forEach(m -> {
                     Taxcode taxcode = new Taxcode();
                     taxcode.setCode(m.getKode());
-                    taxcode.setRate(m.getPromille() / 1000.0);
+                    taxcode.setRate(m.getPromille());
                     taxcode.setDescription(m.getNavn());
                     m.getSelfLinks()
                             .stream()
