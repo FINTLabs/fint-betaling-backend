@@ -79,7 +79,7 @@ public class CacheService {
         try {
             resources = restUtil.get(SkoleResources.class, schoolEndpoint);
         } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             cache.putIfAbsent("schools", Collections.emptyMap());
             return;
         }
@@ -98,7 +98,7 @@ public class CacheService {
         try {
             resources = restUtil.get(BasisgruppeResources.class, basisGroupEndpoint);
         } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             cache.putIfAbsent("basisGroups", Collections.emptyMap());
             return;
         }
@@ -117,7 +117,7 @@ public class CacheService {
         try {
             resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint);
         } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             cache.putIfAbsent("teachingGroups", Collections.emptyMap());
             return;
         }
@@ -136,7 +136,7 @@ public class CacheService {
         try {
             resources = restUtil.get(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
         } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             cache.putIfAbsent("contactTeacherGroups", Collections.emptyMap());
             return;
         }
@@ -155,7 +155,7 @@ public class CacheService {
         try {
             resources = restUtil.get(PersonResources.class, personEndpoint);
         } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             cache.putIfAbsent("students", Collections.emptyMap());
             return;
         }
@@ -174,7 +174,7 @@ public class CacheService {
         try {
             resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint);
         } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getMessage(), ex);
             cache.putIfAbsent("studentRelations", Collections.emptyMap());
             return;
         }

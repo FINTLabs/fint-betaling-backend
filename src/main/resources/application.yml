@@ -23,9 +23,7 @@ fint:
     request-url: https://beta.felleskomponent.no/utdanning/elev/person
   betaling:
     org-id: "fake.fintlabs.no"
-    collection-name: "betaling"
     date-range: "7, 14, 30"
-    default-org-id: "fake.fintlabs.no"
     default-school-org-id: "999999999"
     invoice-send-rate: "60000"
     invoice-update-rate: "150000"

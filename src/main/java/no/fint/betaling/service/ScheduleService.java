@@ -16,23 +16,23 @@ public class ScheduleService {
 
     /*
     @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.invoice-send-rate}")
-    public void sendInvoices(){
-        log.info("Sending invoices...");
+    public void sendClaims(){
+        log.info("Sending claims...");
         try {
-            invoiceRepository.sendInvoices(orgId);
+            claimService.sendClaims();
         } catch (Exception e) {
-            log.error("Error caught when sending invoices!", e);
+            log.error("Error caught when sending claims!", e);
         }
     }
-     */
+    */
 
     @Scheduled(initialDelay = 20000, fixedRateString = "${fint.betaling.invoice-update-rate}")
-    public void updateInvoices() {
-        log.info("Updating invoices...");
+    public void updateClaims() {
+        log.info("Updating claims...");
         try {
             claimService.updateClaimStatus();
         } catch (Exception e) {
-            log.error("Error caught when updating invoices!", e);
+            log.error("Error caught when updating claims!", e);
         }
     }
 }
