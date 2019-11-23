@@ -3,7 +3,7 @@ package no.fint.betaling.factory;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
-import no.fint.betaling.repository.OrderNumberRepository;
+import no.fint.betaling.repository.ClaimRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ClaimFactory {
 
     @Autowired
-    private OrderNumberRepository orderNumberRepository;
+    private ClaimRepository claimRepository;
 
     @Value("${fint.betaling.org-id}")
     private String orgId;
@@ -26,7 +26,7 @@ public class ClaimFactory {
     public List<Claim> createClaim(Order order) {
         List<Claim> claims = new ArrayList<>();
 
-        Long orderNumber = orderNumberRepository.getHighestOrderNumber();
+        Long orderNumber = claimRepository.getHighestOrderNumber();
 
         AtomicLong counter = new AtomicLong(orderNumber);
 

@@ -60,4 +60,17 @@ class ClaimRepositorySpec extends Specification {
         then:
         1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as Class<Claim>)
     }
+
+    def "Get highest order number"() {
+        given:
+        def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
+        def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
+
+        when:
+        def orderNumber = claimRepository.getHighestOrderNumber()
+
+        then:
+        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [lowClaim, highClaim]
+        orderNumber == 5678
+    }
 }
