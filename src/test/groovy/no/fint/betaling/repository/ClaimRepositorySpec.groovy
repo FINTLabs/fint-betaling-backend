@@ -2,7 +2,6 @@ package no.fint.betaling.repository
 
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.Customer
 import no.fint.betaling.util.BetalingObjectFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
@@ -27,7 +26,7 @@ class ClaimRepositorySpec extends Specification {
         def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
 
         when:
-        claimRepository.setClaim(claim)
+        claimRepository.storeClaim(claim)
 
         then:
         1 * mongoTemplate.save(_ as Claim)

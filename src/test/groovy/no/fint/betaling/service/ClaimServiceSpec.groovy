@@ -159,7 +159,7 @@ class ClaimServiceSpec extends Specification {
 
         then:
         1 * claimFactory.createClaim(_ as Order) >> [claim]
-        1 * claimRepository.setClaim(_ as Claim)
+        1 * claimRepository.storeClaim(_ as Claim)
         claims.size() == 1
         claims.every { it.orderItems.size() == 1 }
         claims.every { it.orderNumber == '12345' }

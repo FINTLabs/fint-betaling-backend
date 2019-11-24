@@ -22,7 +22,7 @@ public class ClaimRepository {
     @Value("${fint.betaling.org-id}")
     private String orgId;
 
-    public void setClaim(Claim claim) {
+    public void storeClaim(Claim claim) {
         mongoTemplate.save(claim);
     }
 
