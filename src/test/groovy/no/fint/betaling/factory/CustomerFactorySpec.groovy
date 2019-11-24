@@ -1,27 +1,22 @@
 package no.fint.betaling.factory
 
+import no.fint.betaling.util.FintObjectFactory
 import no.fint.betaling.util.RestUtil
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
 import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
 import spock.lang.Specification
 
 class CustomerFactorySpec extends Specification {
-
     private RestUtil restUtil
-    private String orgId
+    private FintObjectFactory fintObjectFactory
 
     void setup() {
-        restUtil = Mock(RestUtil)
-        orgId = 'test.no'
+        restUtil = Mock()
+        fintObjectFactory = new FintObjectFactory()
     }
 
     def "Get customer given valid person resource returns customer"() {
         given:
-        def person = createPerson('12345678901', 'Oslo', 'test@test.com')
+        def person = fintObjectFactory.newStudent()
 
         when:
         def customer = CustomerFactory.toCustomer(person)
@@ -66,31 +61,5 @@ class CustomerFactorySpec extends Specification {
         'Sture' | 'Pettersen' | 'Hansen'  || 'Hansen, Sture Pettersen'
         null    | null        | 'Hansen'  || 'Hansen'
         null    | null        | null      || ''
-    }
-
-    private static PersonResource createPerson(String id, String city, String email) {
-        def nin = new Identifikator()
-        nin.setIdentifikatorverdi(id)
-
-        def name = new Personnavn()
-        name.setFornavn('Ola')
-        name.setEtternavn('Testesen')
-
-        def contactInformation = new Kontaktinformasjon()
-        contactInformation.setEpostadresse(email)
-
-        def address = new AdresseResource()
-        address.setAdresselinje(["gatenavn"])
-        address.setPoststed(city)
-
-        def person = new PersonResource()
-        person.setFodselsnummer(nin)
-        person.setNavn(name)
-        person.setKontaktinformasjon(contactInformation)
-        person.setPostadresse(address)
-
-        person.addLink('self', new Link('person.self'))
-
-        return person
     }
 }

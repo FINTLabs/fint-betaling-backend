@@ -10,16 +10,15 @@ import java.time.LocalDate
 class BetalingObjectFactory {
 
     static Customer newCustomer() {
-        Customer customer = new Customer()
-        customer.setName('Ola Testesen')
-        customer.setId('21i3v9')
-        customer.setPostalAddress('Testeveien 13')
-        customer.setPostalCode('1234')
-        customer.setCity('Testeby')
-        customer.setMobile('30960547')
-        customer.setEmail('ola@testesen.no')
-        customer.setPerson('link.to.Person'.toURI())
-        return customer
+        return new Customer(
+                name: 'Ola Testesen',
+                id: '21i3v9',
+                postalAddress: 'Testeveien 13',
+                postalCode: '1234',
+                city: 'Testeby',
+                mobile: '30960547',
+                email: 'ola@testesen.no',
+                person: 'link.to.Person'.toURI())
     }
 
     static Principal newPrincipal() {
@@ -27,7 +26,7 @@ class BetalingObjectFactory {
                 uri: 'https://www.imdb.com/title/tt0093780/'.toURI(),
                 description: 'The Principal (1987)',
                 code: 'tt0093780',
-                lineitems: [newLineitem()]
+                lineitems: ['MBP']
         )
     }
 
@@ -52,22 +51,64 @@ class BetalingObjectFactory {
                 customers: [newCustomer()],
                 principal: newPrincipal(),
                 orderItems: [newOrderItem()],
-                requestedNumberOfDaysToPaymentDeadline: '7'
+                requestedNumberOfDaysToPaymentDeadline: '7',
+                organisationUnit: newOrganisationUnit(),
+                createdBy: newUser()
         )
     }
 
     static Claim newClaim(String orderNumber, ClaimStatus claimStatus) {
         def order = newOrder()
         return new Claim(
+                orgId: '123',
                 orderNumber: orderNumber,
-                customer: newCustomer(),
-                principal: newPrincipal(),
-                requestedNumberOfDaysToPaymentDeadline: order.requestedNumberOfDaysToPaymentDeadline,
+                invoiceNumbers: ['456'],
+                invoiceDate: LocalDate.parse('2019-11-10'),
+                paymentDueDate: LocalDate.parse('2019-11-17'),
+                createdDate: LocalDate.parse('2019-11-01'),
+                lastModifiedDate: LocalDate.parse('2019-11-05'),
+                creditNotes: [newCreditNote()],
+                amountDue: 500000,
                 originalAmountDue: order.sum(),
+                requestedNumberOfDaysToPaymentDeadline: order.requestedNumberOfDaysToPaymentDeadline,
+                customer: newCustomer(),
+                createdBy: newUser(),
+                organisationUnit: newOrganisationUnit(),
+                principal: newPrincipal(),
+                invoiceUri: 'link.to.Invoice'.toURI(),
                 orderItems: order.orderItems,
                 claimStatus: claimStatus,
-                createdDate: LocalDate.now(),
-                invoiceUri: 'link.to.Invoice'.toURI(),
+        )
+    }
+
+    static CreditNote newCreditNote() {
+        return new CreditNote(
+                id: '111',
+                date: LocalDate.parse('2019-11-12'),
+                amount: 500000,
+                comment: 'This is a comment'
+        )
+    }
+
+    static User newUser() {
+        return new User(
+                name: 'Frank Testesen',
+                organisation: newOrganisation(),
+                organisationUnits: [newOrganisationUnit()]
+        )
+    }
+
+    static Organisation newOrganisation() {
+        return new Organisation(
+                name: 'SVH',
+                organisationNumber: 'NO987654321'
+        )
+    }
+
+    static Organisation newOrganisationUnit() {
+        return new Organisation(
+                name: 'HVS',
+                organisationNumber: 'NO123456789'
         )
     }
 

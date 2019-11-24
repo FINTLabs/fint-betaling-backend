@@ -42,7 +42,7 @@ class ClaimControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(post('/api/claim').content(jsonOrder).contentType(MediaType.APPLICATION_JSON))
 
         then:
-        1 * claimService.setClaim(_ as Order)
+        1 * claimService.storeClaim(_ as Order)
         response.andExpect(status().is(201))
     }
 

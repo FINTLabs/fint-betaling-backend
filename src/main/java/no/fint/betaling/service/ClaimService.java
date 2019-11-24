@@ -206,9 +206,9 @@ public class ClaimService {
         return claimRepository.getClaims(query);
     }
 
-    public List<Claim> setClaim(Order order) {
+    public List<Claim> storeClaim(Order order) {
         List<Claim> claims = claimFactory.createClaim(order);
-        claims.forEach(claim -> claimRepository.setClaim(claim));
+        claims.forEach(claim -> claimRepository.storeClaim(claim));
         return claims;
     }
 }

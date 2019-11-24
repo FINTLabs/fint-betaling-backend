@@ -1,7 +1,8 @@
 package no.fint.betaling.repository
 
 import no.fint.betaling.model.Claim
-import no.fint.betaling.model.Customer
+import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.util.BetalingObjectFactory
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -10,22 +11,22 @@ import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
 
-    private String orgId
     private MongoTemplate mongoTemplate
     private ClaimRepository claimRepository
+    private BetalingObjectFactory betalingObjectFactory;
 
     void setup() {
-        orgId = 'test.no'
         mongoTemplate = Mock(MongoTemplate)
         claimRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
+        betalingObjectFactory = new BetalingObjectFactory()
     }
 
     def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
         given:
-        def customer = new Customer(name: 'Testesen')
+        def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
 
         when:
-        claimRepository.setClaim(new Claim(invoiceUri: 'link.to.FakturagrunnlagResource'.toURI(), customer: customer))
+        claimRepository.storeClaim(claim)
 
         then:
         1 * mongoTemplate.save(_ as Claim)
@@ -57,5 +58,18 @@ class ClaimRepositorySpec extends Specification {
 
         then:
         1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as Class<Claim>)
+    }
+
+    def "Get highest order number"() {
+        given:
+        def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
+        def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
+
+        when:
+        def orderNumber = claimRepository.getHighestOrderNumber()
+
+        then:
+        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [lowClaim, highClaim]
+        orderNumber == 5678
     }
 }

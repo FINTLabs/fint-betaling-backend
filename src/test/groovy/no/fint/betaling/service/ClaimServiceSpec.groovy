@@ -155,11 +155,11 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
 
         when:
-        def claims = claimService.setClaim(order)
+        def claims = claimService.storeClaim(order)
 
         then:
         1 * claimFactory.createClaim(_ as Order) >> [claim]
-        1 * claimRepository.setClaim(_ as Claim)
+        1 * claimRepository.storeClaim(_ as Claim)
         claims.size() == 1
         claims.every { it.orderItems.size() == 1 }
         claims.every { it.orderNumber == '12345' }
