@@ -206,9 +206,11 @@ public class ClaimService {
         return claimRepository.getClaims(query);
     }
 
-    public List<Claim> storeClaim(Order order) {
-        List<Claim> claims = claimFactory.createClaim(order);
-        claims.forEach(claim -> claimRepository.storeClaim(claim));
-        return claims;
+    public List<Claim> storeClaims(Order order) {
+        return claimFactory
+                .createClaims(order)
+                .stream()
+                .map(claimRepository::storeClaim)
+                .collect(Collectors.toList());
     }
 }

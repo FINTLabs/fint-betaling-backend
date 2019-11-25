@@ -23,7 +23,7 @@ public class ClaimController {
     @PostMapping
     public ResponseEntity storeClaim(@RequestBody Order order) {
         log.info("Received order: {}", order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.storeClaim(order));
+        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.storeClaims(order));
     }
 
     @PostMapping("/send")
