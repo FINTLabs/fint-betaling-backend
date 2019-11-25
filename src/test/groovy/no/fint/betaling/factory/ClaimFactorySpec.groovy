@@ -1,21 +1,17 @@
 package no.fint.betaling.factory
 
 import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import spock.lang.Specification
 
 import java.time.LocalDate
-import java.time.ZoneId
 
 class ClaimFactorySpec extends Specification {
-    private ClaimRepository claimRepository
     private ClaimFactory claimFactory
     private BetalingObjectFactory betalingObjectFactory
 
     void setup() {
-        claimRepository = Mock()
-        claimFactory = new ClaimFactory(claimRepository: claimRepository)
+        claimFactory = new ClaimFactory()
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -24,13 +20,11 @@ class ClaimFactorySpec extends Specification {
         def order = betalingObjectFactory.newOrder()
 
         when:
-        def claims = claimFactory.createClaim(order)
+        def claims = claimFactory.createClaims(order)
 
         then:
-        1 * claimRepository.getHighestOrderNumber() >> 123
-        claims.get(0).orderNumber == '124'
-        claims.get(0).createdDate == LocalDate.now(ZoneId.systemDefault())
-        claims.get(0).lastModifiedDate == LocalDate.now(ZoneId.systemDefault())
+        claims.get(0).createdDate == LocalDate.now()
+        claims.get(0).lastModifiedDate == LocalDate.now()
         claims.get(0).originalAmountDue == 1000000
         claims.get(0).requestedNumberOfDaysToPaymentDeadline == '7'
         claims.get(0).customer.name == 'Ola Testesen'

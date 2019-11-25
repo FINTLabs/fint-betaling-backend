@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import org.springframework.data.util.CloseableIterator
 import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
@@ -30,6 +31,7 @@ class ClaimRepositorySpec extends Specification {
 
         then:
         1 * mongoTemplate.save(_ as Claim)
+        claim.orderNumber == '100001'
     }
 
     def "Get payment returns list"() {
@@ -64,12 +66,29 @@ class ClaimRepositorySpec extends Specification {
         given:
         def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
         def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
+        def claims = [highClaim, lowClaim].iterator()
+        def iter = new CloseableIterator() {
+            @Override
+            void close() {
+
+            }
+
+            @Override
+            boolean hasNext() {
+                return claims.hasNext()
+            }
+
+            @Override
+            Object next() {
+                return claims.next()
+            }
+        }
 
         when:
-        def orderNumber = claimRepository.getHighestOrderNumber()
+        claimRepository.setHighestOrderNumber()
 
         then:
-        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [lowClaim, highClaim]
-        orderNumber == 5678
+        1 * mongoTemplate.stream(_ as Query, _ as Class<Claim>) >> iter
+        claimRepository.orderNumberCounter.get() == 5678
     }
 }
