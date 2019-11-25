@@ -3,14 +3,13 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.UriUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collection;
@@ -57,10 +56,9 @@ public class TaxcodeRepository {
                     m.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
-                            .map(UriComponentsBuilder::fromUriString)
-                            .map(UriComponentsBuilder::build)
-                            .map(UriComponents::toUri)
-                            .findFirst().ifPresent(taxcode::setUri);
+                            .map(UriUtil::parseUri)
+                            .findFirst()
+                            .ifPresent(taxcode::setUri);
                     taxcodes.put(taxcode.getUri(), taxcode);
                 });
         log.info("Update completed, {} tax codes.", taxcodes.size());
