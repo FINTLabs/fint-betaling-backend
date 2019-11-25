@@ -29,6 +29,7 @@ public class ClaimRepository {
 
     public Claim storeClaim(Claim claim) {
         claim.setOrderNumber(String.valueOf(orderNumberCounter.incrementAndGet()));
+        claim.setTimestamp(System.currentTimeMillis());
         mongoTemplate.save(claim);
         return claim;
     }
@@ -38,6 +39,7 @@ public class ClaimRepository {
     }
 
     public void updateClaim(Query query, Update update) {
+        update.set("timestamp", System.currentTimeMillis());
         mongoTemplate.upsert(query, update, Claim.class);
     }
 
