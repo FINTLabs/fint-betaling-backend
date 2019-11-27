@@ -5,6 +5,7 @@ import no.fint.betaling.model.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -22,19 +23,15 @@ public class MeController {
         user.setName("Navn Navnesen");
 
         Organisation schoolOwner = new Organisation();
-        schoolOwner.setName("Telemark fylkeskommune");
-        schoolOwner.setOrganisationNumber("940192226");
+        schoolOwner.setName("Test fylkeskommune");
+        schoolOwner.setOrganisationNumber("888888888");
         user.setOrganisation(schoolOwner);
 
-        Organisation school1 = new Organisation();
-        school1.setName("Skien videregående skole");
-        school1.setOrganisationNumber("974568039");
+        Organisation school = new Organisation();
+        school.setName("Jalla videregående skole");
+        school.setOrganisationNumber("999999999");
 
-        Organisation school2 = new Organisation();
-        school2.setName("Notodden videregående skole");
-        school2.setOrganisationNumber("974568012");
-
-        user.setOrganisationUnits(Arrays.asList(school1, school2));
+        user.setOrganisationUnits(Collections.singletonList(school));
 
         return user;
     }
