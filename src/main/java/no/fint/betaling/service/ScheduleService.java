@@ -30,7 +30,7 @@ public class ScheduleService {
     public void updateClaims() {
         log.info("Updating claims...");
         try {
-            claimService.updateClaimStatus();
+            claimService.updateClaims();
         } catch (Exception e) {
             log.error("Error caught when updating claims!", e);
         }

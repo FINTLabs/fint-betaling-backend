@@ -27,7 +27,7 @@ class ClaimControllerSpec extends MockMvcSpecification {
         def response = mockMvc.perform(get('/api/claim'))
 
         then:
-        1 * claimService.getAllClaims() >> [createClaim('123', 'Testesen')]
+        1 * claimService.getClaims() >> [createClaim('123', 'Testesen')]
         response.andExpect(status().isOk())
                 .andExpect(jsonPathSize('$', 1))
                 .andExpect(jsonPathEquals('$[0].customer.name', 'Testesen'))

@@ -34,7 +34,7 @@ public class ClaimController {
 
     @GetMapping
     public List<Claim> getAllClaims() {
-        return claimService.getAllClaims();
+        return claimService.getClaims();
     }
 
     @GetMapping("/name/{name}")

@@ -38,7 +38,7 @@ dependencies {
     compile("no.fint:fint-okonomi-model-java:${apiVersion}")
     compile('no.fint:fint-utdanning-resource-model-java:3.1.0')
     compile('no.fint:fint-oauth-token-service:1.4.0')
-    compile('no.fint:fint-betaling-model:1.0.0-alpha-8')
+    compile('no.fint:fint-betaling-model:1.0.0-alpha-9')
 
     compile('org.jooq:jool-java-8:0.9.14')
     compile('org.springframework.boot:spring-boot-starter')
