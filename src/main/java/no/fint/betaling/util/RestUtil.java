@@ -42,19 +42,19 @@ public class RestUtil {
 
     public <T> T get(Class<T> clazz, URI uri) {
         try {
-            log.debug("Get {}", uri);
+            log.info("GET {}", uri);
             return restTemplate.getForObject(uri, clazz);
         } catch (RestClientResponseException e) {
             throw new InvalidResponseException(e.getResponseBodyAsString(), e);
         }
     }
 
-    public <T> ResponseEntity<T> post(Class<T> clazz, URI url, T content) {
+    public <T> ResponseEntity<T> post(Class<T> clazz, URI uri, T content) {
         try {
-            log.info("POST {} {}", url, content);
-            return restTemplate.postForEntity(url, content, clazz);
+            log.info("POST {} {}", uri, content);
+            return restTemplate.postForEntity(uri, content, clazz);
         } catch (RestClientResponseException e) {
-            throw new InvalidResponseException(String.format("Unable to set %s url: %s: %s", clazz.getSimpleName(), url, e.getResponseBodyAsString()), e);
+            throw new InvalidResponseException(e.getResponseBodyAsString(), e);
         }
     }
 }

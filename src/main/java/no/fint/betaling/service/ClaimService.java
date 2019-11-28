@@ -72,9 +72,11 @@ public class ClaimService {
                         claim.setInvoiceUri(invoiceUri);
                         claim.setClaimStatus(ClaimStatus.SENT);
                         claim.setStatusMessage(null);
+                        log.info("Sent claim {}", claim.getOrderNumber());
                     } catch (InvalidResponseException e) {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                         claim.setStatusMessage(e.getMessage());
+                        log.error("Error sending claim {}", claim.getOrderNumber(), e);
                     }
                     updateClaimStatus(claim);
                 })
@@ -94,9 +96,11 @@ public class ClaimService {
                 updateClaim(resource);
                 claim.setClaimStatus(ClaimStatus.SENT);
                 claim.setStatusMessage(null);
+                log.info("Updated claim {}", claim.getOrderNumber());
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                 claim.setStatusMessage(e.getMessage());
+                log.error("Error updating claim {}", claim.getOrderNumber(), e);
             }
             updateClaimStatus(claim);
         });
