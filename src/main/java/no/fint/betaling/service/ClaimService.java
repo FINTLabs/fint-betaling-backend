@@ -92,6 +92,7 @@ public class ClaimService {
             try {
                 FakturagrunnlagResource resource = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 updateClaim(resource);
+                claim.setClaimStatus(ClaimStatus.SENT);
                 claim.setStatusMessage(null);
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
