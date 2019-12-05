@@ -5,40 +5,35 @@ import no.fint.betaling.exception.SchoolNotFoundException;
 import no.fint.betaling.factory.CustomerFactory;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
+import no.fint.betaling.repository.GroupRepository;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.*;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.utdanning.basisklasser.Gruppe;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@SuppressWarnings("unchecked")
 public class GroupService {
 
-    private final CacheService cacheService;
+    private final GroupRepository groupRepository;
 
-    public GroupService(CacheService cacheService) {
-        this.cacheService = cacheService;
+    public GroupService(GroupRepository groupRepository) {
+        this.groupRepository = groupRepository;
     }
 
     private SkoleResource getSchool(String schoolId) {
-        Map<String, SkoleResource> schools = cacheService.getResources("schools");
-
-        SkoleResource school = schools.get(schoolId);
-
-        if (school == null) {
-            log.error("x-school-org-id: {}", schoolId);
-            throw new SchoolNotFoundException("x-school-org-id: " + schoolId);
-        }
-
-        return school;
+        return groupRepository.getSchools().values().stream()
+                .filter(hasOrganisationNumber(schoolId))
+                .findFirst()
+                .orElseThrow(() -> new SchoolNotFoundException(String.format("x-school-org-id: %s", schoolId)));
     }
 
     public CustomerGroup getCustomerGroupBySchool(String schoolId) {
@@ -50,46 +45,31 @@ public class GroupService {
     public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 
-        Link schoolLink = getSelfLink(school);
-
-        Map<Link, List<BasisgruppeResource>> resources = cacheService.getResources("basisGroups");
-
-        List<BasisgruppeResource> basisGroups = resources.get(schoolLink);
-
-        if (basisGroups == null) return Collections.emptyList();
-
-        return basisGroups.stream().map(this::createCustomerGroup).collect(Collectors.toList());
+        return groupRepository.getBasisGroups().values().stream()
+                .filter(hasRelationToSchool(school))
+                .map(this::createCustomerGroup)
+                .collect(Collectors.toList());
     }
 
     public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 
-        Link schoolLink = getSelfLink(school);
-
-        Map<Link, List<UndervisningsgruppeResource>> resources = cacheService.getResources("teachingGroups");
-
-        List<UndervisningsgruppeResource> teachingGroups = resources.get(schoolLink);
-
-        if (teachingGroups == null) return Collections.emptyList();
-
-        return teachingGroups.stream().map(this::createCustomerGroup).collect(Collectors.toList());
+        return groupRepository.getTeachingGroups().values().stream()
+                .filter(hasRelationToSchool(school))
+                .map(this::createCustomerGroup)
+                .collect(Collectors.toList());
     }
 
     public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 
-        Link schoolLink = getSelfLink(school);
-
-        Map<Link, List<KontaktlarergruppeResource>> resources = cacheService.getResources("contactTeacherGroups");
-
-        List<KontaktlarergruppeResource> contactTeacherGroups = resources.get(schoolLink);
-
-        if (contactTeacherGroups == null) return Collections.emptyList();
-
-        return contactTeacherGroups.stream().map(this::createCustomerGroup).collect(Collectors.toList());
+        return groupRepository.getContactTeacherGroups().values().stream()
+                .filter(hasRelationToSchool(school))
+                .map(this::createCustomerGroup)
+                .collect(Collectors.toList());
     }
 
-    private<T extends Gruppe & FintLinks> CustomerGroup createCustomerGroup(T group) {
+    private <T extends Gruppe & FintLinks> CustomerGroup createCustomerGroup(T group) {
         CustomerGroup customerGroup = new CustomerGroup();
         customerGroup.setName(group.getNavn());
         customerGroup.setDescription(group.getBeskrivelse());
@@ -106,8 +86,8 @@ public class GroupService {
     }
 
     private List<Customer> getCustomersForGroup(List<Link> studentRelationLinks) {
-        Map<Link, ElevforholdResource> studentRelations = cacheService.getResources("studentRelations");
-        Map<Link, PersonResource> students = cacheService.getResources("students");
+        Map<Link, ElevforholdResource> studentRelations = groupRepository.getStudentRelations();
+        Map<Link, PersonResource> students = groupRepository.getStudents();
 
         return studentRelationLinks.stream()
                 .map(studentRelations::get)
@@ -120,11 +100,18 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
-    private <T extends FintLinks> Link getSelfLink(T resource) {
-        return resource.getSelfLinks().stream().findAny().orElse(null);
+    private Link getStudentLink(ElevforholdResource resource) {
+        return resource.getElev().stream().findFirst().orElse(null);
     }
 
-    private Link getStudentLink(ElevforholdResource resource) {
-        return resource.getElev().stream().findAny().orElse(null);
+    private Predicate<SkoleResource> hasOrganisationNumber(String schoolId) {
+        return s -> Optional.ofNullable(s.getOrganisasjonsnummer())
+                .map(Identifikator::getIdentifikatorverdi)
+                .map(schoolId::equals)
+                .orElse(false);
+    }
+
+    private <T extends FintLinks> Predicate<T> hasRelationToSchool(SkoleResource school) {
+        return g -> g.getLinks().get("skole").contains(school.getSelfLinks().stream().findFirst().orElse(null));
     }
 }
