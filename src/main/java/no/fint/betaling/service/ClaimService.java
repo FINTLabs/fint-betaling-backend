@@ -34,7 +34,7 @@ public class ClaimService {
     private static final String ORDER_NUMBER = "orderNumber";
     private static final String CUSTOMER_NAME = "customer.name";
     private static final String INVOICE_URI = "invoiceUri";
-    private static final String INVOICE_NUMBER = "invoiceNumber";
+    //private static final String INVOICE_NUMBER = "invoiceNumber";
     private static final String AMOUNT_DUE = "amountDue";
     private static final String CLAIM_STATUS = "claimStatus";
     private static final String STATUS_MESSAGE = "statusMessage";
@@ -108,20 +108,28 @@ public class ClaimService {
 
     /**
      * TODO Needs to update with both {@link FakturagrunnlagResource} and {@link FakturaResource}
+     *         "invoiceNumbers": ?
+     *         "invoiceDate": ?
+     *         "paymentDueDate": ?
+     *         "creditNotes": ?
      */
     public void updateClaim(FakturagrunnlagResource invoice) {
         Update update = new Update();
         Consumer2<String, Object> updater = Consumer2.from(update::set);
-        //updater.accept("fakturagrunnlag", invoice);
+
         invoice.getSelfLinks()
                 .stream()
                 .map(Link::getHref)
                 .findAny()
                 .ifPresent(updater.acceptPartially(INVOICE_URI));
+
+        /*
         Optional.ofNullable(invoice.getOrdrenummer())
                 .map(Identifikator::getIdentifikatorverdi)
                 .map(Long::valueOf)
                 .ifPresent(updater.acceptPartially(INVOICE_NUMBER));
+         */
+
         Optional.ofNullable(invoice.getTotal())
                 .map(String::valueOf)
                 .ifPresent(updater.acceptPartially(AMOUNT_DUE));
