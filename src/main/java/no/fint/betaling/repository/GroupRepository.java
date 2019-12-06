@@ -66,7 +66,7 @@ public class GroupRepository {
         updateStudentRelations();
     }
 
-    @CachePut(value = "schools")
+    @CachePut(value = "schools", unless = "#result == null")
     public Map<Link, SkoleResource> updateSchools() {
         log.info("Updating schools from {} ...", schoolEndpoint);
 
@@ -76,7 +76,7 @@ public class GroupRepository {
             resources = restUtil.getUpdates(SkoleResources.class, schoolEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
-            return schools;
+            return null;
         }
 
         if (resources.getTotalItems() > 0)
@@ -95,7 +95,7 @@ public class GroupRepository {
         return schools;
     }
 
-    @CachePut("basisGroups")
+    @CachePut(value = "basisGroups", unless = "#result == null")
     public Map<Link, BasisgruppeResource> updateBasisGroups() {
         log.info("Updating basis groups from {} ...", basisGroupEndpoint);
 
@@ -105,7 +105,7 @@ public class GroupRepository {
             resources = restUtil.getUpdates(BasisgruppeResources.class, basisGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
-            return basisGroups;
+            return null;
         }
 
         if (resources.getTotalItems() > 0)
@@ -124,7 +124,7 @@ public class GroupRepository {
         return basisGroups;
     }
 
-    @CachePut("teachingGroups")
+    @CachePut(value = "teachingGroups", unless = "#result == null")
     public Map<Link, UndervisningsgruppeResource> updateTeachingGroups() {
         log.info("Updating teaching groups from {} ...", teachingGroupEndpoint);
 
@@ -134,7 +134,7 @@ public class GroupRepository {
             resources = restUtil.getUpdates(UndervisningsgruppeResources.class, teachingGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
-            return teachingGroups;
+            return null;
         }
 
         if (resources.getTotalItems() > 0)
@@ -153,7 +153,7 @@ public class GroupRepository {
         return teachingGroups;
     }
 
-    @CachePut("contactTeacherGroups")
+    @CachePut(value = "contactTeacherGroups", unless = "#result == null")
     public Map<Link, KontaktlarergruppeResource> updateContactTeacherGroups() {
         log.info("Updating contact teacher groups from {} ...", contactTeacherGroupEndpoint);
 
@@ -163,7 +163,7 @@ public class GroupRepository {
             resources = restUtil.getUpdates(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
-            return contactTeacherGroups;
+            return null;
         }
 
         if (resources.getTotalItems() > 0)
@@ -182,7 +182,7 @@ public class GroupRepository {
         return contactTeacherGroups;
     }
 
-    @CachePut("students")
+    @CachePut(value = "students", unless = "#result == null")
     public Map<Link, PersonResource> updateStudents() {
         log.info("Updating students from {} ...", personEndpoint);
 
@@ -192,7 +192,7 @@ public class GroupRepository {
             resources = restUtil.getUpdates(PersonResources.class, personEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
-            return students;
+            return null;
         }
 
         if (resources.getTotalItems() > 0)
@@ -211,7 +211,7 @@ public class GroupRepository {
         return students;
     }
 
-    @CachePut("studentRelations")
+    @CachePut(value = "studentRelations", unless = "#result == null")
     public Map<Link, ElevforholdResource> updateStudentRelations() {
         log.info("Updating student relations from {} ...", studentRelationEndpoint);
 
@@ -221,7 +221,7 @@ public class GroupRepository {
             resources = restUtil.getUpdates(ElevforholdResources.class, studentRelationEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
-            return studentRelations;
+            return null;
         }
 
         if (resources.getTotalItems() > 0)
