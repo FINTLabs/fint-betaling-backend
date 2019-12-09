@@ -79,8 +79,9 @@ public class GroupRepository {
             return null;
         }
 
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(resource -> schools.put(getSelfLink(resource), resource));
+        if (resources.getTotalItems() == 0) return null;
+
+        resources.getContent().forEach(resource -> schools.put(getSelfLink(resource), resource));
 
         log.info("Update completed, {} schools.", schools.size());
 
@@ -108,8 +109,9 @@ public class GroupRepository {
             return null;
         }
 
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(r -> basisGroups.put(getSelfLink(r), r));
+        if (resources.getTotalItems() == 0) return null;
+
+        resources.getContent().forEach(r -> basisGroups.put(getSelfLink(r), r));
 
         log.info("Update completed, {} basis groups.", basisGroups.size());
 
@@ -137,8 +139,9 @@ public class GroupRepository {
             return null;
         }
 
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(r -> teachingGroups.put(getSelfLink(r), r));
+        if (resources.getTotalItems() == 0) return null;
+
+        resources.getContent().forEach(resource -> teachingGroups.put(getSelfLink(resource), resource));
 
         log.info("Update completed, {} teaching groups.", teachingGroups.size());
 
@@ -166,8 +169,9 @@ public class GroupRepository {
             return null;
         }
 
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(r -> contactTeacherGroups.put(getSelfLink(r), r));
+        if (resources.getTotalItems() == 0) return null;
+
+        resources.getContent().forEach(r -> contactTeacherGroups.put(getSelfLink(r), r));
 
         log.info("Update completed, {} contact teacher groups.", contactTeacherGroups.size());
 
@@ -195,8 +199,9 @@ public class GroupRepository {
             return null;
         }
 
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(r -> students.put(getStudentLink(r), r));
+        if (resources.getTotalItems() == 0) return null;
+
+        resources.getContent().forEach(r -> students.put(getStudentLink(r), r));
 
         log.info("Update completed, {} students.", students.size());
 
@@ -224,8 +229,9 @@ public class GroupRepository {
             return null;
         }
 
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(r -> studentRelations.put(getSelfLink(r), r));
+        if (resources.getTotalItems() == 0) return null;
+
+        resources.getContent().forEach(r -> studentRelations.put(getSelfLink(r), r));
 
         log.info("Update completed, {} student relations.", studentRelations.size());
 
