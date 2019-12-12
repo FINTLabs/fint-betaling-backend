@@ -72,7 +72,7 @@ public class ClaimService {
                         claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
                         claim.setClaimStatus(ClaimStatus.SENT);
                         claim.setStatusMessage(null);
-                        log.info("Sent claim {}, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
                     } catch (InvalidResponseException e) {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                         claim.setStatusMessage(e.getMessage());
@@ -87,10 +87,15 @@ public class ClaimService {
         getSentClaims().forEach(claim -> {
             try {
                 ResponseEntity<?> responseEntity = restUtil.get(ResponseEntity.class, claim.getInvoiceUri());
-                claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
-                claim.setClaimStatus(ClaimStatus.ACCEPTED);
+                if (responseEntity.getStatusCode().is3xxRedirection()) {
+                    claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
+                    claim.setClaimStatus(ClaimStatus.ACCEPTED);
+                    log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                } else {
+                    claim.setClaimStatus(ClaimStatus.SENT);
+                    log.info("Claim {} pending, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                }
                 claim.setStatusMessage(null);
-                log.info("Accepted claim {}, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
                 claim.setStatusMessage(e.getMessage());
@@ -103,6 +108,7 @@ public class ClaimService {
             try {
                 FakturagrunnlagResource invoice = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 updateClaim(invoice);
+                claim.setStatusMessage(null);
                 log.info("Updated claim {}", claim.getOrderNumber());
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
