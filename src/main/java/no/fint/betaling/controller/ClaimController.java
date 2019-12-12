@@ -21,13 +21,13 @@ public class ClaimController {
     private ClaimService claimService;
 
     @PostMapping
-    public ResponseEntity storeClaim(@RequestBody Order order) {
+    public ResponseEntity<?> storeClaim(@RequestBody Order order) {
         log.info("Received order: {}", order);
         return ResponseEntity.status(HttpStatus.CREATED).body(claimService.storeClaims(order));
     }
 
     @PostMapping("/send")
-    public ResponseEntity sendClaims(@RequestBody List<String> orderNumbers) {
+    public ResponseEntity<?> sendClaims(@RequestBody List<String> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
         return ResponseEntity.status(HttpStatus.CREATED).body(claimService.sendClaims(orderNumbers));
     }
