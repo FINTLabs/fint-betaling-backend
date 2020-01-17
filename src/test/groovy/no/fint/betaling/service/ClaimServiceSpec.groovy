@@ -64,6 +64,7 @@ class ClaimServiceSpec extends Specification {
         claims.get(0).invoiceUri == 'link.to.Location'.toURI()
     }
 
+    @Ignore
     def "Send claim as inovice returns link to location"() {
         given:
         def invoice = betalingObjectFactory.newInvoice()

@@ -9,7 +9,6 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.RestUtil;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturaResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ public class ClaimService {
     private static final String ORDER_NUMBER = "orderNumber";
     private static final String CUSTOMER_NAME = "customer.name";
     private static final String INVOICE_URI = "invoiceUri";
-    private static final String INVOICE_NUMBER = "invoiceNumber";
+    //private static final String INVOICE_NUMBER = "invoiceNumber";
     private static final String AMOUNT_DUE = "amountDue";
     private static final String CLAIM_STATUS = "claimStatus";
     private static final String STATUS_MESSAGE = "statusMessage";
@@ -68,11 +68,12 @@ public class ClaimService {
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .peek(claim -> {
                     try {
-                        URI invoiceUri = sendClaim(InvoiceFactory.createInvoice(claim));
-                        claim.setInvoiceUri(invoiceUri);
+                        FakturagrunnlagResource invoice = InvoiceFactory.createInvoice(claim);
+                        ResponseEntity<?> responseEntity = restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
+                        claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
                         claim.setClaimStatus(ClaimStatus.SENT);
                         claim.setStatusMessage(null);
-                        log.info("Sent claim {}", claim.getOrderNumber());
+                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
                     } catch (InvalidResponseException e) {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                         claim.setStatusMessage(e.getMessage());
@@ -83,20 +84,33 @@ public class ClaimService {
                 .collect(Collectors.toList());
     }
 
-    public URI sendClaim(FakturagrunnlagResource invoice) {
-        ResponseEntity<FakturagrunnlagResource> responseEntity =
-                restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
-        return responseEntity.getHeaders().getLocation();
-    }
-
     void updateClaims() {
         getSentClaims().forEach(claim -> {
             try {
-                FakturagrunnlagResource resource = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
-                updateClaim(resource);
-                claim.setClaimStatus(ClaimStatus.SENT);
+                ResponseEntity<?> responseEntity = restUtil.get(ResponseEntity.class, claim.getInvoiceUri());
+                if (responseEntity.getStatusCode().is3xxRedirection()) {
+                    claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
+                    claim.setClaimStatus(ClaimStatus.ACCEPTED);
+                    log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                } else {
+                    claim.setClaimStatus(ClaimStatus.SENT);
+                    log.info("Claim {} pending, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                }
                 claim.setStatusMessage(null);
-                log.info("Updated claim {}", claim.getOrderNumber());
+            } catch (InvalidResponseException e) {
+                claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+                claim.setStatusMessage(e.getMessage());
+                log.error("Error accepting claim {}", claim.getOrderNumber(), e);
+            }
+            updateClaimStatus(claim);
+        });
+
+        getAcceptedClaims().forEach(claim -> {
+            try {
+                FakturagrunnlagResource invoice = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
+                updateClaim(invoice);
+                claim.setStatusMessage(null);
+                log.info("Claim {} updated", claim.getOrderNumber());
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                 claim.setStatusMessage(e.getMessage());
@@ -108,20 +122,29 @@ public class ClaimService {
 
     /**
      * TODO Needs to update with both {@link FakturagrunnlagResource} and {@link FakturaResource}
+     * "invoiceNumbers": ?
+     * "invoiceDate": ?
+     * "paymentDueDate": ?
+     * "creditNotes": ?
+     * - Check if claim is paid and set status accordingly to remove from update loop
      */
     public void updateClaim(FakturagrunnlagResource invoice) {
         Update update = new Update();
         Consumer2<String, Object> updater = Consumer2.from(update::set);
-        //updater.accept("fakturagrunnlag", invoice);
+
         invoice.getSelfLinks()
                 .stream()
                 .map(Link::getHref)
                 .findAny()
                 .ifPresent(updater.acceptPartially(INVOICE_URI));
+
+        /*
         Optional.ofNullable(invoice.getOrdrenummer())
                 .map(Identifikator::getIdentifikatorverdi)
                 .map(Long::valueOf)
                 .ifPresent(updater.acceptPartially(INVOICE_NUMBER));
+         */
+
         Optional.ofNullable(invoice.getTotal())
                 .map(String::valueOf)
                 .ifPresent(updater.acceptPartially(AMOUNT_DUE));
@@ -154,12 +177,21 @@ public class ClaimService {
         return claimRepository.getClaims(query);
     }
 
+    private List<Claim> getAcceptedClaims() {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
+        query.addCriteria(Criteria.where(ORG_ID).is(orgId).orOperator(
+                Criteria.where(CLAIM_STATUS).is(ClaimStatus.ACCEPTED),
+                Criteria.where(CLAIM_STATUS).is(ClaimStatus.UPDATE_ERROR)));
+        return claimRepository.getClaims(query);
+    }
+
     private List<Claim> getSentClaims() {
         Query query = new Query();
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId).orOperator(
                 Criteria.where(CLAIM_STATUS).is(ClaimStatus.SENT),
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.UPDATE_ERROR)));
+                Criteria.where(CLAIM_STATUS).is(ClaimStatus.ACCEPT_ERROR)));
         return claimRepository.getClaims(query);
     }
 

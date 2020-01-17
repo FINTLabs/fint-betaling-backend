@@ -4,7 +4,6 @@ import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 @RestController

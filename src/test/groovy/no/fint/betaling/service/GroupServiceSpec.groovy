@@ -47,7 +47,7 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * groupRepository.getSchools() >> [(new Link(verdi: 'link.to.School')): school]
-        1 * groupRepository.getContactTeacherGroups() >> [(new Link(verdi: 'link.to.School')): contactTeacherGroup]
+        1 * groupRepository.getContactTeacherGroups() >> [(new Link(verdi: 'link.to.ContactTeacherGroup')): contactTeacherGroup]
         1 * groupRepository.getStudentRelations() >> [(new Link(verdi: 'link.to.StudentRelation')): studentRelation]
         1 * groupRepository.getStudents() >> [(new Link(verdi: 'link.to.Student')): student]
 
@@ -68,7 +68,7 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * groupRepository.getSchools() >> [(new Link(verdi: 'link.to.School')): school]
-        1 * groupRepository.getTeachingGroups() >> [(new Link(verdi: 'link.to.School')): teachingGroup]
+        1 * groupRepository.getTeachingGroups() >> [(new Link(verdi: 'link.to.TeachingGroup')): teachingGroup]
         1 * groupRepository.getStudentRelations() >> [(new Link(verdi: 'link.to.StudentRelation')): studentRelation]
         1 * groupRepository.getStudents() >> [(new Link(verdi: 'link.to.Student')): student]
 
@@ -89,7 +89,7 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * groupRepository.getSchools() >> [(new Link(verdi: 'link.to.School')): school]
-        1 * groupRepository.getBasisGroups() >> [(new Link(verdi: 'link.to.School')): basisGroup]
+        1 * groupRepository.getBasisGroups() >> [(new Link(verdi: 'link.to.BasisGroup')): basisGroup]
         1 * groupRepository.getStudentRelations() >> [(new Link(verdi: 'link.to.StudentRelation')): studentRelation]
         1 * groupRepository.getStudents() >> [(new Link(verdi: 'link.to.Student')): student]
 
