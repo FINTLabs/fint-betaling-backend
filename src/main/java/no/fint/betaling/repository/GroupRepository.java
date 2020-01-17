@@ -20,7 +20,6 @@ import org.springframework.stereotype.Repository;
 
 import java.net.URI;
 import java.util.*;
-import java.util.function.Predicate;
 
 @Slf4j
 @Repository
@@ -226,10 +225,11 @@ public class GroupRepository {
         }
 
         if (resources.getTotalItems() > 0) {
-            resources.getContent().stream()
-                    .filter(person -> !person.getElev().isEmpty())
-                    .forEach(student ->
-                            students.put(student.getElev().stream().findFirst().orElseGet(Link::new), student));
+            resources.getContent().forEach(person -> {
+                person.getElev().stream()
+                        .findFirst()
+                        .ifPresent(student -> students.put(student, person));
+            });
         }
 
         log.info("Update completed, {} students.", students.size());
