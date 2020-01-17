@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -109,7 +110,7 @@ public class ClaimService {
                 FakturagrunnlagResource invoice = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 updateClaim(invoice);
                 claim.setStatusMessage(null);
-                log.info("Updated claim {}", claim.getOrderNumber());
+                log.info("Claim {} updated", claim.getOrderNumber());
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                 claim.setStatusMessage(e.getMessage());

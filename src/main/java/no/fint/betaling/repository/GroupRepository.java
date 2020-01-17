@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Predicate;
 
 @Slf4j
 @Repository
@@ -31,8 +32,8 @@ public class GroupRepository {
     private final Map<Link, BasisgruppeResource> basisGroups = new HashMap<>();
     private final Map<Link, UndervisningsgruppeResource> teachingGroups = new HashMap<>();
     private final Map<Link, KontaktlarergruppeResource> contactTeacherGroups = new HashMap<>();
-    private final Map<Link, PersonResource> students = new HashMap<>();
     private final Map<Link, ElevforholdResource> studentRelations = new HashMap<>();
+    private final Map<Link, PersonResource> students = new HashMap<>();
 
     @Value("${fint.betaling.endpoints.school}")
     private URI schoolEndpoint;
@@ -46,11 +47,11 @@ public class GroupRepository {
     @Value("${fint.betaling.endpoints.contact-teacher-group}")
     private URI contactTeacherGroupEndpoint;
 
-    @Value("${fint.betaling.endpoints.person}")
-    private URI personEndpoint;
-
     @Value("${fint.betaling.endpoints.student-relation}")
     private URI studentRelationEndpoint;
+
+    @Value("${fint.betaling.endpoints.person}")
+    private URI personEndpoint;
 
     public GroupRepository(RestUtil restUtil) {
         this.restUtil = restUtil;
@@ -62,8 +63,8 @@ public class GroupRepository {
         updateBasisGroups();
         updateTeachingGroups();
         updateContactTeacherGroups();
-        updateStudents();
         updateStudentRelations();
+        updateStudents();
     }
 
     @CachePut(value = "schools", unless = "#result == null")
@@ -182,35 +183,6 @@ public class GroupRepository {
         return contactTeacherGroups;
     }
 
-    @CachePut(value = "students", unless = "#result == null")
-    public Map<Link, PersonResource> updateStudents() {
-        log.info("Updating students from {} ...", personEndpoint);
-
-        PersonResources resources;
-
-        try {
-            resources = restUtil.getUpdates(PersonResources.class, personEndpoint);
-        } catch (InvalidResponseException ex) {
-            log.error(ex.getMessage(), ex);
-            return null;
-        }
-
-        if (resources.getTotalItems() > 0)
-            resources.getContent().forEach(r -> students.put(getStudentLink(r), r));
-
-        log.info("Update completed, {} students.", students.size());
-
-        return students;
-    }
-
-    @Cacheable("students")
-    public Map<Link, PersonResource> getStudents() {
-        if (students.isEmpty()) {
-            updateStudents();
-        }
-        return students;
-    }
-
     @CachePut(value = "studentRelations", unless = "#result == null")
     public Map<Link, ElevforholdResource> updateStudentRelations() {
         log.info("Updating student relations from {} ...", studentRelationEndpoint);
@@ -240,11 +212,40 @@ public class GroupRepository {
         return studentRelations;
     }
 
-    private <T extends FintLinks> Link getSelfLink(T resource) {
-        return resource.getSelfLinks().stream().findFirst().orElse(null);
+    @CachePut(value = "students", unless = "#result == null")
+    public Map<Link, PersonResource> updateStudents() {
+        log.info("Updating students from {} ...", personEndpoint);
+
+        PersonResources resources;
+
+        try {
+            resources = restUtil.getUpdates(PersonResources.class, personEndpoint);
+        } catch (InvalidResponseException ex) {
+            log.error(ex.getMessage(), ex);
+            return null;
+        }
+
+        if (resources.getTotalItems() > 0) {
+            resources.getContent().stream()
+                    .filter(person -> !person.getElev().isEmpty())
+                    .forEach(student ->
+                            students.put(student.getElev().stream().findFirst().orElseGet(Link::new), student));
+        }
+
+        log.info("Update completed, {} students.", students.size());
+
+        return students;
     }
 
-    private Link getStudentLink(PersonResource resource) {
-        return resource.getElev().stream().findFirst().orElse(null);
+    @Cacheable("students")
+    public Map<Link, PersonResource> getStudents() {
+        if (students.isEmpty()) {
+            updateStudents();
+        }
+        return students;
+    }
+
+    private <T extends FintLinks> Link getSelfLink(T resource) {
+        return resource.getSelfLinks().stream().findFirst().orElseGet(Link::new);
     }
 }

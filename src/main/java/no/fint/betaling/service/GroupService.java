@@ -45,8 +45,9 @@ public class GroupService {
     public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 
-        return groupRepository.getBasisGroups().values().stream()
-                .filter(hasRelationToSchool(school))
+        return school.getBasisgruppe().stream()
+                .map(group -> groupRepository.getBasisGroups().get(group))
+                .filter(Objects::nonNull)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -54,8 +55,9 @@ public class GroupService {
     public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 
-        return groupRepository.getTeachingGroups().values().stream()
-                .filter(hasRelationToSchool(school))
+        return school.getUndervisningsgruppe().stream()
+                .map(group -> groupRepository.getTeachingGroups().get(group))
+                .filter(Objects::nonNull)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -63,8 +65,9 @@ public class GroupService {
     public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 
-        return groupRepository.getContactTeacherGroups().values().stream()
-                .filter(hasRelationToSchool(school))
+        return school.getKontaktlarergruppe().stream()
+                .map(group -> groupRepository.getContactTeacherGroups().get(group))
+                .filter(Objects::nonNull)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -109,9 +112,5 @@ public class GroupService {
                 .map(Identifikator::getIdentifikatorverdi)
                 .map(schoolId::equals)
                 .orElse(false);
-    }
-
-    private <T extends FintLinks> Predicate<T> hasRelationToSchool(SkoleResource school) {
-        return g -> g.getLinks().get("skole").contains(school.getSelfLinks().stream().findFirst().orElse(null));
     }
 }

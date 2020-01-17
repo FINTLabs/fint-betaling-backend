@@ -20,6 +20,9 @@ class FintObjectFactory {
         resource.setNavn('HVS')
         resource.setSkolenummer(new Identifikator(identifikatorverdi: '08010'))
         resource.setOrganisasjonsnummer(new Identifikator(identifikatorverdi: 'NO123456789'))
+        resource.addBasisgruppe(new Link('link.to.BasisGroup'))
+        resource.addUndervisningsgruppe(new Link('link.to.TeachingGroup'))
+        resource.addKontaktlarergruppe(new Link('link.to.ContactTeacherGroup'))
         resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
         resource.addSelf(new Link(verdi: 'link.to.School'))
         return resource
