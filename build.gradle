@@ -36,7 +36,7 @@ repositories {
 
 dependencies {
     compile("no.fint:fint-okonomi-model-java:${apiVersion}")
-    compile('no.fint:fint-utdanning-resource-model-java:3.1.0')
+    compile('no.fint:fint-utdanning-resource-model-java:3.4.0')
     compile('no.fint:fint-oauth-token-service:1.4.0')
     compile('no.fint:fint-betaling-model:1.0.0-alpha-10')
 
@@ -47,6 +47,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}")
     compile('org.springframework.plugin:spring-plugin-core')
     compile('com.fasterxml.jackson.core:jackson-databind')
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
     compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
 
