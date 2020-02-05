@@ -5,6 +5,7 @@ import no.fint.betaling.exception.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -44,8 +45,8 @@ public class RestUtil {
         try {
             log.info("GET {}", uri);
             return restTemplate.getForObject(uri, clazz);
-        } catch (RestClientResponseException e) {
-            throw new InvalidResponseException(e.getResponseBodyAsString(), e);
+        } catch (HttpStatusCodeException e) {
+            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
     }
 
@@ -53,8 +54,8 @@ public class RestUtil {
         try {
             log.info("POST {} {}", uri, content);
             return restTemplate.postForEntity(uri, content, clazz);
-        } catch (RestClientResponseException e) {
-            throw new InvalidResponseException(e.getResponseBodyAsString(), e);
+        } catch (HttpStatusCodeException e) {
+            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
     }
 }
