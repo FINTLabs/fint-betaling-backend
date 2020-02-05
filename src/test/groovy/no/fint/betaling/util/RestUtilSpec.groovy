@@ -6,16 +6,10 @@ import no.fint.model.resource.AbstractCollectionResources
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource
 import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.client.RestClientException
-import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
-
-import java.nio.charset.Charset
 
 class RestUtilSpec extends Specification {
     private RestTemplate restTemplate
@@ -32,7 +26,7 @@ class RestUtilSpec extends Specification {
 
         then:
         1 * restTemplate.getForObject('http://localhost'.toURI(), _ as Class<String>) >> {
-            throw new InvalidResponseException('test', Throwable.newInstance())
+            throw new InvalidResponseException(HttpStatus.BAD_REQUEST, 'test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
     }
@@ -43,7 +37,7 @@ class RestUtilSpec extends Specification {
 
         then:
         1 * restTemplate.postForEntity('http://localhost'.toURI(), _, _ as Class) >> {
-            throw new InvalidResponseException('test', Throwable.newInstance())
+            throw new InvalidResponseException(HttpStatus.BAD_REQUEST, 'test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
     }

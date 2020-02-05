@@ -77,7 +77,7 @@ public class ClaimService {
                     } catch (InvalidResponseException e) {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                         claim.setStatusMessage(e.getMessage());
-                        log.error("Error sending claim {}", claim.getOrderNumber(), e);
+                        log.error("Error sending claim {}: {}", claim.getOrderNumber(), e.getStatus(), e);
                     }
                     updateClaimStatus(claim);
                 })
@@ -88,7 +88,7 @@ public class ClaimService {
         getSentClaims().forEach(claim -> {
             try {
                 ResponseEntity<?> responseEntity = restUtil.get(ResponseEntity.class, claim.getInvoiceUri());
-                if (responseEntity.getStatusCode().is3xxRedirection()) {
+                if (responseEntity.getStatusCode() == HttpStatus.CREATED) {
                     claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
                     log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
@@ -100,7 +100,7 @@ public class ClaimService {
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
                 claim.setStatusMessage(e.getMessage());
-                log.error("Error accepting claim {}", claim.getOrderNumber(), e);
+                log.error("Error accepting claim {}: {}", claim.getOrderNumber(), e.getStatus(), e);
             }
             updateClaimStatus(claim);
         });
@@ -114,7 +114,7 @@ public class ClaimService {
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                 claim.setStatusMessage(e.getMessage());
-                log.error("Error updating claim {}", claim.getOrderNumber(), e);
+                log.error("Error updating claim {}: {}", claim.getOrderNumber(), e.getStatus(), e);
             }
             updateClaimStatus(claim);
         });
