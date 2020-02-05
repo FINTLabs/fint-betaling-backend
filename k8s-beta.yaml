@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: betaling
-          image: fintlabs.azurecr.io/betaling:build.19
+          image: fintlabs.azurecr.io/betaling:PR-34.1
           resources:
             limits:
               memory: "2Gi"
@@ -43,29 +43,29 @@ spec:
             - name: fint.oauth.access-token-uri
               value: https://idp.felleskomponent.no/nidp/oauth/nam/token
             - name: fint.betaling.org-id
-              value: fake.fintlabs.no
+              value: fintlabs.no
             - name: fint.oauth.scope
               value: fint-client
             - name: fint.oauth.client-id
               valueFrom:
                 secretKeyRef:
-                  key: client-id
-                  name: fake-client
+                  key: clientId
+                  name: fintlabs-betaling
             - name: fint.oauth.client-secret
               valueFrom:
                 secretKeyRef:
-                  key: client-secret
-                  name: fake-client
+                  key: openIdSecret
+                  name: fintlabs-betaling
             - name: fint.oauth.username
               valueFrom:
                 secretKeyRef:
                   key: username
-                  name: fake-client
+                  name: fintlabs-betaling
             - name: fint.oauth.password
               valueFrom:
                 secretKeyRef:
                   key: password
-                  name: fake-client
+                  name: fintlabs-betaling
             - name: spring.data.mongodb.uri
               valueFrom:
                 secretKeyRef:
