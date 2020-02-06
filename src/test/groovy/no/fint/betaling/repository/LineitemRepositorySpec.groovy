@@ -12,7 +12,7 @@ class LineitemRepositorySpec extends Specification {
 
     def taxcodeRepository = Mock(TaxcodeRepository)
     def restUtil = Mock(RestUtil)
-    def endpoint = 'http://localhost/varelinje'.toURI()
+    def endpoint = 'http://localhost/varelinje'
     def repository = new LineitemRepository(restUtil: restUtil, lineitemEndpoint: endpoint, taxcodeRepository: taxcodeRepository)
 
     def 'Update line items'() {
@@ -33,8 +33,8 @@ class LineitemRepositorySpec extends Specification {
         repository.updateLineitems()
 
         then:
-        1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as URI) >> resources
-        1 * taxcodeRepository.getTaxcodeByUri(_ as URI) >> new Taxcode(rate: 0.25)
+        1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as String) >> resources
+        1 * taxcodeRepository.getTaxcodeByUri(_ as String) >> new Taxcode(rate: 0.25)
     }
 
     def 'Fetching lime items should update first'() {
@@ -55,8 +55,8 @@ class LineitemRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as URI) >> resources
-        1 * taxcodeRepository.getTaxcodeByUri(_ as URI) >> new Taxcode(rate: 0.25)
+        1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as String) >> resources
+        1 * taxcodeRepository.getTaxcodeByUri(_ as String) >> new Taxcode(rate: 0.25)
 
     }
 }

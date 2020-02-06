@@ -6,7 +6,6 @@ import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import org.springframework.util.StringUtils;
 
-import java.net.URI;
 import java.util.Optional;
 
 public enum CustomerFactory {
@@ -41,7 +40,7 @@ public enum CustomerFactory {
         customer.setCity(person.getPostadresse().getPoststed());
         person.getPostadresse().getAdresselinje().stream().findFirst().ifPresent(customer::setPostalAddress);
         customer.setPostalCode(person.getPostadresse().getPostnummer());
-        person.getSelfLinks().stream().map(Link::getHref).map(URI::create).findAny().ifPresent(customer::setPerson);
+        person.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(customer::setPerson);
         return customer;
     }
 
