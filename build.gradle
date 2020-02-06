@@ -40,6 +40,7 @@ dependencies {
     compile('no.fint:fint-oauth-token-service:1.4.0')
     compile('no.fint:fint-betaling-model:1.0.0-alpha-10')
 
+    compile('org.apache.commons:commons-lang3:3.9')
     compile('org.jooq:jool-java-8:0.9.14')
     compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-cache')
