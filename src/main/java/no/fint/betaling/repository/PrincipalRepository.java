@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
@@ -57,18 +58,21 @@ public class PrincipalRepository {
                     Principal principal = new Principal();
                     principal.setCode(o.getSystemId().getIdentifikatorverdi());
                     principal.setDescription(o.getNavn());
-                    principal.setLineitems(o.getVarelinje()
-                            .stream()
-                            .map(Link::getHref)
-                            .map(UriUtil::parseUri)
-                            .map(lineitemRepository::getLineitemByUri)
-                            .map(Lineitem::getItemCode)
-                            .collect(Collectors.toSet()));
                     o.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
+                            .peek(log::debug)
                             .map(UriUtil::parseUri)
                             .findFirst().ifPresent(principal::setUri);
+                    principal.setLineitems(o.getVarelinje()
+                            .stream()
+                            .map(Link::getHref)
+                            .peek(log::debug)
+                            .map(UriUtil::parseUri)
+                            .map(lineitemRepository::getLineitemByUri)
+                            .filter(Objects::nonNull)
+                            .map(Lineitem::getItemCode)
+                            .collect(Collectors.toSet()));
                     principals.put(principal.getUri(), principal);
                 });
         log.info("Update completed, {} principals.", principals.size());

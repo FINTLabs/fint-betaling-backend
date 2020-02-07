@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -60,13 +61,16 @@ public class LineitemRepository {
                     v.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
+                            .peek(log::debug)
                             .map(UriUtil::parseUri)
                             .findFirst().ifPresent(lineitem::setUri);
                     v.getMvakode()
                             .stream()
                             .map(Link::getHref)
+                            .peek(log::debug)
                             .map(UriUtil::parseUri)
                             .map(taxcodeRepository::getTaxcodeByUri)
+                            .filter(Objects::nonNull)
                             .map(Taxcode::getRate)
                             .findFirst()
                             .ifPresent(lineitem::setTaxrate);
