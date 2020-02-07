@@ -22,10 +22,10 @@ class RestUtilSpec extends Specification {
 
     def "Get resource given invalid response throws InvalidResponseException"() {
         when:
-        restUtil.get(String, 'http://localhost'.toURI())
+        restUtil.get(String, 'http://localhost')
 
         then:
-        1 * restTemplate.getForObject('http://localhost'.toURI(), _ as Class<String>) >> {
+        1 * restTemplate.getForObject('http://localhost', _ as Class<String>) >> {
             throw new InvalidResponseException(HttpStatus.BAD_REQUEST, 'test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
@@ -44,10 +44,10 @@ class RestUtilSpec extends Specification {
 
     def "Get ElevResource given valid url returns ElevResource"() {
         when:
-        def resource = restUtil.get(ElevResource, 'http://localhost'.toURI())
+        def resource = restUtil.get(ElevResource, 'http://localhost')
 
         then:
-        1 * restTemplate.getForObject('http://localhost'.toURI(), _ as Class<ElevResource>) >> new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test'))
+        1 * restTemplate.getForObject('http://localhost', _ as Class<ElevResource>) >> new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test'))
         resource.elevnummer.identifikatorverdi == 'test'
     }
 
@@ -62,7 +62,7 @@ class RestUtilSpec extends Specification {
 
     def 'Get updates for a resource'() {
         given:
-        def uri = 'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs'.toURI()
+        def uri = 'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs'
 
         when:
         def result = restUtil.getUpdates(PersonalressursResources, uri)
@@ -70,11 +70,11 @@ class RestUtilSpec extends Specification {
         then:
         result.totalItems == 1
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs/last-updated'.toURI(),
+                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs/last-updated',
                 _
         ) >> ['lastUpdated': "12345"]
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs?sinceTimeStamp=0'.toURI(),
+                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs?sinceTimeStamp=0',
                 _
         ) >> new PersonalressursResources(embedded: new AbstractCollectionResources.EmbeddedResources<PersonalressursResource>(entries:
                 [new PersonalressursResource(ansattnummer: new Identifikator(identifikatorverdi: '123456'))]))
@@ -85,11 +85,11 @@ class RestUtilSpec extends Specification {
         then:
         result2.totalItems == 0
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs/last-updated'.toURI(),
+                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs/last-updated',
                 _
         ) >> ['lastUpdated': "12345"]
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs?sinceTimeStamp=12346'.toURI(),
+                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs?sinceTimeStamp=12346',
                 _
         ) >> new PersonalressursResources(embedded: new AbstractCollectionResources.EmbeddedResources<PersonalressursResource>(entries: []))
 

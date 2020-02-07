@@ -18,8 +18,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
-import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Repository
@@ -35,22 +35,22 @@ public class GroupRepository {
     private final Map<Link, PersonResource> students = new HashMap<>();
 
     @Value("${fint.betaling.endpoints.school}")
-    private URI schoolEndpoint;
+    private String schoolEndpoint;
 
     @Value("${fint.betaling.endpoints.basis-group}")
-    private URI basisGroupEndpoint;
+    private String basisGroupEndpoint;
 
     @Value("${fint.betaling.endpoints.teaching-group}")
-    private URI teachingGroupEndpoint;
+    private String teachingGroupEndpoint;
 
     @Value("${fint.betaling.endpoints.contact-teacher-group}")
-    private URI contactTeacherGroupEndpoint;
+    private String contactTeacherGroupEndpoint;
 
     @Value("${fint.betaling.endpoints.student-relation}")
-    private URI studentRelationEndpoint;
+    private String studentRelationEndpoint;
 
     @Value("${fint.betaling.endpoints.person}")
-    private URI personEndpoint;
+    private String personEndpoint;
 
     public GroupRepository(RestUtil restUtil) {
         this.restUtil = restUtil;
