@@ -46,6 +46,8 @@ spec:
               value: https://idp.felleskomponent.no/nidp/oauth/nam/token
             - name: fint.betaling.org-id
               value: fintlabs.no
+            - name: fint.betaling.default-school-org-id
+              value: "970123458"
             - name: fint.oauth.scope
               value: fint-client
             - name: fint.oauth.client-id

@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
-import no.fint.betaling.util.UriUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -24,7 +22,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class LineitemRepository {
 
     @Value("${fint.betaling.endpoints.lineitem}")
-    private URI lineitemEndpoint;
+    private String lineitemEndpoint;
 
     @Autowired
     private RestUtil restUtil;
@@ -32,9 +30,9 @@ public class LineitemRepository {
     @Autowired
     private TaxcodeRepository taxcodeRepository;
 
-    private final ConcurrentMap<URI, Lineitem> lineitems = new ConcurrentSkipListMap<>();
+    private final ConcurrentMap<String, Lineitem> lineitems = new ConcurrentSkipListMap<>();
 
-    public Lineitem getLineitemByUri(URI uri) {
+    public Lineitem getLineitemByUri(String uri) {
         if (lineitems.isEmpty()) {
             updateLineitems();
         }
@@ -61,16 +59,11 @@ public class LineitemRepository {
                     v.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
-                            .peek(log::debug)
-                            .map(UriUtil::parseUri)
                             .findFirst().ifPresent(lineitem::setUri);
                     v.getMvakode()
                             .stream()
                             .map(Link::getHref)
-                            .peek(log::debug)
-                            .map(UriUtil::parseUri)
                             .map(taxcodeRepository::getTaxcodeByUri)
-                            .filter(Objects::nonNull)
                             .map(Taxcode::getRate)
                             .findFirst()
                             .ifPresent(lineitem::setTaxrate);

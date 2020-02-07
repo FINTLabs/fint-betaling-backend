@@ -10,7 +10,7 @@ import spock.lang.Specification
 class TaxcodeRepositorySpec extends Specification {
 
     def restUtil = Mock(RestUtil)
-    def endpoint = 'http://localhost/mvakode'.toURI()
+    def endpoint = 'http://localhost/mvakode'
     def repository = new TaxcodeRepository(restUtil: restUtil, taxcodeEndpoint: endpoint)
 
     def 'Fetching tax codes should update first'() {

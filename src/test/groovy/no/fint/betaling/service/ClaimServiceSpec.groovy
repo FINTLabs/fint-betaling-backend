@@ -61,7 +61,7 @@ class ClaimServiceSpec extends Specification {
 
         claims.size() == 1
         claims.get(0).claimStatus == ClaimStatus.SENT
-        claims.get(0).invoiceUri == 'link.to.Location'.toURI()
+        claims.get(0).invoiceUri == 'link.to.Location'
     }
 
     @Ignore
