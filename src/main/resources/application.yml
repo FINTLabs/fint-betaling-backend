@@ -22,7 +22,7 @@ fint:
     access-token-uri: "https://idp.felleskomponent.no/nidp/oauth/nam/token"
     request-url: https://beta.felleskomponent.no/utdanning/elev/person
   betaling:
-    org-id: "fake.fintlabs.no"
+    org-id: "fintlabs.no"
     date-range: "7, 14, 30"
     default-school-org-id: "999999999"
     invoice-send-rate: "60000"

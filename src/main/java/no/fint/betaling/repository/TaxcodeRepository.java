@@ -3,7 +3,6 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
-import no.fint.betaling.util.UriUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResources;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentMap;
@@ -22,14 +20,14 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class TaxcodeRepository {
 
     @Value("${fint.betaling.endpoints.mva-code}")
-    private URI taxcodeEndpoint;
+    private String taxcodeEndpoint;
 
     @Autowired
     private RestUtil restUtil;
 
-    private final ConcurrentMap<URI, Taxcode> taxcodes = new ConcurrentSkipListMap<>();
+    private final ConcurrentMap<String, Taxcode> taxcodes = new ConcurrentSkipListMap<>();
 
-    public Taxcode getTaxcodeByUri(URI uri) {
+    public Taxcode getTaxcodeByUri(String uri) {
         if (taxcodes.isEmpty()) {
             updateTaxcodes();
         }
@@ -56,7 +54,6 @@ public class TaxcodeRepository {
                     m.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
-                            .map(UriUtil::parseUri)
                             .findFirst()
                             .ifPresent(taxcode::setUri);
                     taxcodes.put(taxcode.getUri(), taxcode);

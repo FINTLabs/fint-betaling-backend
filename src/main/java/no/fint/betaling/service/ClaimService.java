@@ -70,7 +70,7 @@ public class ClaimService {
                     try {
                         FakturagrunnlagResource invoice = InvoiceFactory.createInvoice(claim);
                         ResponseEntity<?> responseEntity = restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
-                        claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
+                        claim.setInvoiceUri(responseEntity.getHeaders().getLocation().toString());
                         claim.setClaimStatus(ClaimStatus.SENT);
                         claim.setStatusMessage(null);
                         log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
@@ -89,7 +89,7 @@ public class ClaimService {
             try {
                 ResponseEntity<?> responseEntity = restUtil.get(ResponseEntity.class, claim.getInvoiceUri());
                 if (responseEntity.getStatusCode() == HttpStatus.CREATED) {
-                    claim.setInvoiceUri(responseEntity.getHeaders().getLocation());
+                    claim.setInvoiceUri(responseEntity.getHeaders().getLocation().toString());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
                     log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
                 } else {

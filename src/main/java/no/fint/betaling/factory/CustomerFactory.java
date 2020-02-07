@@ -6,8 +6,10 @@ import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import org.apache.commons.lang3.StringUtils;
 
+
 import java.net.URI;
 import java.util.Objects;
+
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -46,6 +48,8 @@ public enum CustomerFactory {
             customer.setPostalCode(adresse.getPostnummer());
             customer.setPostalAddress(StringUtils.join(adresse.getAdresselinje(), '\n'));
         });
+
+      
         return customer;
     }
 

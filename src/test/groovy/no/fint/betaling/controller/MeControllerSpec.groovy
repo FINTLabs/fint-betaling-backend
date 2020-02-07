@@ -1,9 +1,11 @@
 package no.fint.betaling.controller
 
 import no.fint.test.utils.MockMvcSpecification
+import spock.lang.Ignore
 
 class MeControllerSpec extends MockMvcSpecification {
 
+    @Ignore
     def "Get me returns user"() {
         given:
         def controller = new MeController()

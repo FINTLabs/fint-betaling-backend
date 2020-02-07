@@ -5,9 +5,10 @@ classes/
 out
 .DS_Store
 *.iml
-application-*.yml
 /.classpath
 /.project
 /.settings/
 /bin/
 /.vscode/
+application-*.yml
+

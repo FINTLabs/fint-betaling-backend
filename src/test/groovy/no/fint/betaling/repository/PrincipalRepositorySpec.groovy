@@ -11,7 +11,7 @@ import spock.lang.Specification
 class PrincipalRepositorySpec extends Specification {
 
     def restUtil = Mock(RestUtil)
-    def endpoint = 'http://localhost/oppdragsgiver'.toURI()
+    def endpoint = 'http://localhost/oppdragsgiver'
     def lineitemRepository = Mock(LineitemRepository)
     def repository = new PrincipalRepository(restUtil: restUtil, principalEndpoint: endpoint, lineitemRepository: lineitemRepository)
 
@@ -29,6 +29,6 @@ class PrincipalRepositorySpec extends Specification {
         then:
         result.size() == 1
         1 * restUtil.getUpdates(OppdragsgiverResources, endpoint) >> oppdragsgiverResources
-        1 * lineitemRepository.getLineitemByUri(_ as URI) >> new Lineitem(itemCode: 'abc')
+        1 * lineitemRepository.getLineitemByUri(_ as String) >> new Lineitem(itemCode: 'abc')
     }
 }
