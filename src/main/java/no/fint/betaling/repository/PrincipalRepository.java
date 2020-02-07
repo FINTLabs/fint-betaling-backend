@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
@@ -48,7 +49,7 @@ public class PrincipalRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updatePrincipals() {
-        log.info("Updating principals from {} ...", principalEndpoint);
+       log.info("Updating principals from {} ...", principalEndpoint);
         restUtil.getUpdates(OppdragsgiverResources.class, principalEndpoint)
                 .getContent()
                 .forEach(o -> {
