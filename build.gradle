@@ -51,6 +51,8 @@ dependencies {
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
     compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
+    compile('org.apache.commons:commons-lang3:3.9')
+
 
     runtime('org.springframework.boot:spring-boot-actuator')
 

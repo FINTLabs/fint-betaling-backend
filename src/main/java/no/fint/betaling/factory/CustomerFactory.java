@@ -4,9 +4,14 @@ import no.fint.betaling.model.Customer;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+
+import java.net.URI;
+import java.util.Objects;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public enum CustomerFactory {
     ;
@@ -37,10 +42,14 @@ public enum CustomerFactory {
         customer.setName(getDisplayName(person.getNavn()));
         customer.setEmail(person.getKontaktinformasjon().getEpostadresse());
         customer.setMobile(person.getKontaktinformasjon().getMobiltelefonnummer());
-        customer.setCity(person.getPostadresse().getPoststed());
-        person.getPostadresse().getAdresselinje().stream().findFirst().ifPresent(customer::setPostalAddress);
-        customer.setPostalCode(person.getPostadresse().getPostnummer());
-        person.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(customer::setPerson);
+        person.getSelfLinks().stream().map(Link::getHref).map(URI::create).findAny().ifPresent(customer::setPerson);
+        Stream.of(person.getPostadresse(), person.getBostedsadresse()).filter(Objects::nonNull).findFirst().ifPresent(adresse -> {
+            customer.setCity(adresse.getPoststed());
+            customer.setPostalCode(adresse.getPostnummer());
+            customer.setPostalAddress(StringUtils.join(adresse.getAdresselinje(), '\n'));
+        });
+
+      
         return customer;
     }
 

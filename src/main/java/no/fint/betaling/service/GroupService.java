@@ -89,6 +89,9 @@ public class GroupService {
     }
 
     private List<Customer> getCustomersForGroup(List<Link> studentRelationLinks) {
+        if (studentRelationLinks == null) {
+            return Collections.emptyList();
+        }
         Map<Link, ElevforholdResource> studentRelations = groupRepository.getStudentRelations();
         Map<Link, PersonResource> students = groupRepository.getStudents();
 
