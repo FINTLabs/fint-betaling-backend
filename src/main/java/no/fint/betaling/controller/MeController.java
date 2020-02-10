@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.util.RestUtil;
-import no.fint.betaling.util.UriUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResource;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -30,7 +28,7 @@ import java.util.stream.Stream;
 public class MeController {
 
     @Value("${fint.betaling.endpoints.school-resource}")
-    private URI schoolResourceEndpoint;
+    private String schoolResourceEndpoint;
 
     @Autowired
     private RestUtil restUtil;
@@ -40,7 +38,7 @@ public class MeController {
         User user = new User();
 
         SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class,
-                UriComponentsBuilder.fromUri(schoolResourceEndpoint).pathSegment("feidenavn", ePPN).build().toUri());
+                UriComponentsBuilder.fromUriString(schoolResourceEndpoint).pathSegment("feidenavn", ePPN).build().toUriString());
 
         log.debug("Skoleressurs: {}", skoleressurs);
 
@@ -48,12 +46,10 @@ public class MeController {
                 .getPersonalressurs()
                 .stream()
                 .map(Link::getHref)
-                .map(UriUtil::parseUri)
                 .map(it -> restUtil.get(PersonalressursResource.class, it))
                 .peek(it -> log.debug("Personalressurs: {}", it))
                 .flatMap(it -> it.getPerson().stream())
                 .map(Link::getHref)
-                .map(UriUtil::parseUri)
                 .map(it -> restUtil.get(PersonResource.class, it))
                 .peek(it -> log.debug("Person: {}", it))
                 .map(PersonResource::getNavn)
@@ -67,7 +63,6 @@ public class MeController {
                 .getSkole()
                 .stream()
                 .map(Link::getHref)
-                .map(UriUtil::parseUri)
                 .map(it -> restUtil.get(SkoleResource.class, it))
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
@@ -90,13 +85,12 @@ public class MeController {
                 .map(SkoleResource::getOrganisasjon)
                 .flatMap(List::stream)
                 .map(Link::getHref)
-                .map(UriUtil::parseUri)
                 .map(it -> restUtil.get(OrganisasjonselementResource.class, it))
                 .peek(it -> log.debug("Organisasjon: {}", it))
                 .forEach(tree::push);
 
         while (true) {
-            List<OrganisasjonselementResource> resources = tree.peek().getOverordnet().stream().map(Link::getHref).map(UriUtil::parseUri).map(it ->
+            List<OrganisasjonselementResource> resources = tree.peek().getOverordnet().stream().map(Link::getHref).map(it ->
                     restUtil.get(OrganisasjonselementResource.class, it)).collect(Collectors.toList());
             if (resources.isEmpty() || tree.containsAll(resources)) {
                 break;
