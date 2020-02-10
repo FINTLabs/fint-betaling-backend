@@ -60,12 +60,13 @@ public class PrincipalRepository {
                             .stream()
                             .map(Link::getHref)
                             .map(lineitemRepository::getLineitemByUri)
+                            .filter(Objects::nonNull)
                             .map(Lineitem::getItemCode)
                             .collect(Collectors.toSet()));
                     o.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
-                            .findFirst().ifPresent(principal::setUri);
+                            .forEach(principal::setUri);
                     principals.put(principal.getUri(), principal);
                 });
         log.info("Update completed, {} principals.", principals.size());

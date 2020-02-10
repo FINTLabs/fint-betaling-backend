@@ -56,17 +56,17 @@ public class LineitemRepository {
                     lineitem.setItemCode(v.getKode());
                     lineitem.setItemPrice(v.getPris());
                     lineitem.setDescription(v.getNavn());
-                    v.getSelfLinks()
-                            .stream()
-                            .map(Link::getHref)
-                            .findFirst().ifPresent(lineitem::setUri);
                     v.getMvakode()
                             .stream()
                             .map(Link::getHref)
                             .map(taxcodeRepository::getTaxcodeByUri)
+                            .filter(Objects::nonNull)
                             .map(Taxcode::getRate)
-                            .findFirst()
-                            .ifPresent(lineitem::setTaxrate);
+                            .forEach(lineitem::setTaxrate);
+                    v.getSelfLinks()
+                            .stream()
+                            .map(Link::getHref)
+                            .forEach(lineitem::setUri);
                     lineitems.put(lineitem.getUri(), lineitem);
                 });
         log.info("Update completed, {} line items.", lineitems.size());
