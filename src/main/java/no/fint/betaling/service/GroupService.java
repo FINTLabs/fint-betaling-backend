@@ -10,7 +10,7 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
-import no.fint.model.resource.utdanning.elev.*;
+import no.fint.model.resource.utdanning.elev.ElevforholdResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.utdanning.basisklasser.Gruppe;
 import org.springframework.stereotype.Service;

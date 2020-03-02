@@ -55,6 +55,9 @@ public class ClaimService {
     @Autowired
     private ClaimFactory claimFactory;
 
+    @Autowired
+    private InvoiceFactory invoiceFactory;
+
     public List<Claim> storeClaims(Order order) {
         return claimFactory
                 .createClaims(order)
@@ -68,7 +71,7 @@ public class ClaimService {
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .peek(claim -> {
                     try {
-                        FakturagrunnlagResource invoice = InvoiceFactory.createInvoice(claim);
+                        FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
                         ResponseEntity<?> responseEntity = restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
                         claim.setInvoiceUri(responseEntity.getHeaders().getLocation().toString());
                         claim.setClaimStatus(ClaimStatus.SENT);
