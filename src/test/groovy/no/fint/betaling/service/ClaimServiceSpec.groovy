@@ -22,13 +22,20 @@ class ClaimServiceSpec extends Specification {
     private InvoiceFactory invoiceFactory
     private RestUtil restUtil
     private BetalingObjectFactory betalingObjectFactory
+    private QueryService queryService
 
     void setup() {
         claimRepository = Mock()
         claimFactory = Mock()
         restUtil = Mock()
         invoiceFactory = Mock()
-        claimService = new ClaimService(restUtil: restUtil, claimRepository: claimRepository, claimFactory: claimFactory, invoiceFactory: invoiceFactory)
+        queryService = new QueryService('mock.no')
+        claimService = new ClaimService(
+                restUtil: restUtil,
+                claimRepository: claimRepository,
+                claimFactory: claimFactory,
+                invoiceFactory: invoiceFactory,
+                queryService: queryService)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 

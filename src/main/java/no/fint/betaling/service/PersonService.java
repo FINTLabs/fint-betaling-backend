@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.PersonNotFoundException;
 import no.fint.betaling.factory.CustomerFactory;
 import no.fint.betaling.repository.GroupRepository;
 import no.fint.model.resource.Link;
@@ -53,6 +54,6 @@ public class PersonService extends CacheLoader<String, PersonResource> {
                 .parallelStream()
                 .filter(p -> StringUtils.equals(key, CustomerFactory.getCustomerId(p)))
                 .findAny()
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new PersonNotFoundException(key));
     }
 }
