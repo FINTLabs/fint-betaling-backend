@@ -103,6 +103,7 @@ public class GroupService {
                 .map(students::get)
                 .filter(Objects::nonNull)
                 .map(CustomerFactory::toCustomer)
+                .distinct()
                 .collect(Collectors.toList());
     }
 

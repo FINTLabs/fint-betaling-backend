@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static no.fint.betaling.config.Config.DEFAULT_SCHOOL_ORG_ID;
+
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
@@ -14,8 +16,6 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService groupService;
-
-    private static final String DEFAULT_SCHOOL_ORG_ID = "${fint.betaling.default-school-org-id}";
 
     public GroupController(GroupService groupService) {
         this.groupService = groupService;

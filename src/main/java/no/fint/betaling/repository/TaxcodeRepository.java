@@ -5,6 +5,7 @@ import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.MvakodeResources;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,6 +33,14 @@ public class TaxcodeRepository {
             updateTaxcodes();
         }
         return taxcodes.get(uri);
+    }
+
+    public Taxcode getTaxcodeByCode(String code) {
+        return getTaxcodes()
+                .stream()
+                .filter(tax -> StringUtils.equals(code, tax.getCode()))
+                .findFirst()
+                .orElse(null);
     }
 
     public Collection<Taxcode> getTaxcodes() {
