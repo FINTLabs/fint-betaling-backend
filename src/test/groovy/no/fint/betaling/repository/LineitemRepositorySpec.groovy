@@ -24,7 +24,7 @@ class LineitemRepositorySpec extends Specification {
                 kode: 'code',
                 systemId: new Identifikator(identifikatorverdi: 'test'))
         varelinjeResource.addSelf(Link.with('http://varelinje'))
-        varelinjeResource.addMvakode(Link.with('http://mvakode'))
+        varelinjeResource.addMvakode(Link.with('http://mvakode/1234'))
         def resources = new VarelinjeResources()
         resources.addResource(varelinjeResource)
 
@@ -34,7 +34,7 @@ class LineitemRepositorySpec extends Specification {
 
         then:
         1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as String) >> resources
-        1 * taxcodeRepository.getTaxcodeByUri(_ as String) >> new Taxcode(rate: 0.25)
+        1 * taxcodeRepository.getTaxcodeByCode('1234') >> new Taxcode(rate: 0.25)
     }
 
     def 'Fetching lime items should update first'() {
@@ -46,7 +46,7 @@ class LineitemRepositorySpec extends Specification {
                 kode: 'code',
                 systemId: new Identifikator(identifikatorverdi: 'test'))
         varelinjeResource.addSelf(Link.with('http://varelinje'))
-        varelinjeResource.addMvakode(Link.with('http://mvakode'))
+        varelinjeResource.addMvakode(Link.with('http://mvakode/2345'))
         def resources = new VarelinjeResources()
         resources.addResource(varelinjeResource)
 
@@ -56,7 +56,7 @@ class LineitemRepositorySpec extends Specification {
         then:
         result.size() == 1
         1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as String) >> resources
-        1 * taxcodeRepository.getTaxcodeByUri(_ as String) >> new Taxcode(rate: 0.25)
+        1 * taxcodeRepository.getTaxcodeByCode('2345') >> new Taxcode(rate: 0.25)
 
     }
 }

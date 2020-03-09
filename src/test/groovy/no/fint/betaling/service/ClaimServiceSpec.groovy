@@ -2,6 +2,7 @@ package no.fint.betaling.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.fint.betaling.factory.ClaimFactory
+import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Order
@@ -21,14 +22,23 @@ class ClaimServiceSpec extends Specification {
     private ClaimService claimService
     private ClaimRepository claimRepository
     private ClaimFactory claimFactory
+    private InvoiceFactory invoiceFactory
     private RestUtil restUtil
     private BetalingObjectFactory betalingObjectFactory
+    private QueryService queryService
 
     void setup() {
         claimRepository = Mock()
         claimFactory = Mock()
         restUtil = Mock()
-        claimService = new ClaimService(restUtil: restUtil, claimRepository: claimRepository, claimFactory: claimFactory)
+        invoiceFactory = Mock()
+        queryService = new QueryService('mock.no')
+        claimService = new ClaimService(
+                restUtil: restUtil,
+                claimRepository: claimRepository,
+                claimFactory: claimFactory,
+                invoiceFactory: invoiceFactory,
+                queryService: queryService)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -61,6 +71,7 @@ class ClaimServiceSpec extends Specification {
         1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
             ResponseEntity.ok().headers().location(new URI('link.to.Location')).build()
         }
+        1 * invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
 
         claims.size() == 1
         claims.get(0).claimStatus == ClaimStatus.SENT

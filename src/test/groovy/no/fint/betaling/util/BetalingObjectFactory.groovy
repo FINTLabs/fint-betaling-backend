@@ -1,6 +1,6 @@
 package no.fint.betaling.util
 
-import no.fint.betaling.factory.InvoiceFactory
+
 import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
@@ -15,18 +15,12 @@ class BetalingObjectFactory {
     static Customer newCustomer() {
         return new Customer(
                 name: 'Ola Testesen',
-                id: '21i3v9',
-                postalAddress: 'Testeveien 13',
-                postalCode: '1234',
-                city: 'Testeby',
-                mobile: '30960547',
-                email: 'ola@testesen.no',
-                person: 'link.to.Person'.toURI())
+                id: '21i3v9')
     }
 
     static Principal newPrincipal() {
         return new Principal(
-                uri: 'https://www.imdb.com/title/tt0093780/'.toURI(),
+                uri: 'https://www.imdb.com/title/tt0093780/',
                 description: 'The Principal (1987)',
                 code: 'tt0093780',
                 lineitems: ['MBP']
@@ -46,7 +40,7 @@ class BetalingObjectFactory {
                 description: 'Apple MacBook Pro',
                 itemPrice: 1000000,
                 itemCode: 'MBP',
-                uri: 'link.to.Item'.toURI())
+                uri: 'link.to.Item')
     }
 
     static Order newOrder() {
@@ -78,7 +72,7 @@ class BetalingObjectFactory {
                 createdBy: newUser(),
                 organisationUnit: newOrganisationUnit(),
                 principal: newPrincipal(),
-                invoiceUri: 'link.to.Invoice'.toURI(),
+                invoiceUri: 'link.to.Invoice',
                 orderItems: order.orderItems,
                 claimStatus: claimStatus,
         )
@@ -116,7 +110,7 @@ class BetalingObjectFactory {
     }
 
     static FakturagrunnlagResource newFakturagrunnlag() {
-        def invoice = InvoiceFactory.createInvoice(newClaim('12345', ClaimStatus.STORED))
+        def invoice = new FakturagrunnlagResource(ordrenummer: new Identifikator(identifikatorverdi: '12345'))
         invoice.addSelf(Link.with('link.to.Invoice'))
         return invoice
     }

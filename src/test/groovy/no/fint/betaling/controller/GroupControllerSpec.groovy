@@ -19,7 +19,7 @@ class GroupControllerSpec extends MockMvcSpecification {
 
     def "Get customers from school"() {
         when:
-        def response = mockMvc.perform(get('/api/group/school'))
+        def response = mockMvc.perform(get('/api/group/school').header('x-school-org-id', 'DUMMY'))
 
         then:
         1 * groupService.getCustomerGroupBySchool(_ as String) >> new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])
@@ -30,7 +30,7 @@ class GroupControllerSpec extends MockMvcSpecification {
 
     def "Get customer groups from basis groups"() {
         when:
-        def response = mockMvc.perform(get('/api/group/basis-group'))
+        def response = mockMvc.perform(get('/api/group/basis-group').header('x-school-org-id', 'DUMMY'))
 
         then:
         1 * groupService.getCustomerGroupsByBasisGroupsAndSchool(_ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
@@ -42,7 +42,7 @@ class GroupControllerSpec extends MockMvcSpecification {
 
     def "Get customer groups from teaching groups"() {
         when:
-        def response = mockMvc.perform(get('/api/group/teaching-group'))
+        def response = mockMvc.perform(get('/api/group/teaching-group').header('x-school-org-id', 'DUMMY'))
 
         then:
         1 * groupService.getCustomerGroupsByTeachingGroupsAndSchool(_ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]
@@ -54,7 +54,7 @@ class GroupControllerSpec extends MockMvcSpecification {
 
     def "Get customer groups from contact teacher groups"() {
         when:
-        def response = mockMvc.perform(get('/api/group/contact-teacher-group'))
+        def response = mockMvc.perform(get('/api/group/contact-teacher-group').header('x-school-org-id', 'DUMMY'))
 
         then:
         1 * groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(_ as String) >> [new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])]

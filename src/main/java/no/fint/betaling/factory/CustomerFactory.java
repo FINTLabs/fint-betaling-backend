@@ -1,14 +1,12 @@
 package no.fint.betaling.factory;
 
 import no.fint.betaling.model.Customer;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
-import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public enum CustomerFactory {
     ;
@@ -35,22 +33,13 @@ public enum CustomerFactory {
 
     public static Customer toCustomer(PersonResource person) {
         Customer customer = new Customer();
-        customer.setId(getCustomerId(person.getFodselsnummer().getIdentifikatorverdi()));
+        customer.setId(getCustomerId(person));
         customer.setName(getDisplayName(person.getNavn()));
-        customer.setEmail(person.getKontaktinformasjon().getEpostadresse());
-        customer.setMobile(person.getKontaktinformasjon().getMobiltelefonnummer());
-        person.getSelfLinks().stream().map(Link::getHref).findAny().ifPresent(customer::setPerson);
-        Stream.of(person.getPostadresse(), person.getBostedsadresse()).filter(Objects::nonNull).findFirst().ifPresent(adresse -> {
-            customer.setCity(adresse.getPoststed());
-            customer.setPostalCode(adresse.getPostnummer());
-            customer.setPostalAddress(StringUtils.join(adresse.getAdresselinje(), '\n'));
-        });
-
-      
         return customer;
     }
 
-    public static String getCustomerId(String nin) {
+    public static String getCustomerId(PersonResource personResource) {
+        String nin = Optional.ofNullable(personResource).map(PersonResource::getFodselsnummer).map(Identifikator::getIdentifikatorverdi).orElse("");
         try {
             return Long.toString((Long.parseLong(nin) / 100), 36);
         } catch (NumberFormatException ex) {
