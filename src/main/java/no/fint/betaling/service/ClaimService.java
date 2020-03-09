@@ -9,6 +9,7 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.RestUtil;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.FakturaResource;
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -138,12 +140,26 @@ public class ClaimService {
                 .findAny()
                 .ifPresent(updater.acceptPartially(INVOICE_URI));
 
-        /*
-        Optional.ofNullable(invoice.getOrdrenummer())
+        List<FakturaResource> fakturaList = invoice.getFaktura()
+                .stream()
+                .map(Link::getHref)
+                .map(uri -> restUtil.get(FakturaResource.class, uri))
+                .collect(Collectors.toList());
+
+        updater.accept("invoiceNumbers", fakturaList.stream()
+                .map(FakturaResource::getFakturanummer)
                 .map(Identifikator::getIdentifikatorverdi)
-                .map(Long::valueOf)
-                .ifPresent(updater.acceptPartially(INVOICE_NUMBER));
-         */
+                .collect(Collectors.toList()));
+
+        fakturaList.stream()
+                .map(FakturaResource::getFakturadato)
+                .min(Comparator.naturalOrder())
+                .ifPresent(updater.acceptPartially("invoiceDate"));
+
+        fakturaList.stream()
+                .map(FakturaResource::getForfallsdato)
+                .max(Comparator.naturalOrder())
+                .ifPresent(updater.acceptPartially("paymentDueDate"));
 
         Optional.ofNullable(invoice.getTotal())
                 .map(String::valueOf)
