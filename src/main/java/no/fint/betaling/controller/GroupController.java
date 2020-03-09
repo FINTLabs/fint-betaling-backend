@@ -7,8 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static no.fint.betaling.config.Config.DEFAULT_SCHOOL_ORG_ID;
-
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
@@ -22,26 +20,22 @@ public class GroupController {
     }
 
     @GetMapping("/school")
-    public CustomerGroup getCustomerGroupBySchool(@RequestHeader(name = "x-school-org-id",
-            defaultValue = DEFAULT_SCHOOL_ORG_ID) String schoolId) {
+    public CustomerGroup getCustomerGroupBySchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return groupService.getCustomerGroupBySchool(schoolId);
     }
 
     @GetMapping("/basis-group")
-    public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(@RequestHeader(name = "x-school-org-id",
-            defaultValue = DEFAULT_SCHOOL_ORG_ID) String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return groupService.getCustomerGroupsByBasisGroupsAndSchool(schoolId);
     }
 
     @GetMapping("/teaching-group")
-    public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(@RequestHeader(name = "x-school-org-id",
-            defaultValue = DEFAULT_SCHOOL_ORG_ID) String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByTeachingGroupsAndSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return groupService.getCustomerGroupsByTeachingGroupsAndSchool(schoolId);
     }
 
     @GetMapping("/contact-teacher-group")
-    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(@RequestHeader(name = "x-school-org-id",
-            defaultValue = DEFAULT_SCHOOL_ORG_ID) String schoolId) {
+    public List<CustomerGroup> getCustomerGroupsByContactTeacherGroupsAndSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(schoolId);
     }
 }

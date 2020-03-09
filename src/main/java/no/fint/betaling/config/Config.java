@@ -16,7 +16,6 @@ import javax.annotation.PostConstruct;
 @Configuration
 @Import(OAuthConfig.class)
 public class Config {
-    public static final String DEFAULT_SCHOOL_ORG_ID = "${fint.betaling.default-school-org-id}";
     private final ObjectMapper objectMapper;
 
     public Config(ObjectMapper objectMapper) {
