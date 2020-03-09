@@ -61,7 +61,6 @@ public class PrincipalRepository {
                             .map(Link::getHref)
                             .map(lineitemRepository::getLineitemByUri)
                             .filter(Objects::nonNull)
-                            .map(Lineitem::getItemCode)
                             .collect(Collectors.toSet()));
                     o.getSelfLinks()
                             .stream()

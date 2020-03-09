@@ -2,7 +2,9 @@ package no.fint.betaling.factory
 
 import no.fint.betaling.util.FintObjectFactory
 import no.fint.betaling.util.RestUtil
+import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
+import no.fint.model.resource.felles.PersonResource
 import spock.lang.Specification
 
 class CustomerFactorySpec extends Specification {
@@ -30,7 +32,7 @@ class CustomerFactorySpec extends Specification {
         def nin = "12345678901"
 
         when:
-        def id = CustomerFactory.getCustomerId(nin)
+        def id = CustomerFactory.getCustomerId(new PersonResource(fodselsnummer: new Identifikator(identifikatorverdi: nin)))
 
         then:
         id == '21i3v9'

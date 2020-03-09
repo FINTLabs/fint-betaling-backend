@@ -20,7 +20,7 @@ fint:
     client-id: "e56a78b9-0f0e-4ff9-846b-46d99fa66d76"
     scope: "fint-client"
     access-token-uri: "https://idp.felleskomponent.no/nidp/oauth/nam/token"
-    request-url: https://beta.felleskomponent.no/utdanning/elev/person
+    request-url: "https://idp.felleskomponent.no/nidp/oauth/nam/userinfo"
   betaling:
     org-id: "fintlabs.no"
     date-range: "7, 14, 30"

@@ -1,19 +1,23 @@
 package no.fint.betaling.factory
 
-
 import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.service.PersonService
 import no.fint.betaling.util.BetalingObjectFactory
+import no.fint.model.resource.Link
 import spock.lang.Specification
 
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 class InvoiceFactorySpec extends Specification {
     private BetalingObjectFactory betalingObjectFactory
+    private InvoiceFactory invoiceFactory
+    private PersonService personService
 
     void setup() {
         betalingObjectFactory = new BetalingObjectFactory()
+        personService = Mock()
+        invoiceFactory = new InvoiceFactory(personService)
     }
 
     def "Get invoice given valid payment returns invoice"() {
@@ -21,7 +25,7 @@ class InvoiceFactorySpec extends Specification {
         def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
 
         when:
-        def invoice = InvoiceFactory.createInvoice(claim)
+        def invoice = invoiceFactory.createInvoice(claim)
 
         then:
         invoice.ordrenummer.identifikatorverdi == '123'
@@ -31,6 +35,7 @@ class InvoiceFactorySpec extends Specification {
         invoice.fakturalinjer.get(0).fritekst == ['Monkeyballs']
         invoice.mottaker.any { it.href == 'link.to.Person' }
         invoice.oppdragsgiver.any { it.href ==~ /.*\\/title\/tt0093780\// }
+        1 * personService.getPersonLinkById('21i3v9') >> Link.with('link.to.Person')
     }
 }
 

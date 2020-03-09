@@ -15,7 +15,6 @@ import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
@@ -31,20 +30,14 @@ import java.util.stream.Collectors;
 @Service
 public class ClaimService {
 
-    private static final String ORDER_NUMBER = "orderNumber";
-    private static final String CUSTOMER_NAME = "customer.name";
     private static final String INVOICE_URI = "invoiceUri";
     //private static final String INVOICE_NUMBER = "invoiceNumber";
     private static final String AMOUNT_DUE = "amountDue";
     private static final String CLAIM_STATUS = "claimStatus";
     private static final String STATUS_MESSAGE = "statusMessage";
-    private static final String ORG_ID = "orgId";
 
     @Value("${fint.betaling.endpoints.invoice}")
     private URI invoiceEndpoint;
-
-    @Value("${fint.betaling.org-id}")
-    private String orgId;
 
     @Autowired
     private RestUtil restUtil;
@@ -54,6 +47,12 @@ public class ClaimService {
 
     @Autowired
     private ClaimFactory claimFactory;
+
+    @Autowired
+    private InvoiceFactory invoiceFactory;
+
+    @Autowired
+    private QueryService queryService;
 
     public List<Claim> storeClaims(Order order) {
         return claimFactory
@@ -68,7 +67,7 @@ public class ClaimService {
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .peek(claim -> {
                     try {
-                        FakturagrunnlagResource invoice = InvoiceFactory.createInvoice(claim);
+                        FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
                         ResponseEntity<?> responseEntity = restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
                         claim.setInvoiceUri(responseEntity.getHeaders().getLocation().toString());
                         claim.setClaimStatus(ClaimStatus.SENT);
@@ -149,10 +148,7 @@ public class ClaimService {
                 .map(String::valueOf)
                 .ifPresent(updater.acceptPartially(AMOUNT_DUE));
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where(ORDER_NUMBER).is(invoice.getOrdrenummer().getIdentifikatorverdi()));
+        Query query = queryService.queryByOrderNumber(invoice.getOrdrenummer().getIdentifikatorverdi());
 
         claimRepository.updateClaim(query, update);
     }
@@ -163,60 +159,37 @@ public class ClaimService {
         update.set(CLAIM_STATUS, claim.getClaimStatus());
         update.set(STATUS_MESSAGE, claim.getStatusMessage());
 
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where(ORDER_NUMBER).is(claim.getOrderNumber()));
+        Query query = queryService.queryByOrderNumber(claim.getOrderNumber());
         claimRepository.updateClaim(query, update);
     }
 
     public List<Claim> getClaims() {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        return claimRepository.getClaims(query);
+        return claimRepository.getClaims(queryService.createQuery());
     }
 
     private List<Claim> getAcceptedClaims() {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId).orOperator(
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.ACCEPTED),
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.UPDATE_ERROR)));
-        return claimRepository.getClaims(query);
+        return claimRepository.getClaims(queryService.queryByClaimStatus(
+                ClaimStatus.ACCEPTED,
+                ClaimStatus.UPDATE_ERROR));
     }
 
     private List<Claim> getSentClaims() {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId).orOperator(
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.SENT),
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.ACCEPT_ERROR)));
-        return claimRepository.getClaims(query);
+        return claimRepository.getClaims(queryService.queryByClaimStatus(
+                ClaimStatus.SENT,
+                ClaimStatus.ACCEPT_ERROR));
     }
 
     private List<Claim> getUnsentClaims() {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId).orOperator(
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.STORED),
-                Criteria.where(CLAIM_STATUS).is(ClaimStatus.SEND_ERROR)));
-        return claimRepository.getClaims(query);
+        return claimRepository.getClaims(queryService.queryByClaimStatus(
+                        ClaimStatus.STORED,
+                        ClaimStatus.SEND_ERROR));
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where(CUSTOMER_NAME).regex(name, "i"));
-        return claimRepository.getClaims(query);
+        return claimRepository.getClaims(queryService.queryByCustomerNameRegex(name));
     }
 
     public List<Claim> getClaimsByOrderNumber(String orderNumber) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
-        query.addCriteria(Criteria.where(ORDER_NUMBER).is(orderNumber));
-        return claimRepository.getClaims(query);
+        return claimRepository.getClaims(queryService.queryByOrderNumber(orderNumber));
     }
 }

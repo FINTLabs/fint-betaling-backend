@@ -1,25 +1,22 @@
 package no.fint.betaling.controller;
 
 import no.fint.betaling.model.Principal;
-import no.fint.betaling.repository.PrincipalRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collection;
+import no.fint.betaling.service.PrincipalService;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/principal")
 public class PrincipalController {
 
-    @Autowired
-    private PrincipalRepository repository;
+    private final PrincipalService principalService;
+
+    public PrincipalController(PrincipalService principalService) {
+        this.principalService = principalService;
+    }
 
     @GetMapping
-    public Collection<Principal> getPrincipals() {
-        return repository.getPrincipals();
+    public Principal getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return principalService.getPrincipalByOrganisationId(schoolId);
     }
 }

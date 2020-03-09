@@ -6,6 +6,7 @@ import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -53,13 +54,14 @@ public class LineitemRepository {
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();
-                    lineitem.setItemCode(v.getKode());
+                    lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
                     lineitem.setItemPrice(v.getPris());
                     lineitem.setDescription(v.getNavn());
                     v.getMvakode()
                             .stream()
                             .map(Link::getHref)
-                            .map(taxcodeRepository::getTaxcodeByUri)
+                            .map(href -> StringUtils.substringAfterLast(href, "/"))
+                            .map(taxcodeRepository::getTaxcodeByCode)
                             .filter(Objects::nonNull)
                             .map(Taxcode::getRate)
                             .forEach(lineitem::setTaxrate);
