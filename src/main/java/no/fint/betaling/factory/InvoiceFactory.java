@@ -26,7 +26,11 @@ public class InvoiceFactory {
     public FakturagrunnlagResource createInvoice(Claim claim) {
         List<FakturalinjeResource> invoiceLines = claim.getOrderItems().stream().map(orderItem -> {
             FakturalinjeResource invoiceLine = new FakturalinjeResource();
-            invoiceLine.setPris(orderItem.getLineitem().getItemPrice());
+            if (orderItem.getItemPrice() != null) {
+                invoiceLine.setPris(orderItem.getItemPrice());
+            } else {
+                invoiceLine.setPris(orderItem.getLineitem().getItemPrice());
+            }
             invoiceLine.setAntall(orderItem.getItemQuantity() / 1.0f);
             invoiceLine.setFritekst(Collections.singletonList(orderItem.getDescription()));
             invoiceLine.addVarelinje(Link.with(orderItem.getLineitem().getUri()));
