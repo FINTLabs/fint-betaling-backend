@@ -1,6 +1,5 @@
 package no.fint.betaling.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.factory.ClaimFactory;
@@ -21,7 +20,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -110,10 +108,14 @@ public class ClaimService {
                         String result = restUtil.get(String.class, claim.getInvoiceUri());
                         log.error("Unexpected result! {}", result);
                     } catch (InvalidResponseException e2) {
+                        if (e2.getStatus().is4xxClientError()) {
+                            claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+                        } else if (e2.getStatus().is5xxServerError()) {
+                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                        }
                         claim.setStatusMessage(e2.getMessage());
-                        log.warn("Error accepting claim {}: [{}] {}", claim.getOrderNumber(), e2.getStatus(), e2.getMessage());
+                        log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatus(), e2.getMessage());
                     }
-                    claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
                 }
             }
             updateClaimStatus(claim);
@@ -128,7 +130,7 @@ public class ClaimService {
             } catch (InvalidResponseException e) {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                 claim.setStatusMessage(e.getMessage());
-                log.error("Error updating claim {}: {}", claim.getOrderNumber(), e.getStatus(), e);
+                log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatus(), e.getMessage());
             }
             updateClaimStatus(claim);
         });
@@ -204,8 +206,7 @@ public class ClaimService {
 
     private List<Claim> getSentClaims() {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
-                ClaimStatus.SENT,
-                ClaimStatus.ACCEPT_ERROR));
+                ClaimStatus.SENT));
     }
 
     private List<Claim> getUnsentClaims() {
