@@ -1,5 +1,6 @@
 package no.fint.betaling.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.model.Claim
@@ -8,6 +9,8 @@ import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.betaling.util.RestUtil
+import no.fint.model.administrasjon.okonomi.Faktura
+import no.fint.model.resource.administrasjon.okonomi.FakturaResource
 import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -65,11 +68,8 @@ class ClaimServiceSpec extends Specification {
 
         then:
         1 * claimRepository.getClaims(_ as Query) >> [claim]
-        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
-            ResponseEntity.ok().headers().location(new URI('link.to.Location')).build()
-        }
+        1 * restUtil.post(_, _ as FakturagrunnlagResource) >> new URI('link.to.Location')
         1 * invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
-
         claims.size() == 1
         claims.get(0).claimStatus == ClaimStatus.SENT
         claims.get(0).invoiceUri == 'link.to.Location'
@@ -78,16 +78,13 @@ class ClaimServiceSpec extends Specification {
     @Ignore
     def "Send claim as inovice returns link to location"() {
         given:
-        def invoice = betalingObjectFactory.newInvoice()
+        def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
         def response = claimService.sendClaim(invoice)
 
         then:
-        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _, _ as FakturagrunnlagResource) >> {
-            ResponseEntity.ok().headers().location(new URI('link.to.Location')).build()
-        }
-
+        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _) >> new URI('link.to.Location')
         response == 'link.to.Location'.toURI()
     }
 
@@ -95,7 +92,7 @@ class ClaimServiceSpec extends Specification {
     def "Update claims fetches invoices and updates claims"() {
         given:
         def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
-        def invoice = betalingObjectFactory.newInvoice()
+        def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
         claimService.updateClaims()
@@ -115,13 +112,13 @@ class ClaimServiceSpec extends Specification {
         def invoice = claimService.getStatus(claim)
 
         then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> betalingObjectFactory.newInvoice()
+        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> betalingObjectFactory.newFakturagrunnlag()
         invoice.ordrenummer.identifikatorverdi == '12345'
     }
 
     def "Update claim given valid invoice updates claim"() {
         given:
-        def invoice = betalingObjectFactory.newInvoice()
+        def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
         claimService.updateClaim(invoice)
@@ -165,5 +162,19 @@ class ClaimServiceSpec extends Specification {
         claims.get(0).orderNumber == '12345'
     }
 
+    def 'Fetch links to Faktura for Fakturagrunnlag'() {
+        given:
+        def mapper = new ObjectMapper()
+        def fakturagrunnlag = mapper.readValue(getClass().getResourceAsStream('/dummy_fakturagrunnlag.json'), FakturagrunnlagResource)
+
+        when:
+        claimService.updateClaim(fakturagrunnlag)
+
+        then:
+        2 * restUtil.get(FakturaResource, _) >>> [betalingObjectFactory.newFaktura(), betalingObjectFactory.newFaktura()]
+        1 * claimRepository.updateClaim(_ as Query, {
+            it.modifierOps['$set'].every { it.key in ['invoiceUri', 'invoiceNumbers', 'invoiceDate', 'paymentDueDate', 'amountDue'] }
+        })
+    }
 
 }

@@ -5,8 +5,7 @@ import no.fint.betaling.exception.InvalidResponseException;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -59,10 +58,10 @@ public class RestUtil {
         return result;
     }
 
-    public ResponseEntity<Void> head(String uri) {
+    public HttpHeaders head(String uri) {
         try {
             log.info("GET {}", uri);
-            return restTemplate.exchange(uri, HttpMethod.HEAD, null, Void.class);
+            return restTemplate.headForHeaders(uri);
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
@@ -78,10 +77,10 @@ public class RestUtil {
         }
     }
 
-    public <T> ResponseEntity<T> post(Class<T> clazz, URI uri, T content) {
+    public <T> URI post(URI uri, T content) {
         try {
             log.info("POST {} {}", uri, content);
-            return restTemplate.postForEntity(uri, content, clazz);
+            return restTemplate.postForLocation(uri, content);
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
