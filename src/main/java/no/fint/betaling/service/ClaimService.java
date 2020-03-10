@@ -1,5 +1,6 @@
 package no.fint.betaling.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.factory.ClaimFactory;
@@ -71,11 +72,13 @@ public class ClaimService {
                 .peek(claim -> {
                     try {
                         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-                        ResponseEntity<?> responseEntity = restUtil.post(FakturagrunnlagResource.class, invoiceEndpoint, invoice);
-                        claim.setInvoiceUri(responseEntity.getHeaders().getLocation().toString());
-                        claim.setClaimStatus(ClaimStatus.SENT);
-                        claim.setStatusMessage(null);
-                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                        URI location = restUtil.post(invoiceEndpoint, invoice);
+                        if (location != null) {
+                            claim.setInvoiceUri(location.toString());
+                            claim.setClaimStatus(ClaimStatus.SENT);
+                            claim.setStatusMessage(null);
+                            log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                        }
                     } catch (InvalidResponseException e) {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                         claim.setStatusMessage(e.getMessage());
@@ -89,13 +92,13 @@ public class ClaimService {
     void updateClaims() {
         getSentClaims().forEach(claim -> {
             try {
-                ResponseEntity<Void> response = restUtil.head(claim.getInvoiceUri());
-                if (response.getStatusCode() == HttpStatus.CREATED) {
-                    claim.setInvoiceUri(response.getHeaders().getLocation().toString());
+                HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
+                if (headers.getLocation() == null) {
+                    claim.setInvoiceUri(headers.getLocation().toString());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
                     log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
                 } else {
-                    log.info("Claim {} [{}], location: {}", claim.getOrderNumber(), response.getStatusCode(), claim.getInvoiceUri());
+                    log.info("Claim {} not updated", claim.getOrderNumber());
                 }
                 claim.setStatusMessage(null);
             } catch (InvalidResponseException e) {
@@ -103,10 +106,15 @@ public class ClaimService {
                     log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
                     claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                 } else {
+                    try {
+                        String result = restUtil.get(String.class, claim.getInvoiceUri());
+                        log.error("Unexpected result! {}", result);
+                    } catch (InvalidResponseException e2) {
+                        claim.setStatusMessage(e2.getMessage());
+                        log.warn("Error accepting claim {}: [{}] {}", claim.getOrderNumber(), e2.getStatus(), e2.getMessage());
+                    }
                     claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
                 }
-                claim.setStatusMessage(e.getMessage());
-                log.error("Error accepting claim {}: {}", claim.getOrderNumber(), e.getStatus());
             }
             updateClaimStatus(claim);
         });
