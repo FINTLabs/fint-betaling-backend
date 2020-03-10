@@ -34,7 +34,7 @@ public class MeController {
     @Autowired
     private RestUtil restUtil;
 
-    @Cacheable("me")
+    @Cacheable("meCache")
     @GetMapping
     public User getMe(@RequestHeader(name = "x-ePPN", required = false) String ePPN) {
         User user = new User();
