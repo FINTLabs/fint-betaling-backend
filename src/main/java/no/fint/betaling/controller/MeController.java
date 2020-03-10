@@ -13,6 +13,7 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -33,6 +34,7 @@ public class MeController {
     @Autowired
     private RestUtil restUtil;
 
+    @Cacheable("me")
     @GetMapping
     public User getMe(@RequestHeader(name = "x-ePPN", required = false) String ePPN) {
         User user = new User();
