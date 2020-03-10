@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -78,7 +79,7 @@ public class ClaimService {
                     } catch (InvalidResponseException e) {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                         claim.setStatusMessage(e.getMessage());
-                        log.error("Error sending claim {}: {}", claim.getOrderNumber(), e.getStatus(), e);
+                        log.error("Error sending claim {}: {}", claim.getOrderNumber(), e.getStatus());
                     }
                     updateClaimStatus(claim);
                 })
@@ -88,20 +89,24 @@ public class ClaimService {
     void updateClaims() {
         getSentClaims().forEach(claim -> {
             try {
-                ResponseEntity<?> responseEntity = restUtil.get(ResponseEntity.class, claim.getInvoiceUri());
-                if (responseEntity.getStatusCode() == HttpStatus.CREATED) {
-                    claim.setInvoiceUri(responseEntity.getHeaders().getLocation().toString());
+                ResponseEntity<Void> response = restUtil.head(claim.getInvoiceUri());
+                if (response.getStatusCode() == HttpStatus.CREATED) {
+                    claim.setInvoiceUri(response.getHeaders().getLocation().toString());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
                     log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
                 } else {
-                    claim.setClaimStatus(ClaimStatus.SENT);
-                    log.info("Claim {} pending, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                    log.info("Claim {} [{}], location: {}", claim.getOrderNumber(), response.getStatusCode(), claim.getInvoiceUri());
                 }
                 claim.setStatusMessage(null);
             } catch (InvalidResponseException e) {
-                claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+                if (e.getStatus() == HttpStatus.GONE) {
+                    log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
+                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                } else {
+                    claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+                }
                 claim.setStatusMessage(e.getMessage());
-                log.error("Error accepting claim {}: {}", claim.getOrderNumber(), e.getStatus(), e);
+                log.error("Error accepting claim {}: {}", claim.getOrderNumber(), e.getStatus());
             }
             updateClaimStatus(claim);
         });
@@ -197,8 +202,8 @@ public class ClaimService {
 
     private List<Claim> getUnsentClaims() {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
-                        ClaimStatus.STORED,
-                        ClaimStatus.SEND_ERROR));
+                ClaimStatus.STORED,
+                ClaimStatus.SEND_ERROR));
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {
