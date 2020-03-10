@@ -1,5 +1,5 @@
 buildscript {
-    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.6.0/dependencies.gradle'
+    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.7.0/dependencies.gradle'
     ext {
         springBootVersion = springBootVersion
     }
@@ -53,6 +53,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     compile('org.apache.commons:commons-lang3:3.9')
     compile('commons-beanutils:commons-beanutils:1.9.4')
+    compile('com.squareup.okhttp3:okhttp:4.4.0')
 
 
     runtime('org.springframework.boot:spring-boot-actuator')
@@ -99,4 +100,4 @@ jar {
 
 bootRepackage.enabled = false
 
-apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.6.0/dependencyReport.gradle'
+apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.7.0/dependencyReport.gradle'
