@@ -98,6 +98,15 @@ jar {
     }
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+afterEvaluate {
+    configure(processResources) {
+        filesMatching('**/*.yml') {
+            filter(ReplaceTokens, tokens: [version: jar.version, title: jar.baseName])
+        }
+    }
+}
+
 bootRepackage.enabled = false
 
 apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.7.0/dependencyReport.gradle'
