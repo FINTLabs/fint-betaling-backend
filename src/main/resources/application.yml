@@ -14,6 +14,9 @@ springfox:
   version: '0.0.1-SNAPSHOT'
 
 fint:
+  cache:
+    spec:
+      me: expireAfterWrite=2h
   oauth:
     enabled: true
     username: "betaling@client.fintlabs.no"
