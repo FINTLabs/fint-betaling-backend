@@ -11,7 +11,7 @@ class PersonServiceSpec extends Specification {
     def 'Get Person Link by ID'() {
         given:
         def groupRepository = Mock(GroupRepository)
-        def personService = new PersonService(groupRepository, "expireAfterWrite=1s")
+        def personService = new PersonService(groupRepository)
 
         when:
         def result = personService.getPersonLinkById('21i3v9')
