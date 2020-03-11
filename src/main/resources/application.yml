@@ -1,4 +1,9 @@
 spring:
+  cache:
+    caffeine:
+      spec: expireAfterWrite=2h
+    cache-names: me, schools, basisGroups, teachingGroups, contactTeacherGroups, studentRelations, students
+    type: CAFFEINE
   mvc:
     dispatch-options-request: true
   data:
@@ -14,9 +19,6 @@ springfox:
   version: '0.0.1-SNAPSHOT'
 
 fint:
-  cache:
-    spec:
-      me: expireAfterWrite=2h
   oauth:
     enabled: true
     username: "betaling@client.fintlabs.no"
