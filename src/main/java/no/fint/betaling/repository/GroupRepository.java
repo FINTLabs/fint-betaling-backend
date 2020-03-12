@@ -178,7 +178,7 @@ public class GroupRepository {
         return contactTeacherGroups;
     }
 
-    @Cacheable("contactTeacherGoups")
+    @Cacheable("contactTeacherGroups")
     public Map<Link, KontaktlarergruppeResource> getContactTeacherGroups() {
         if (contactTeacherGroups.isEmpty()) {
             updateContactTeacherGroups();

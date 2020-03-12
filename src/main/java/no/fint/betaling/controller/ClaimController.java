@@ -2,6 +2,7 @@ package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Claim;
+import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -45,5 +48,10 @@ public class ClaimController {
     @GetMapping("/order-number/{order-number}")
     public List<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
         return claimService.getClaimsByOrderNumber(orderNumber);
+    }
+
+    @GetMapping("/status/{status}")
+    public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
+        return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
     }
 }
