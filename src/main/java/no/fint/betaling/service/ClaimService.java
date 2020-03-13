@@ -91,7 +91,7 @@ public class ClaimService {
         getSentClaims().forEach(claim -> {
             try {
                 HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
-                if (headers.getLocation() == null) {
+                if (headers.getLocation() != null) {
                     claim.setInvoiceUri(headers.getLocation().toString());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
                     log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
@@ -103,6 +103,7 @@ public class ClaimService {
                 if (e.getStatus() == HttpStatus.GONE) {
                     log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
                     claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                    claim.setInvoiceUri(null);
                 } else {
                     try {
                         String result = restUtil.get(String.class, claim.getInvoiceUri());
@@ -121,10 +122,12 @@ public class ClaimService {
             updateClaimStatus(claim);
         });
 
+        // TODO Accepted claims should be checked less often
         getAcceptedClaims().forEach(claim -> {
             try {
                 FakturagrunnlagResource invoice = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
-                updateClaim(invoice);
+                ClaimStatus newStatus = updateClaim(invoice);
+                claim.setClaimStatus(newStatus);
                 claim.setStatusMessage(null);
                 log.info("Claim {} updated", claim.getOrderNumber());
             } catch (InvalidResponseException e) {
@@ -143,8 +146,10 @@ public class ClaimService {
      * "paymentDueDate": ?
      * "creditNotes": ?
      * - Check if claim is paid and set status accordingly to remove from update loop
+     *
+     * @return New claim status
      */
-    public void updateClaim(FakturagrunnlagResource invoice) {
+    public ClaimStatus updateClaim(FakturagrunnlagResource invoice) {
         Update update = new Update();
         Consumer2<String, Object> updater = Consumer2.from(update::set);
 
@@ -179,9 +184,20 @@ public class ClaimService {
                 .map(String::valueOf)
                 .ifPresent(updater.acceptPartially(AMOUNT_DUE));
 
+        boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
+        boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
+        boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
+
         Query query = queryService.queryByOrderNumber(invoice.getOrdrenummer().getIdentifikatorverdi());
 
         claimRepository.updateClaim(query, update);
+
+        if (credited || paid) {
+            return ClaimStatus.PAID;
+        } else if (issued) {
+            return ClaimStatus.SENT;
+        }
+        return ClaimStatus.ACCEPTED;
     }
 
     private void updateClaimStatus(Claim claim) {
@@ -221,5 +237,9 @@ public class ClaimService {
 
     public List<Claim> getClaimsByOrderNumber(String orderNumber) {
         return claimRepository.getClaims(queryService.queryByOrderNumber(orderNumber));
+    }
+
+    public List<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
+        return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
     }
 }
