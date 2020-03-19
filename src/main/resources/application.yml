@@ -6,53 +6,17 @@ spring:
     type: CAFFEINE
   mvc:
     dispatch-options-request: true
-  data:
-    mongodb:
-      uri: "mongodb://localhost:27017/fintBetaling"
 
 security:
   basic:
     enabled: false
 
 springfox:
-  title: 'FINT-Betaling'
-  version: '0.0.1-SNAPSHOT'
+  title: '@title@'
+  version: '@version@'
 
 fint:
-  oauth:
-    enabled: true
-    username: "betaling@client.fintlabs.no"
-    client-id: "e56a78b9-0f0e-4ff9-846b-46d99fa66d76"
-    scope: "fint-client"
-    access-token-uri: "https://idp.felleskomponent.no/nidp/oauth/nam/token"
-    request-url: "https://idp.felleskomponent.no/nidp/oauth/nam/userinfo"
   betaling:
-    org-id: "fintlabs.no"
     date-range: "7, 14, 30"
-    default-school-org-id: "999999999"
     invoice-send-rate: "60000"
     invoice-update-rate: "150000"
-    endpoints:
-      invoice: "https://beta1.felleskomponent.no/betaling/fakturagrunnlag"
-      lineitem: "https://beta1.felleskomponent.no/betaling/varelinje"
-      mva-code: "https://beta1.felleskomponent.no/betaling/mvakode"
-      principal: "https://beta1.felleskomponent.no/betaling/oppdragsgiver"
-      school: "https://beta.felleskomponent.no/utdanning/utdanningsprogram/skole"
-      basis-group: "https://beta.felleskomponent.no/utdanning/elev/basisgruppe"
-      teaching-group: "https://beta.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
-      contact-teacher-group: "https://beta.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
-      person: "https://beta.felleskomponent.no/utdanning/elev/person"
-      student-relation: "https://beta.felleskomponent.no/utdanning/elev/elevforhold"
-      school-resource: "https://beta.felleskomponent.no/utdanning/elev/skoleressurs"
-    endpoints-pwf:
-      invoice: "https://beta1.felleskomponent.no/betaling/fakturagrunnlag"
-      lineitem: "https://beta1.felleskomponent.no/betaling/varelinje"
-      mva-code: "https://beta1.felleskomponent.no/betaling/mvakode"
-      principal: "https://beta1.felleskomponent.no/betaling/oppdragsgiver"
-      school: "https://beta.felleskomponent.no/utdanning/utdanningsprogram/skole"
-      basis-group: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
-      teaching-group: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
-      contact-teacher-group: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
-      person: "https://play-with-fint.felleskomponent.no/utdanning/elev/person"
-      student-relation: "https://play-with-fint.felleskomponent.no/utdanning/elev/elevforhold"
-      school-resource: "https://play-with-fint.felleskomponent.no/utdanning/elev/skoleressurs"
