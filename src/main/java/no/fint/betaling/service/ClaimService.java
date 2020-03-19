@@ -192,10 +192,12 @@ public class ClaimService {
 
         claimRepository.updateClaim(query, update);
 
-        if (credited || paid) {
+        if (fakturaList.isEmpty()) {
+            return ClaimStatus.ACCEPTED;
+        } else if (credited || paid) {
             return ClaimStatus.PAID;
         } else if (issued) {
-            return ClaimStatus.SENT;
+            return ClaimStatus.ISSUED;
         }
         return ClaimStatus.ACCEPTED;
     }
@@ -217,6 +219,7 @@ public class ClaimService {
     private List<Claim> getAcceptedClaims() {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.ACCEPTED,
+                ClaimStatus.ISSUED,
                 ClaimStatus.UPDATE_ERROR));
     }
 
