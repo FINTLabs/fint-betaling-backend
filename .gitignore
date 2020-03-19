@@ -11,4 +11,4 @@ out
 /bin/
 /.vscode/
 application-*.yml
-
+application-*.properties

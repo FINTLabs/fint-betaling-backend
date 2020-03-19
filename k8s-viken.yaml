@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: betaling-viken
+  annotations: {service.beta.kubernetes.io/azure-load-balancer-internal: 'true'}
+spec:
+  selector:
+    app: betaling-viken
+  type: LoadBalancer
+  ports:
+    - {name: '8080', port: 8080}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: betaling-viken
+spec:
+  selector:
+    matchLabels:
+      app: betaling-viken
+  template:
+    metadata:
+      labels:
+        app: betaling-viken
+    spec:
+      containers:
+        - name: betaling-viken
+          image: fintlabs.azurecr.io/betaling:build.62
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "2"
+            requests:
+              memory: "1Gi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: fint-environment
+            - secretRef:
+                name: betaling-viken
