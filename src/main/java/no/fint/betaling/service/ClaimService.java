@@ -220,6 +220,7 @@ public class ClaimService {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.ACCEPTED,
                 ClaimStatus.ISSUED,
+                ClaimStatus.PAID,  // TODO Workaround for issue with Visma Fakturering
                 ClaimStatus.UPDATE_ERROR));
     }
 
