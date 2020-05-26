@@ -3,7 +3,6 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.util.RestUtil;
-import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
@@ -231,11 +230,8 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(person -> {
-            person.getElev().stream()
-                    .findFirst()
-                    .ifPresent(student -> students.put(student, person));
-        });
+        resources.getContent().forEach(person -> person.getElev()
+                .forEach(student -> students.put(student, person)));
 
 
         log.info("Update completed, {} students.", students.size());

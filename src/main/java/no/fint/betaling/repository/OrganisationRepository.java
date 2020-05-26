@@ -29,7 +29,7 @@ public class OrganisationRepository {
     private final ConcurrentMap<String, Organisation> organisations = new ConcurrentSkipListMap<>();
     private final ConcurrentMap<String, String> superiors = new ConcurrentSkipListMap<>();
 
-    public Organisation getOrganisationByLink(String href) {
+    public Organisation getOrganisationByHref(String href) {
         if (organisations.isEmpty()) {
             updateOrganisations();
         }
@@ -41,9 +41,9 @@ public class OrganisationRepository {
         Organisation organisation;
         Organisation parent;
         do {
-            organisation = getOrganisationByLink(href);
+            organisation = getOrganisationByHref(href);
             href = superiors.getOrDefault(href, href);
-            parent = getOrganisationByLink(href);
+            parent = getOrganisationByHref(href);
             log.debug("{} vs {}", organisation, parent);
         } while (parent != organisation);
         return organisation;
