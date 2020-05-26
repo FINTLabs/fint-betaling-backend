@@ -3,9 +3,10 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
+import no.fint.betaling.repository.GroupRepository;
+import no.fint.betaling.repository.OrganisationRepository;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResource;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.SkoleressursResource;
@@ -18,9 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.Stack;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -33,6 +33,12 @@ public class MeController {
 
     @Autowired
     private RestUtil restUtil;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
+    @Autowired
+    private OrganisationRepository organisationRepository;
 
     @Cacheable("me")
     @GetMapping
@@ -64,8 +70,7 @@ public class MeController {
         List<SkoleResource> schools = skoleressurs
                 .getSkole()
                 .stream()
-                .map(Link::getHref)
-                .map(it -> restUtil.get(SkoleResource.class, it))
+                .map(groupRepository.getSchools()::get)
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
 
@@ -80,33 +85,18 @@ public class MeController {
                         })
                         .collect(Collectors.toList()));
 
-        Stack<OrganisasjonselementResource> tree = new Stack<>();
-
-        schools
+        final Optional<Organisation> owner = schools
                 .stream()
                 .map(SkoleResource::getOrganisasjon)
                 .flatMap(List::stream)
                 .map(Link::getHref)
-                .map(it -> restUtil.get(OrganisasjonselementResource.class, it))
+                .map(StringUtils::lowerCase)
+                .map(organisationRepository::getTopOrganisationByHref)
+                .distinct()
                 .peek(it -> log.debug("Organisasjon: {}", it))
-                .forEach(tree::push);
+                .findAny();
 
-        while (true) {
-            List<OrganisasjonselementResource> resources = tree.peek().getOverordnet().stream().map(Link::getHref).map(it ->
-                    restUtil.get(OrganisasjonselementResource.class, it)).collect(Collectors.toList());
-            if (resources.isEmpty() || tree.containsAll(resources)) {
-                break;
-            }
-            resources.forEach(tree::push);
-        }
-
-        log.debug("Tree: {}", tree.stream().map(OrganisasjonselementResource::getNavn).collect(Collectors.toList()));
-
-        Organisation owner = new Organisation();
-        OrganisasjonselementResource top = tree.peek();
-        Stream.of(top.getOrganisasjonsnavn(), top.getNavn(), top.getKortnavn()).filter(StringUtils::isNotBlank).findFirst().ifPresent(owner::setName);
-        owner.setOrganisationNumber(top.getOrganisasjonsnummer().getIdentifikatorverdi());
-        user.setOrganisation(owner);
+        owner.ifPresent(user::setOrganisation);
 
         log.info("User: {}", user);
         return user;
