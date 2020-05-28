@@ -56,13 +56,13 @@ public class MeController {
         if (StringUtils.isNotBlank(ePPN)) {
             User user = getUserFromSkoleressursByFeidenavn(ePPN);
 
-            log.info("User: {}", user);
+            log.debug("User: {}", user);
             return user;
         }
 
         if (StringUtils.isNotBlank(nin)) {
             User user = getUserFromPersonalressursByNIN(nin);
-            log.info("User: {}", user);
+            log.debug("User: {}", user);
             return user;
         }
 
@@ -108,7 +108,7 @@ public class MeController {
                 : String.format("%s %s %s", n.getFornavn(), n.getMellomnavn(), n.getEtternavn());
     }
 
-    private User getUserFromSkoleressursByFeidenavn(@RequestHeader(name = "x-ePPN", required = false) String ePPN) {
+    private User getUserFromSkoleressursByFeidenavn(String ePPN) {
         User user = new User();
 
         SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class,
