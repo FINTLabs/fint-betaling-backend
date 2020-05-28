@@ -97,7 +97,7 @@ public class MeController {
                 .findAny()
                 .ifPresent(user::setOrganisation);
 
-        setOrganisationUnits(user, groupRepository.getSchools().values().stream().filter(s -> Objects.nonNull(s.getOrganisasjonsnummer())));
+        setOrganisationUnits(user, groupRepository.getSchools().values().stream().filter(s -> Objects.nonNull(s.getOrganisasjonsnummer())).distinct());
 
         return user;
     }
