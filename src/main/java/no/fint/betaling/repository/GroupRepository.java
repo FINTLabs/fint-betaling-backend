@@ -3,7 +3,6 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.util.RestUtil;
-import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
@@ -81,7 +80,7 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(resource -> schools.put(getSelfLink(resource), resource));
+        resources.getContent().forEach(resource -> resource.getSelfLinks().forEach(link -> schools.put(link, resource)));
 
         log.info("Update completed, {} schools.", schools.size());
 
@@ -111,7 +110,7 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(r -> basisGroups.put(getSelfLink(r), r));
+        resources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> basisGroups.put(link, r)));
 
         log.info("Update completed, {} basis groups.", basisGroups.size());
 
@@ -141,7 +140,7 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(resource -> teachingGroups.put(getSelfLink(resource), resource));
+        resources.getContent().forEach(resource -> resource.getSelfLinks().forEach(link -> teachingGroups.put(link, resource)));
 
         log.info("Update completed, {} teaching groups.", teachingGroups.size());
 
@@ -171,7 +170,7 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(r -> contactTeacherGroups.put(getSelfLink(r), r));
+        resources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> contactTeacherGroups.put(link, r)));
 
         log.info("Update completed, {} contact teacher groups.", contactTeacherGroups.size());
 
@@ -201,7 +200,7 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(r -> studentRelations.put(getSelfLink(r), r));
+        resources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> studentRelations.put(link, r)));
 
         log.info("Update completed, {} student relations.", studentRelations.size());
 
@@ -231,11 +230,8 @@ public class GroupRepository {
 
         if (resources.getTotalItems() == 0) return null;
 
-        resources.getContent().forEach(person -> {
-            person.getElev().stream()
-                    .findFirst()
-                    .ifPresent(student -> students.put(student, person));
-        });
+        resources.getContent().forEach(person -> person.getElev()
+                .forEach(student -> students.put(student, person)));
 
 
         log.info("Update completed, {} students.", students.size());
@@ -251,7 +247,4 @@ public class GroupRepository {
         return students;
     }
 
-    private <T extends FintLinks> Link getSelfLink(T resource) {
-        return resource.getSelfLinks().stream().findFirst().orElseGet(Link::new);
-    }
 }
