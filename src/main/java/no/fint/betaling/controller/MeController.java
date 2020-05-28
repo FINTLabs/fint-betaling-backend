@@ -20,6 +20,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -165,6 +166,7 @@ public class MeController {
                             }
                             return org;
                         })
+                        .sorted(Comparator.comparing(Organisation::getName))
                         .collect(Collectors.toList()));
     }
 }
