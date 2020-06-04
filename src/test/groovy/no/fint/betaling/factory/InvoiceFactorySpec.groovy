@@ -30,11 +30,11 @@ class InvoiceFactorySpec extends Specification {
         then:
         invoice.ordrenummer.identifikatorverdi == '123'
         invoice.leveringsdato == Date.from(LocalDate.parse('2019-11-01').atStartOfDay(ZoneId.systemDefault()).toInstant())
-        invoice.netto == 1000000
+        invoice.nettobelop == 1000000
         invoice.fakturalinjer.size() == 1
         invoice.fakturalinjer.get(0).fritekst == ['Monkeyballs']
         invoice.mottaker.any { it.href == 'link.to.Person' }
-        invoice.oppdragsgiver.any { it.href ==~ /.*\\/title\/tt0093780\// }
+        invoice.fakturautsteder.any { it.href ==~ /.*\\/title\/tt0093780\// }
         1 * personService.getPersonLinkById('21i3v9') >> Link.with('link.to.Person')
     }
 }

@@ -4,7 +4,7 @@
       "antall": 21.0,
       "pris": 28476,
       "_links": {
-        "varelinje": [
+        "vare": [
           {
             "href": "https://beta1.felleskomponent.no/betaling/varelinje/systemid/100--10"
           }
@@ -15,7 +15,7 @@
       "antall": 21.0,
       "pris": -28476,
       "_links": {
-        "varelinje": [
+        "vare": [
           {
             "href": "https://beta1.felleskomponent.no/betaling/varelinje/systemid/100--10"
           }
@@ -26,7 +26,7 @@
   "ordrenummer": {
     "identifikatorverdi": "DUMMY"
   },
-  "total": 0,
+  "totalbelop": 0,
   "_links": {
     "faktura": [
       {
@@ -36,7 +36,7 @@
         "href": "https://beta1.felleskomponent.no/betaling/faktura/fakturanummer/DUMMY2"
       }
     ],
-    "oppdragsgiver": [
+    "fakturautsteder": [
       {
         "href": "https://beta1.felleskomponent.no/betaling/oppdragsgiver/systemid/10"
       }

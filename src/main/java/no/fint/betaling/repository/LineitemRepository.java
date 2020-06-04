@@ -5,7 +5,7 @@ import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources;
+import no.fint.model.resource.administrasjon.faktura.VareResources;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,14 +50,14 @@ public class LineitemRepository {
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateLineitems() {
         log.info("Updating line items from {} ...", lineitemEndpoint);
-        restUtil.getUpdates(VarelinjeResources.class, lineitemEndpoint)
+        restUtil.getUpdates(VareResources.class, lineitemEndpoint)
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();
                     lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
                     lineitem.setItemPrice(v.getPris());
                     lineitem.setDescription(v.getNavn());
-                    v.getMvakode()
+                    v.getMerverdiavgift()
                             .stream()
                             .map(Link::getHref)
                             .map(href -> StringUtils.substringAfterLast(href, "/"))

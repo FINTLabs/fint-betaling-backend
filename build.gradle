@@ -35,8 +35,9 @@ repositories {
 
 
 dependencies {
-    compile("no.fint:fint-okonomi-model-java:${apiVersion}")
-    compile('no.fint:fint-utdanning-resource-model-java:3.4.0')
+    compile("no.fint:fint-administrasjon-resource-model-java:${apiVersion}")
+    //compile("no.fint:fint-utdanning-resource-model-java:${apiVersion}")
+    compile('no.fint:fint-utdanning-resource-model-java:3.5.0')
     compile('no.fint:fint-oauth-token-service:1.4.0')
     compile('no.fint:fint-betaling-model:1.1.0')
 
