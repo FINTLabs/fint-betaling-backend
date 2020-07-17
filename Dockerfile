@@ -1,4 +1,4 @@
-FROM fintlabs.azurecr.io/betaling-frontend:latest as client
+FROM fintlabsacr.azurecr.io/betaling-frontend:latest as client
 
 FROM gradle:4.10.2-jdk8-alpine as builder
 USER root
