@@ -184,7 +184,7 @@ public class ClaimService {
         fakturaList.stream()
                 .map(FakturaResource::getRestbelop)
                 .filter(Objects::nonNull)
-                .findFirst()
+                .reduce(Long::sum)
                 .ifPresent(updater.acceptPartially(AMOUNT_DUE));
 
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
