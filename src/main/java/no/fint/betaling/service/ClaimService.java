@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -180,8 +181,10 @@ public class ClaimService {
                 .max(Comparator.naturalOrder())
                 .ifPresent(updater.acceptPartially("paymentDueDate"));
 
-        Optional.ofNullable(invoice.getTotal())
-                .map(String::valueOf)
+        fakturaList.stream()
+                .map(FakturaResource::getRestbelop)
+                .filter(Objects::nonNull)
+                .findFirst()
                 .ifPresent(updater.acceptPartially(AMOUNT_DUE));
 
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
@@ -220,7 +223,7 @@ public class ClaimService {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.ACCEPTED,
                 ClaimStatus.ISSUED,
-                ClaimStatus.PAID,  // TODO Workaround for issue with Visma Fakturering
+                // ClaimStatus.PAID,  // TODO Used to be workaround for issue with Visma Fakturering
                 ClaimStatus.UPDATE_ERROR));
     }
 
