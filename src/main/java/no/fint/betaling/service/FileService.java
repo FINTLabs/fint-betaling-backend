@@ -14,9 +14,9 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -89,15 +89,15 @@ public class FileService {
         return resource.getElev().stream().findFirst().orElse(null);
     }
 
-    public CustomerGroup getCustomersFromFile(String schoolId, File newFile) throws IOException {
-        BufferedReader csvReader = new BufferedReader(new FileReader(newFile.getAbsolutePath()));
+    public CustomerGroup getCustomersFromFile(String schoolId, byte[] file) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(file)));
         ArrayList<String> customerNumbers = new ArrayList<>();
         String row;
-        while ((row = csvReader.readLine()) != null) {
+        while ((row = reader.readLine()) != null) {
             String[] data = row.split(",");
             customerNumbers.addAll(Arrays.asList(data));
         }
-        csvReader.close();
+        reader.close();
         return getCustomers(schoolId, customerNumbers);
     }
 }

@@ -117,14 +117,6 @@ public class FileRepository {
         return basisGroups;
     }
 
-    @Cacheable("basisGroups")
-    public Map<Link, BasisgruppeResource> getBasisGroups() {
-        if (basisGroups.isEmpty()) {
-            updateBasisGroups();
-        }
-        return basisGroups;
-    }
-
     @CachePut(value = "teachingGroups", unless = "#result == null")
     public Map<Link, UndervisningsgruppeResource> updateTeachingGroups() {
         log.info("Updating teaching groups from {} ...", teachingGroupEndpoint);
@@ -147,14 +139,6 @@ public class FileRepository {
         return teachingGroups;
     }
 
-    @Cacheable("teachingGroups")
-    public Map<Link, UndervisningsgruppeResource> getTeachingGroups() {
-        if (teachingGroups.isEmpty()) {
-            updateTeachingGroups();
-        }
-        return teachingGroups;
-    }
-
     @CachePut(value = "contactTeacherGroups", unless = "#result == null")
     public Map<Link, KontaktlarergruppeResource> updateContactTeacherGroups() {
         log.info("Updating contact teacher groups from {} ...", contactTeacherGroupEndpoint);
@@ -174,14 +158,6 @@ public class FileRepository {
 
         log.info("Update completed, {} contact teacher groups.", contactTeacherGroups.size());
 
-        return contactTeacherGroups;
-    }
-
-    @Cacheable("contactTeacherGroups")
-    public Map<Link, KontaktlarergruppeResource> getContactTeacherGroups() {
-        if (contactTeacherGroups.isEmpty()) {
-            updateContactTeacherGroups();
-        }
         return contactTeacherGroups;
     }
 
