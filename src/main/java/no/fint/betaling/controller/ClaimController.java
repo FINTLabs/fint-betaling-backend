@@ -1,5 +1,6 @@
 package no.fint.betaling.controller;
 
+import com.mongodb.WriteResult;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
@@ -10,9 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -53,5 +54,13 @@ public class ClaimController {
     @GetMapping("/status/{status}")
     public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
         return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
+    }
+
+    @DeleteMapping("/cancel")
+    public List<Claim> cancelClaimByID(@RequestBody List<String> orderNumbers) {
+        claimService.cancelClaims(orderNumbers);
+        ArrayList<Claim> claimList = new ArrayList<>();
+        orderNumbers.forEach(s -> claimList.addAll(claimService.getClaimsByOrderNumber(s)));
+        return claimList;
     }
 }

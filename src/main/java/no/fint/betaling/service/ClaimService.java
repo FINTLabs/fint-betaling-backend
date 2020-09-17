@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -245,5 +246,12 @@ public class ClaimService {
 
     public List<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
         return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
+    }
+
+    public void cancelClaims(List<String> orderNumbers) {
+        ArrayList<Claim> claimList = new ArrayList<>();
+        orderNumbers.forEach(s -> claimList.addAll(getClaimsByOrderNumber(s)));
+        claimList.forEach(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED));
+        claimList.forEach(this::updateClaimStatus);
     }
 }
