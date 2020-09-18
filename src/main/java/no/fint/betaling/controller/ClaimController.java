@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -54,13 +53,4 @@ public class ClaimController {
     public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
         return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
     }
-<<<<<<< Updated upstream
-=======
-
-    @DeleteMapping
-    public ResponseEntity cancelClaimsByIDs(@RequestBody List<String> orderNumbers) {
-        claimService.cancelClaims(orderNumbers);
-        return ResponseEntity.ok().build();
-    }
->>>>>>> Stashed changes
 }
