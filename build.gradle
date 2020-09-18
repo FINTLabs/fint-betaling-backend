@@ -55,6 +55,10 @@ dependencies {
     compile('commons-beanutils:commons-beanutils:1.9.4')
     compile('com.squareup.okhttp3:okhttp:4.4.0')
     compile('com.github.ben-manes.caffeine:caffeine')
+    // https://mvnrepository.com/artifact/org.apache.poi/poi
+    compile 'org.apache.poi:poi:4.0.0'
+    compile 'org.apache.poi:poi-ooxml:4.0.0'
+
 
     runtime('org.springframework.boot:spring-boot-actuator')
 

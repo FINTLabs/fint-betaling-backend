@@ -54,4 +54,13 @@ public class ClaimController {
     public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
         return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
     }
+<<<<<<< Updated upstream
+=======
+
+    @DeleteMapping
+    public ResponseEntity cancelClaimsByIDs(@RequestBody List<String> orderNumbers) {
+        claimService.cancelClaims(orderNumbers);
+        return ResponseEntity.ok().build();
+    }
+>>>>>>> Stashed changes
 }

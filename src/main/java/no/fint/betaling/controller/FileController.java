@@ -1,8 +1,9 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.CustomerGroup;
 import no.fint.betaling.service.FileService;
+import no.fint.betaling.util.CustomerFileGroup;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class FileController {
     }
 
     @PostMapping
-    public CustomerGroup getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws IOException {
-        return fileService.getCustomersFromFile(schoolId, file);
+    public ResponseEntity<CustomerFileGroup> getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws IOException {
+        return ResponseEntity.ok(fileService.getCustomersFromFile(schoolId, file));
     }
 }
