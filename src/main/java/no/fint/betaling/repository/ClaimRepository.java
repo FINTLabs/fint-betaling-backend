@@ -1,6 +1,5 @@
 package no.fint.betaling.repository;
 
-import com.mongodb.WriteResult;
 import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +11,6 @@ import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
