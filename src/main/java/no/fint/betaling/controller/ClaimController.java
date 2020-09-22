@@ -54,7 +54,7 @@ public class ClaimController {
         return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
     }
 
-    @DeleteMapping
+    @PutMapping("/cancel")
     public ResponseEntity cancelClaimsByIDs(@RequestBody List<String> orderNumbers) {
         claimService.cancelClaims(orderNumbers);
         return ResponseEntity.ok().build();

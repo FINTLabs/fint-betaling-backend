@@ -251,7 +251,7 @@ public class ClaimService {
     public void cancelClaims(List<String> orderNumbers) {
         ArrayList<Claim> claimList = new ArrayList<>();
         orderNumbers.forEach(s -> claimList.addAll(getClaimsByOrderNumber(s)));
-        claimList.forEach(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED));
+        claimList.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED)).forEach(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED));
         claimList.forEach(this::updateClaimStatus);
     }
 }
