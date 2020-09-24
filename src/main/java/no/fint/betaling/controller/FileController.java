@@ -7,8 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @Slf4j
 @RestController
 @CrossOrigin(origins = "*")
@@ -23,6 +21,7 @@ public class FileController {
 
     @PostMapping
     public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) {
+        //Todo: Fix unsuported media type and wrong content
         ResponseEntity<CustomerFileGroup> response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         try {
             response = ResponseEntity.ok(fileService.getCustomersFromFile(schoolId, file));
