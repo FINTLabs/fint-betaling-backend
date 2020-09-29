@@ -33,7 +33,6 @@ public class FileService {
     }
 
     public CustomerGroup getCustomers(String schoolId, ArrayList<String> customerNumbers) {
-        Map<Link, PersonResource> students = fileRepository.getStudents();
         SkoleResource school = getSchool(schoolId);
         CustomerGroup customerGroup = createCustomerGroup(school);
         List<Customer> customerList = customerGroup.getCustomers().stream().filter(customer -> studentMatchStudentNumber(customer, customerNumbers)).collect(Collectors.toList());
@@ -91,21 +90,14 @@ public class FileService {
     }
 
     public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws IOException {
-        CustomerFileGroup customerFileGroup = new CustomerFileGroup();
-        ArrayList<String> customerNumbers = new ArrayList<>();
         InputStream targetStream = new ByteArrayInputStream(file);
-        ArrayList<String> notFoundCustomers = new ArrayList<>();
-
         Workbook wb = WorkbookFactory.create(targetStream);
-
         Sheet sheet = wb.getSheetAt(0);
         Row row;
-        Cell cell;
         int rows;
         rows = sheet.getPhysicalNumberOfRows();
-
         int cols = 0;
-        int tmp = 0;
+        int tmp;
 
         for (int i = 0; i < 10 || i < rows; i++) {
             row = sheet.getRow(i);
@@ -114,49 +106,65 @@ public class FileService {
                 if (tmp > cols) cols = tmp;
             }
         }
+        return extractCustomerFileGroupFromFile(rows, sheet, cols, schoolId);
+    }
 
+    private CustomerFileGroup extractCustomerFileGroupFromFile(int rows, Sheet sheet, int cols, String schoolId) {
+        CustomerFileGroup customerFileGroup = new CustomerFileGroup();
+        CustomerGroup customerGroup = new CustomerGroup();
+        ArrayList<Customer> customers = new ArrayList<>();
+        ArrayList<String> notFoundCustomers = new ArrayList<>();
+        Cell cell;
+        int colWithVISID = -1;
         for (int r = 0; r < rows; r++) {
-            row = sheet.getRow(r);
+            Row row = sheet.getRow(r);
+            String visId = "";
             if (row != null) {
-                String firstName = "";
-                String lastName = "";
-                String birthDate = "";
                 for (int c = 0; c < cols; c++) {
                     cell = row.getCell(c);
-                    if (cell != null && r > 0) {
-                        if (c == 0) {
-                            firstName = cell.toString();
-                        }
-                        if (c == 1) {
-                            lastName = cell.toString();
-                        }
-                        if (c == 3) {
-                            birthDate = cell.toString();
+                    if (r == 0 && cell.toString().equals("VIS-ID")) {
+                        colWithVISID = c;
+                    }
+                    if (cell != null && r > 0 && c == colWithVISID) {
+                        visId = cell.toString();
+                        if (visId.contains(".")) {
+                            visId = visId.split("\\.")[0];
                         }
                     }
                 }
-                if (firstName.length() > 0 && lastName.length() > 0) {
-                    String customerNumberByNameAndDate = getCustomerNumberByNameAndDate(firstName, lastName, birthDate, schoolId);
-                    if (customerNumberByNameAndDate != null) {
-                        customerNumbers.add(customerNumberByNameAndDate);
-                    } else notFoundCustomers.add(lastName + ", " + firstName);
+            }
+            if (visId.length() > 0) {
+                Customer customer = getCustomerNumberByVisId(visId, schoolId);
+                if (customer != null) {
+                    customers.add(customer);
+                } else {
+                    notFoundCustomers.add(visId);
                 }
             }
         }
-        customerFileGroup.setFoundCustomers(getCustomers(schoolId, customerNumbers));
+        customerGroup.setCustomers(customers);
+        customerFileGroup.setFoundCustomers(customerGroup);
         customerFileGroup.setNotFoundCustomers(notFoundCustomers);
         return customerFileGroup;
     }
 
-    public String getCustomerNumberByNameAndDate(String firstname, String lastName, String birthDate, String schoolId) {
+    private Customer getCustomerNumberByVisId(String visId, String schoolId) {
         SkoleResource school = getSchool(schoolId);
-        CustomerGroup customerGroup = createCustomerGroup(school);
-        List<Customer> customerList = customerGroup.getCustomers().stream().filter(customer -> studentMatchNameAndBirthDate(firstname, lastName, birthDate, customer)).collect(Collectors.toList());
-        return customerList.size() > 0 ? customerList.get(0).getId() : null;
-    }
+        Map<Link, ElevforholdResource> studentRelations = fileRepository.getStudentRelations();
+        Map<Link, PersonResource> students = fileRepository.getStudents();
 
-    private boolean studentMatchNameAndBirthDate(String firstname, String lastName, String birthDate, Customer customer) {
-        String name = lastName + ", " + firstname;
-        return customer.getName().equals(name);
+        List<Customer> personResources = school.getElevforhold().stream()
+                .map(studentRelations::get)
+                .filter(Objects::nonNull)
+                .filter(elevforholdResource -> elevforholdResource.getSystemId().getIdentifikatorverdi().equals(visId))
+                .map(this::getStudentLink)
+                .filter(Objects::nonNull)
+                .map(students::get)
+                .filter(Objects::nonNull)
+                .map(CustomerFactory::toCustomer)
+                .distinct()
+                .collect(Collectors.toList());
+
+        return personResources.size() > 0 ? personResources.get(0) : null;
     }
 }
