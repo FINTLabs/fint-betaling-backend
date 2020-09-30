@@ -89,9 +89,15 @@ public class FileService {
         return resource.getElev().stream().findFirst().orElse(null);
     }
 
-    public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws IOException {
+    public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) {
         InputStream targetStream = new ByteArrayInputStream(file);
-        Workbook wb = WorkbookFactory.create(targetStream);
+        Workbook wb = null;
+        try{
+            wb = WorkbookFactory.create(targetStream);
+        }catch (IOException ex){
+            log.error(ex.getMessage(), ex);
+            return null;
+        }
         Sheet sheet = wb.getSheetAt(0);
         Row row;
         int rows;
@@ -141,6 +147,9 @@ public class FileService {
                     notFoundCustomers.add(visId);
                 }
             }
+        }
+        if (colWithVISID == -1){
+            return customerFileGroup;
         }
         customerGroup.setCustomers(customers);
         customerFileGroup.setFoundCustomers(customerGroup);
