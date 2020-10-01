@@ -3,7 +3,6 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.service.FileService;
 import no.fint.betaling.util.CustomerFileGroup;
-import org.apache.tika.Tika;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +20,7 @@ public class FileController {
     }
 
     @PostMapping
-    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) {
-
-        String contentType = new Tika().detect(file);
+    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId,@RequestHeader(name = "Content-Type") String contentType, @RequestBody byte[] file) {
 
         if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") || contentType.equals("application/vnd.ms-excel")) {
             CustomerFileGroup customersFromFile = fileService.getCustomersFromFile(schoolId, file);
