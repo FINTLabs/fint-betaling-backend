@@ -2,6 +2,7 @@ package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.SchoolNotFoundException;
+import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.factory.CustomerFactory;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
@@ -89,14 +90,14 @@ public class FileService {
         return resource.getElev().stream().findFirst().orElse(null);
     }
 
-    public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) {
+    public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws UnableToReadFileException {
         InputStream targetStream = new ByteArrayInputStream(file);
         Workbook wb = null;
         try{
             wb = WorkbookFactory.create(targetStream);
         }catch (IOException ex){
             log.error(ex.getMessage(), ex);
-            return null;
+            throw new UnableToReadFileException(ex.getMessage());
         }
         Sheet sheet = wb.getSheetAt(0);
         Row row;
@@ -175,5 +176,9 @@ public class FileService {
                 .collect(Collectors.toList());
 
         return personResources.size() > 0 ? personResources.get(0) : null;
+    }
+
+    public boolean isTypeOfTypeExcel(String contentType) {
+        return contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") || contentType.equals("application/vnd.ms-excel");
     }
 }

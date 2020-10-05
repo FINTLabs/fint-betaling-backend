@@ -1,11 +1,15 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.service.FileService;
 import no.fint.betaling.util.CustomerFileGroup;
+import org.apache.tika.Tika;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.FileInputStream;
 
 @Slf4j
 @RestController
@@ -20,10 +24,18 @@ public class FileController {
     }
 
     @PostMapping
-    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId,@RequestHeader(name = "Content-Type") String contentType, @RequestBody byte[] file) {
+    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) {
+        CustomerFileGroup customersFromFile;
 
-        if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") || contentType.equals("application/vnd.ms-excel")) {
-            CustomerFileGroup customersFromFile = fileService.getCustomersFromFile(schoolId, file);
+        String contentType = new Tika().detect(file);
+
+        if (fileService.isTypeOfTypeExcel(contentType)) {
+            try {
+                customersFromFile = fileService.getCustomersFromFile(schoolId, file);
+            } catch (UnableToReadFileException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
+            }
             ResponseEntity<CustomerFileGroup> response = ResponseEntity.ok(customersFromFile);
             if (customersFromFile != null) {
                 if (customersFromFile.getFoundCustomers() != null && customersFromFile.getNotFoundCustomers() != null) {
@@ -31,11 +43,10 @@ public class FileController {
                 } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
                 }
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{}");
             }
         } else {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("{}");
         }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{}");
     }
 }
