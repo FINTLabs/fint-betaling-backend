@@ -248,10 +248,9 @@ public class ClaimService {
         return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
     }
 
-    public void cancelClaims(List<String> orderNumbers) {
-        ArrayList<Claim> claimList = new ArrayList<>();
-        orderNumbers.forEach(s -> claimList.addAll(getClaimsByOrderNumber(s)));
-        claimList.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED)).forEach(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED));
-        claimList.forEach(this::updateClaimStatus);
+    public void cancelClaim(String orderNumber) {
+        List<Claim> claimsByOrderNumber = getClaimsByOrderNumber(orderNumber);
+        claimsByOrderNumber.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED)).forEach(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED));
+        claimsByOrderNumber.forEach(this::updateClaimStatus);
     }
 }
