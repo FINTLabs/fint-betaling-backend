@@ -250,7 +250,10 @@ public class ClaimService {
 
     public void cancelClaim(String orderNumber) {
         List<Claim> claimsByOrderNumber = getClaimsByOrderNumber(orderNumber);
-        claimsByOrderNumber.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED)).forEach(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED));
-        claimsByOrderNumber.forEach(this::updateClaimStatus);
+        claimsByOrderNumber
+                .stream()
+                .filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED))
+                .peek(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED))
+                .forEach(this::updateClaimStatus);
     }
 }
