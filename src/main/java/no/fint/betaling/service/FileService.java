@@ -1,6 +1,7 @@
 package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.SchoolNotFoundException;
 import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.factory.CustomerFactory;
@@ -13,7 +14,9 @@ import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.ElevforholdResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -22,10 +25,16 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
 public class FileService {
+
+    @Value("${fint.betaling.dnd.file-types:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel}")
+    private String[] fileTypes;
+    @Value("${fint.betaling.dnd.VIS-ID:VIS-ID}")
+    private String visId;
 
     private final FileRepository fileRepository;
 
@@ -90,80 +99,67 @@ public class FileService {
         return resource.getElev().stream().findFirst().orElse(null);
     }
 
-    public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws UnableToReadFileException {
+    public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws UnableToReadFileException, NoVISIDColumnException {
         InputStream targetStream = new ByteArrayInputStream(file);
-        Workbook wb = null;
-        try{
+        Workbook wb;
+        try {
             wb = WorkbookFactory.create(targetStream);
-        }catch (IOException ex){
+        } catch (IOException ex) {
             log.error(ex.getMessage(), ex);
             throw new UnableToReadFileException(ex.getMessage());
         }
         Sheet sheet = wb.getSheetAt(0);
-        Row row;
-        int rows;
-        rows = sheet.getPhysicalNumberOfRows();
-        int cols = 0;
-        int tmp;
-
-        for (int i = 0; i < 10 || i < rows; i++) {
-            row = sheet.getRow(i);
-            if (row != null) {
-                tmp = sheet.getRow(i).getPhysicalNumberOfCells();
-                if (tmp > cols) cols = tmp;
-            }
-        }
-        return extractCustomerFileGroupFromFile(rows, sheet, cols, schoolId);
+        return extractCustomerFileGroupFromFile(sheet, schoolId);
     }
 
-    private CustomerFileGroup extractCustomerFileGroupFromFile(int rows, Sheet sheet, int cols, String schoolId) {
+    private CustomerFileGroup extractCustomerFileGroupFromFile(Sheet sheet, String schoolId) throws NoVISIDColumnException {
         CustomerFileGroup customerFileGroup = new CustomerFileGroup();
         CustomerGroup customerGroup = new CustomerGroup();
         ArrayList<Customer> customers = new ArrayList<>();
         ArrayList<String> notFoundCustomers = new ArrayList<>();
-        Cell cell;
-        int colWithVISID = -1;
-        for (int r = 0; r < rows; r++) {
-            Row row = sheet.getRow(r);
-            String visId = "";
-            if (row != null) {
-                for (int c = 0; c < cols; c++) {
-                    cell = row.getCell(c);
-                    if (r == 0 && cell.toString().equals("VIS-ID")) {
-                        colWithVISID = c;
-                    }
-                    if (cell != null && r > 0 && c == colWithVISID) {
-                        visId = cell.toString();
-                        if (visId.contains(".")) {
-                            visId = visId.split("\\.")[0];
-                        }
-                    }
-                }
-            }
-            if (visId.length() > 0) {
-                Customer customer = getCustomerNumberByVisId(visId, schoolId);
-                if (customer != null) {
-                    customers.add(customer);
-                } else {
-                    notFoundCustomers.add(visId);
-                }
-            }
-        }
-        if (colWithVISID == -1){
-            return customerFileGroup;
-        }
+
+        Cell visIdCell = getVisIdCell(sheet);
+
+        IntStream
+                .range(visIdCell.getRowIndex()+1, sheet.getPhysicalNumberOfRows())
+                .mapToObj(sheet::getRow)
+                .filter(Objects::nonNull)
+                .map(row -> row.getCell(visIdCell.getColumnIndex()))
+                .filter(Objects::nonNull)
+                .map(cell1 -> String.format("%.0f", cell1.getNumericCellValue()))
+                .forEach(s ->
+                    getCustomerNumberByVisId(s, schoolId)
+                            .map(customers::add)
+                            .orElseGet(() -> notFoundCustomers.add(s))
+                );
+
         customerGroup.setCustomers(customers);
         customerFileGroup.setFoundCustomers(customerGroup);
         customerFileGroup.setNotFoundCustomers(notFoundCustomers);
         return customerFileGroup;
     }
 
-    private Customer getCustomerNumberByVisId(String visId, String schoolId) {
+    private Cell getVisIdCell(Sheet sheet) throws NoVISIDColumnException {
+        return IntStream
+                    .range(0, sheet.getPhysicalNumberOfRows())
+                    .mapToObj(sheet::getRow)
+                    .filter(Objects::nonNull)
+                    .flatMap(row ->
+                            IntStream
+                                    .range(0, row.getPhysicalNumberOfCells())
+                                    .mapToObj(row::getCell)
+                                    .filter(Objects::nonNull)
+                                    .filter(cell1 -> cell1.getStringCellValue().equals(visId)))
+                    .findFirst()
+                    .orElseThrow(NoVISIDColumnException::new);
+    }
+
+    private Optional<Customer> getCustomerNumberByVisId(String visId, String schoolId) {
         SkoleResource school = getSchool(schoolId);
         Map<Link, ElevforholdResource> studentRelations = fileRepository.getStudentRelations();
         Map<Link, PersonResource> students = fileRepository.getStudents();
 
-        List<Customer> personResources = school.getElevforhold().stream()
+        return school.getElevforhold().stream()
                 .map(studentRelations::get)
                 .filter(Objects::nonNull)
                 .filter(elevforholdResource -> elevforholdResource.getSystemId().getIdentifikatorverdi().equals(visId))
@@ -173,12 +169,10 @@ public class FileService {
                 .filter(Objects::nonNull)
                 .map(CustomerFactory::toCustomer)
                 .distinct()
-                .collect(Collectors.toList());
-
-        return personResources.size() > 0 ? personResources.get(0) : null;
+                .findFirst();
     }
 
     public boolean isTypeOfTypeExcel(String contentType) {
-        return contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") || contentType.equals("application/vnd.ms-excel");
+        return StringUtils.equalsAny(contentType, fileTypes);
     }
 }
