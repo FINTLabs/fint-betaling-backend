@@ -57,6 +57,6 @@ public class ClaimController {
     @DeleteMapping("/order-number/{order-number}")
     public ResponseEntity cancelClaimsByID(@PathVariable("order-number") String orderNumber) {
         claimService.cancelClaim(orderNumber);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
