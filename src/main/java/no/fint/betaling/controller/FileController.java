@@ -1,6 +1,8 @@
 package no.fint.betaling.controller;
 
+import com.sun.xml.internal.ws.server.UnsupportedMediaException;
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.service.FileService;
@@ -26,31 +28,26 @@ public class FileController {
     }
 
     @PostMapping
-    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) {
-        CustomerFileGroup customersFromFile;
+    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException {
+        CustomerFileGroup customersFromFile = fileService.getCustomersFromFile(schoolId, file);
+        if (customersFromFile != null && customersFromFile.getFoundCustomers() != null && customersFromFile.getNotFoundCustomers() != null)
+            return ResponseEntity.ok(customersFromFile);
+        else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "could not find VIS-ID or list is empty"));
+    }
 
-        String contentType = new Tika().detect(file);
+    @ExceptionHandler({NoVISIDColumnException.class})
+    public ResponseEntity handleNoVisIdException() {
+        return ResponseEntity.badRequest().body(Collections.singletonMap("message", "missing VIS-ID column"));
+    }
 
-        if (fileService.isTypeOfTypeExcel(contentType)) {
-            try {
-                customersFromFile = fileService.getCustomersFromFile(schoolId, file);
-            } catch (UnableToReadFileException e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{}");
-            }catch (NoVISIDColumnException e){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "missing VIS-ID column"));
-            }
-            ResponseEntity<CustomerFileGroup> response = ResponseEntity.ok(customersFromFile);
-            if (customersFromFile != null) {
-                if (customersFromFile.getFoundCustomers() != null && customersFromFile.getNotFoundCustomers() != null) {
-                    return response;
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "could not find VIS-ID or list is empty"));
-                }
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(Collections.singletonMap("message", "invalid content type " + contentType));
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{}");
+    @ExceptionHandler({UnableToReadFileException.class})
+    public ResponseEntity handleUnableToReadFileException() {
+        return ResponseEntity.badRequest().body(Collections.singletonMap("message", "unable to read file"));
+    }
+
+    @ExceptionHandler({UnsupportedMediaException.class})
+    public ResponseEntity handleUnsupportedMediaException(UnsupportedMediaException ex) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(Collections.singletonMap("message", ex.getMessage()));
     }
 }

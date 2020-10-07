@@ -1,5 +1,6 @@
 package no.fint.betaling.service;
 
+import com.sun.xml.internal.ws.server.UnsupportedMediaException;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.SchoolNotFoundException;
@@ -7,7 +8,7 @@ import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.factory.CustomerFactory;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
-import no.fint.betaling.repository.FileRepository;
+import no.fint.betaling.repository.GroupRepository;
 import no.fint.betaling.util.CustomerFileGroup;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
@@ -15,7 +16,11 @@ import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.ElevforholdResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -36,34 +41,14 @@ public class FileService {
     @Value("${fint.betaling.dnd.VIS-ID:VIS-ID}")
     private String visId;
 
-    private final FileRepository fileRepository;
+    private final GroupRepository groupRepository;
 
-    public FileService(FileRepository fileRepository) {
-        this.fileRepository = fileRepository;
-    }
-
-    public CustomerGroup getCustomers(String schoolId, ArrayList<String> customerNumbers) {
-        SkoleResource school = getSchool(schoolId);
-        CustomerGroup customerGroup = createCustomerGroup(school);
-        List<Customer> customerList = customerGroup.getCustomers().stream().filter(customer -> studentMatchStudentNumber(customer, customerNumbers)).collect(Collectors.toList());
-        customerGroup.setCustomers(customerList);
-        return customerGroup;
-    }
-
-    private boolean studentMatchStudentNumber(Customer customer, ArrayList<String> customerNumbers) {
-        return customerNumbers.contains(customer.getId());
-    }
-
-    private CustomerGroup createCustomerGroup(SkoleResource school) {
-        CustomerGroup customerGroup = new CustomerGroup();
-        customerGroup.setName(school.getNavn());
-        customerGroup.setDescription(null);
-        customerGroup.setCustomers(getCustomersForGroup(school.getElevforhold()));
-        return customerGroup;
+    public FileService(GroupRepository groupRepository) {
+        this.groupRepository = groupRepository;
     }
 
     private SkoleResource getSchool(String schoolId) {
-        return fileRepository.getSchools().values().stream()
+        return groupRepository.getSchools().values().stream()
                 .filter(hasOrganisationNumber(schoolId))
                 .findFirst()
                 .orElseThrow(() -> new SchoolNotFoundException(String.format("x-school-org-id: %s", schoolId)));
@@ -76,36 +61,20 @@ public class FileService {
                 .orElse(false);
     }
 
-    private List<Customer> getCustomersForGroup(List<Link> studentRelationLinks) {
-        if (studentRelationLinks == null) {
-            return Collections.emptyList();
-        }
-        Map<Link, ElevforholdResource> studentRelations = fileRepository.getStudentRelations();
-        Map<Link, PersonResource> students = fileRepository.getStudents();
-
-        return studentRelationLinks.stream()
-                .map(studentRelations::get)
-                .filter(Objects::nonNull)
-                .map(this::getStudentLink)
-                .filter(Objects::nonNull)
-                .map(students::get)
-                .filter(Objects::nonNull)
-                .map(CustomerFactory::toCustomer)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
     private Link getStudentLink(ElevforholdResource resource) {
         return resource.getElev().stream().findFirst().orElse(null);
     }
 
     public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws UnableToReadFileException, NoVISIDColumnException {
+        if(!isTypeOfTypeExcel(new Tika().detect(file))){
+            throw new UnsupportedMediaException(new Tika().detect(file));
+        }
         InputStream targetStream = new ByteArrayInputStream(file);
         Workbook wb;
         try {
             wb = WorkbookFactory.create(targetStream);
         } catch (IOException ex) {
-            log.error(ex.getMessage(), ex);
+            log.info(ex.getMessage(), ex);
             throw new UnableToReadFileException(ex.getMessage());
         }
         Sheet sheet = wb.getSheetAt(0);
@@ -113,7 +82,6 @@ public class FileService {
     }
 
     private CustomerFileGroup extractCustomerFileGroupFromFile(Sheet sheet, String schoolId) throws NoVISIDColumnException {
-        CustomerFileGroup customerFileGroup = new CustomerFileGroup();
         CustomerGroup customerGroup = new CustomerGroup();
         ArrayList<Customer> customers = new ArrayList<>();
         ArrayList<String> notFoundCustomers = new ArrayList<>();
@@ -121,43 +89,41 @@ public class FileService {
         Cell visIdCell = getVisIdCell(sheet);
 
         IntStream
-                .range(visIdCell.getRowIndex()+1, sheet.getPhysicalNumberOfRows())
+                .range(visIdCell.getRowIndex() + 1, sheet.getPhysicalNumberOfRows())
                 .mapToObj(sheet::getRow)
                 .filter(Objects::nonNull)
                 .map(row -> row.getCell(visIdCell.getColumnIndex()))
                 .filter(Objects::nonNull)
                 .map(cell1 -> String.format("%.0f", cell1.getNumericCellValue()))
                 .forEach(s ->
-                    getCustomerNumberByVisId(s, schoolId)
-                            .map(customers::add)
-                            .orElseGet(() -> notFoundCustomers.add(s))
+                        getCustomerNumberByVisId(s, schoolId)
+                                .map(customers::add)
+                                .orElseGet(() -> notFoundCustomers.add(s))
                 );
 
         customerGroup.setCustomers(customers);
-        customerFileGroup.setFoundCustomers(customerGroup);
-        customerFileGroup.setNotFoundCustomers(notFoundCustomers);
-        return customerFileGroup;
+        return new CustomerFileGroup(customerGroup, notFoundCustomers);
     }
 
     private Cell getVisIdCell(Sheet sheet) throws NoVISIDColumnException {
         return IntStream
-                    .range(0, sheet.getPhysicalNumberOfRows())
-                    .mapToObj(sheet::getRow)
-                    .filter(Objects::nonNull)
-                    .flatMap(row ->
-                            IntStream
-                                    .range(0, row.getPhysicalNumberOfCells())
-                                    .mapToObj(row::getCell)
-                                    .filter(Objects::nonNull)
-                                    .filter(cell1 -> cell1.getStringCellValue().equals(visId)))
-                    .findFirst()
-                    .orElseThrow(NoVISIDColumnException::new);
+                .range(0, sheet.getPhysicalNumberOfRows())
+                .mapToObj(sheet::getRow)
+                .filter(Objects::nonNull)
+                .flatMap(row ->
+                        IntStream
+                                .range(0, row.getPhysicalNumberOfCells())
+                                .mapToObj(row::getCell)
+                                .filter(Objects::nonNull)
+                                .filter(cell1 -> cell1.getStringCellValue().equals(visId)))
+                .findFirst()
+                .orElseThrow(NoVISIDColumnException::new);
     }
 
     private Optional<Customer> getCustomerNumberByVisId(String visId, String schoolId) {
         SkoleResource school = getSchool(schoolId);
-        Map<Link, ElevforholdResource> studentRelations = fileRepository.getStudentRelations();
-        Map<Link, PersonResource> students = fileRepository.getStudents();
+        Map<Link, ElevforholdResource> studentRelations = groupRepository.getStudentRelations();
+        Map<Link, PersonResource> students = groupRepository.getStudents();
 
         return school.getElevforhold().stream()
                 .map(studentRelations::get)
