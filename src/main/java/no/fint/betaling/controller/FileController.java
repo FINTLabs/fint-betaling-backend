@@ -2,17 +2,15 @@ package no.fint.betaling.controller;
 
 import com.sun.xml.internal.ws.server.UnsupportedMediaException;
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.service.FileService;
 import no.fint.betaling.util.CustomerFileGroup;
-import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.FileInputStream;
 import java.util.Collections;
 
 @Slf4j
@@ -21,11 +19,8 @@ import java.util.Collections;
 @RequestMapping(value = "/api/file")
 public class FileController {
 
-    private final FileService fileService;
-
-    public FileController(FileService fileService) {
-        this.fileService = fileService;
-    }
+    @Autowired
+    private FileService fileService;
 
     @PostMapping
     public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException {

@@ -21,15 +21,18 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -42,11 +45,9 @@ public class FileService {
     @Value("${fint.betaling.dnd.VIS-ID:VIS-ID}")
     private String visId;
 
-    private final GroupRepository groupRepository;
+    @Autowired
+    private GroupRepository groupRepository;
 
-    public FileService(GroupRepository groupRepository) {
-        this.groupRepository = groupRepository;
-    }
 
     private SkoleResource getSchool(String schoolId) {
         return groupRepository.getSchools().values().stream()
@@ -67,8 +68,9 @@ public class FileService {
     }
 
     public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws UnableToReadFileException, NoVISIDColumnException {
-        if(!isTypeOfTypeExcel(new Tika().detect(file))){
-            throw new UnsupportedMediaException(new Tika().detect(file));
+        String contentType = new Tika().detect(file);
+        if (!isTypeOfTypeExcel(contentType)) {
+            throw new UnsupportedMediaException(contentType);
         }
         InputStream targetStream = new ByteArrayInputStream(file);
         Workbook wb;

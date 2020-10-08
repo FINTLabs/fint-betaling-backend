@@ -15,6 +15,6 @@ public class CustomerFileGroup {
     List<String> notFoundCustomers;
 
     public boolean hasCustomers(){
-        return foundCustomers.getCustomers().size() != 0 || notFoundCustomers.size() != 0;
+        return !foundCustomers.getCustomers().isEmpty() || !notFoundCustomers.isEmpty();
     }
 }
