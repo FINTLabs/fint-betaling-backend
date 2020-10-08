@@ -30,7 +30,7 @@ public class FileController {
     @PostMapping
     public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException {
         CustomerFileGroup customersFromFile = fileService.getCustomersFromFile(schoolId, file);
-        if (customersFromFile != null && customersFromFile.getFoundCustomers() != null && customersFromFile.getNotFoundCustomers() != null)
+        if (customersFromFile.hasCustomers())
             return ResponseEntity.ok(customersFromFile);
         else
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("message", "could not find VIS-ID or list is empty"));

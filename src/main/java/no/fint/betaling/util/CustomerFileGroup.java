@@ -13,4 +13,8 @@ import java.util.List;
 public class CustomerFileGroup {
     CustomerGroup foundCustomers;
     List<String> notFoundCustomers;
+
+    public boolean hasCustomers(){
+        return foundCustomers.getCustomers().size() != 0 || notFoundCustomers.size() != 0;
+    }
 }
