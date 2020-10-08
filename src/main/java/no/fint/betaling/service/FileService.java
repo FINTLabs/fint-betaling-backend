@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -61,8 +62,8 @@ public class FileService {
                 .orElse(false);
     }
 
-    private Link getStudentLink(ElevforholdResource resource) {
-        return resource.getElev().stream().findFirst().orElse(null);
+    private Stream<Link> getStudentLink(ElevforholdResource resource) {
+        return resource.getElev().stream();
     }
 
     public CustomerFileGroup getCustomersFromFile(String schoolId, byte[] file) throws UnableToReadFileException, NoVISIDColumnException {
@@ -129,7 +130,7 @@ public class FileService {
                 .map(studentRelations::get)
                 .filter(Objects::nonNull)
                 .filter(elevforholdResource -> elevforholdResource.getSystemId().getIdentifikatorverdi().equals(visId))
-                .map(this::getStudentLink)
+                .flatMap(this::getStudentLink)
                 .filter(Objects::nonNull)
                 .map(students::get)
                 .filter(Objects::nonNull)
