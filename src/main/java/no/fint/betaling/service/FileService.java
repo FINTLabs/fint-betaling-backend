@@ -16,6 +16,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,10 +36,10 @@ public class FileService {
     @Value("${fint.betaling.dnd.VIS-ID:VIS-ID}")
     private String visId;
 
-    public Sheet getSheetFromBytes(byte[] file) throws UnableToReadFileException {
+    public Sheet getSheetFromBytes(byte[] file) throws UnableToReadFileException, HttpMediaTypeNotAcceptableException {
         String contentType = new Tika().detect(file);
         if (!isTypeOfTypeExcel(contentType)) {
-            throw new UnsupportedMediaException(contentType);
+            throw new HttpMediaTypeNotAcceptableException(contentType);
         }
         InputStream targetStream = new ByteArrayInputStream(file);
         Workbook wb;
