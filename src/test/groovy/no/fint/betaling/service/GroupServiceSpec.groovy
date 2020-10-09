@@ -97,4 +97,16 @@ class GroupServiceSpec extends Specification {
         customerList.get(0).name == '1TIA'
         customerList.get(0).customers.get(0).id == '21i3v9'
     }
+
+    def 'Ola lager denne'() {
+        when:
+        def result = groupService.getCustomersForSchoolWithVisIdKey('foo')
+
+        then:
+        1 * groupRepository.getSchools(_) >> [:]
+        1 * groupRepository.getStudentRelations(_) >> [:]
+        1 * groupRepository.getStudents(_) >> [:]
+        noExceptionThrown()
+        !result.isEmpty()
+    }
 }
