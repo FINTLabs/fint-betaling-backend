@@ -1,6 +1,6 @@
 package no.fint.betaling.service
 
-import com.sun.xml.internal.ws.server.UnsupportedMediaException
+
 import no.fint.betaling.exception.InsufficientDataException
 import no.fint.betaling.exception.NoVISIDColumnException
 import no.fint.betaling.model.Customer
