@@ -38,7 +38,7 @@ dependencies {
     compile("no.fint:fint-okonomi-model-java:${apiVersion}")
     compile('no.fint:fint-utdanning-resource-model-java:3.4.0')
     compile('no.fint:fint-oauth-token-service:1.4.0')
-    compile('no.fint:fint-betaling-model:1.1.0')
+    compile('no.fint:fint-betaling-model:1.2.0')
 
     compile('org.apache.commons:commons-lang3:3.9')
     compile('org.jooq:jool-java-8:0.9.14')
@@ -55,8 +55,12 @@ dependencies {
     compile('commons-beanutils:commons-beanutils:1.9.4')
     compile('com.squareup.okhttp3:okhttp:4.4.0')
     compile('com.github.ben-manes.caffeine:caffeine')
+    // https://mvnrepository.com/artifact/org.apache.poi/poi
+    compile 'org.apache.poi:poi:4.0.0'
+    compile 'org.apache.poi:poi-ooxml:4.0.0'
 
     runtime('org.springframework.boot:spring-boot-actuator')
+    compile 'org.apache.tika:tika-parsers:1.24.1'
 
     testCompile('no.fint:fint-test-utils:0.0.4')
     testCompile("cglib:cglib-nodep:${cglibVersion}")
@@ -99,6 +103,7 @@ jar {
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
+
 afterEvaluate {
     configure(processResources) {
         filesMatching('**/*.yml') {

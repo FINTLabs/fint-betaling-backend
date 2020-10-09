@@ -42,6 +42,23 @@ public class GroupService {
         return createCustomerGroup(school);
     }
 
+    public Map<String, Customer> getCustomersForSchoolWithVisIdKey(String schoolId) {
+         return getSchool(schoolId)
+                .getElevforhold()
+                .stream()
+                .map(groupRepository.getStudentRelations()::get)
+                .collect(Collectors.toMap(
+                        e -> e.getSystemId().getIdentifikatorverdi(),
+                        e -> e.getElev()
+                                .stream()
+                                .map(groupRepository.getStudents()::get)
+                                .map(CustomerFactory::toCustomer)
+                                .distinct()
+                                .findFirst()
+                                .orElseThrow(IllegalStateException::new)
+                ));
+    }
+
     public List<CustomerGroup> getCustomerGroupsByBasisGroupsAndSchool(String schoolId) {
         SkoleResource school = getSchool(schoolId);
 

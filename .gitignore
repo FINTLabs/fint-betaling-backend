@@ -13,3 +13,4 @@ out
 application-*.yml
 application-*.properties
 *.log*
+/src/main/resources/application-*.yaml
