@@ -42,7 +42,6 @@ class FileControllerSpec extends MockMvcSpecification {
                 .andExpect(status().isOk())
                 .andExpect(jsonPathSize('$.foundCustomers.customers', 1))
                 .andExpect(jsonPathSize('$.notFoundCustomers', 1))
-
     }
 
 }

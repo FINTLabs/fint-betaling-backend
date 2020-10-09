@@ -1,10 +1,12 @@
 package no.fint.betaling.service
 
 import com.sun.xml.internal.ws.server.UnsupportedMediaException
+import no.fint.betaling.exception.InsufficientDataException
 import no.fint.betaling.exception.NoVISIDColumnException
 import no.fint.betaling.model.Customer
 import no.fint.betaling.util.FintObjectFactory
 import org.apache.commons.io.FileUtils
+import org.springframework.web.HttpMediaTypeNotAcceptableException
 import spock.lang.Specification
 
 class FileServiceSpec extends Specification {
@@ -20,7 +22,7 @@ class FileServiceSpec extends Specification {
 
     }
 
-    def "Given valid excel list return CustomerFileGroup"(){
+    def "Given valid excel list, response contains found and not found customers"(){
         given:
         def resource = new File(getClass().getResource('/dummy_excel_customer_list.xlsx').toURI())
         def array = FileUtils.readFileToByteArray(resource)
@@ -50,7 +52,7 @@ class FileServiceSpec extends Specification {
         fileService.getSheetFromBytes(array)
 
         then:
-        thrown(UnsupportedMediaException)
+        thrown(HttpMediaTypeNotAcceptableException)
     }
 
     def 'Given file with no "VIS-ID" column, NoVISIDColumnException should be thrown'() {
@@ -59,12 +61,24 @@ class FileServiceSpec extends Specification {
         def array = FileUtils.readFileToByteArray(resource)
         def customers = ['12345': new Customer(id: 'FOUNDIT')]
 
-
         when:
         def sheet = fileService.getSheetFromBytes(array)
         fileService.extractCustomerFileGroupFromSheet(sheet, customers)
 
         then:
         thrown(NoVISIDColumnException)
+    }
+    def 'Given empty list, InsufficientDataException should be thrown'() {
+        given:
+        def resource = new File(getClass().getResource('/dummy_excel_empty_list.xlsx').toURI())
+        def array = FileUtils.readFileToByteArray(resource)
+        def customers = ['12345': new Customer(id: 'FOUNDIT')]
+
+        when:
+        def sheet = fileService.getSheetFromBytes(array)
+        fileService.extractCustomerFileGroupFromSheet(sheet, customers)
+
+        then:
+        thrown(InsufficientDataException)
     }
 }
