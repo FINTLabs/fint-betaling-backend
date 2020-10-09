@@ -1,6 +1,5 @@
 package no.fint.betaling.service;
 
-import com.sun.xml.internal.ws.server.UnsupportedMediaException;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InsufficientDataException;
 import no.fint.betaling.exception.NoVISIDColumnException;
@@ -11,7 +10,6 @@ import no.fint.betaling.util.CustomerFileGroup;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +18,6 @@ import org.springframework.web.HttpMediaTypeNotAcceptableException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
@@ -41,15 +38,12 @@ public class FileService {
         if (!isTypeOfTypeExcel(contentType)) {
             throw new HttpMediaTypeNotAcceptableException(contentType);
         }
-        InputStream targetStream = new ByteArrayInputStream(file);
-        Workbook wb;
         try {
-            wb = WorkbookFactory.create(targetStream);
+            return WorkbookFactory.create(new ByteArrayInputStream(file)).getSheetAt(0);
         } catch (IOException ex) {
             log.info(ex.getMessage(), ex);
             throw new UnableToReadFileException(ex.getMessage());
         }
-        return wb.getSheetAt(0);
     }
 
     public CustomerFileGroup extractCustomerFileGroupFromSheet(Sheet sheet, Map<String, Customer> customersInput) throws NoVISIDColumnException, InsufficientDataException {

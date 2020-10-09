@@ -1,6 +1,5 @@
 package no.fint.betaling.controller;
 
-import com.sun.xml.internal.ws.server.UnsupportedMediaException;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InsufficientDataException;
 import no.fint.betaling.exception.NoVISIDColumnException;
