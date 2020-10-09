@@ -2,7 +2,11 @@ package no.fint.betaling.service
 
 import no.fint.betaling.repository.GroupRepository
 import no.fint.betaling.util.FintObjectFactory
+import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
+import no.fint.model.resource.utdanning.elev.ElevforholdResource
+import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource
+import no.fint.model.utdanning.utdanningsprogram.Skole
 import spock.lang.Specification
 
 class GroupServiceSpec extends Specification {
@@ -98,14 +102,18 @@ class GroupServiceSpec extends Specification {
         customerList.get(0).customers.get(0).id == '21i3v9'
     }
 
-    def 'Ola lager denne'() {
-        when:
-        def result = groupService.getCustomersForSchoolWithVisIdKey('foo')
+    def 'Given valid schoolId do'() {
+        given:
+        def school = fintObjectFactory.newSchool()
+        def studentRelation = fintObjectFactory.newStudentRelation()
+        def student = fintObjectFactory.newStudent()
 
+        when:
+        def result = groupService.getCustomersForSchoolWithVisIdKey('NO123456789')
         then:
-        1 * groupRepository.getSchools(_) >> [:]
-        1 * groupRepository.getStudentRelations(_) >> [:]
-        1 * groupRepository.getStudents(_) >> [:]
+        1 * groupRepository.getSchools() >> [(new Link(verdi: 'link.to.School')): school]
+        1 * groupRepository.getStudentRelations() >> [(new Link(verdi: 'link.to.StudentRelation')): studentRelation]
+        1 * groupRepository.getStudents() >> [(new Link(verdi: 'link.to.Student')): student]
         noExceptionThrown()
         !result.isEmpty()
     }
