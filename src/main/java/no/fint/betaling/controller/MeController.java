@@ -1,6 +1,7 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.exception.PersonNotFoundException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
@@ -21,6 +22,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
@@ -53,7 +55,7 @@ public class MeController {
     public User getMe(
             @RequestHeader(name = "x-ePPN", required = false) String ePPN,
             @RequestHeader(name = "x-nin", required = false) String nin
-    ){
+    ) {
         if (StringUtils.isNotBlank(ePPN)) {
             User user = getUserFromSkoleressursByFeidenavn(ePPN);
 
@@ -113,8 +115,12 @@ public class MeController {
         try {
             skoleressurs = restUtil.get(SkoleressursResource.class,
                     UriComponentsBuilder.fromUriString(schoolResourceEndpoint).pathSegment("feidenavn", ePPN).build().toUriString());
-        } catch (RuntimeException ex) {
-            throw new PersonNotFoundException(ex.getMessage());
+        } catch (InvalidResponseException ex) {
+            if (ex.getStatus() == HttpStatus.NOT_FOUND) {
+                throw new PersonNotFoundException(ex.getMessage());
+            }else{
+                throw ex;
+            }
         }
 
         log.debug("Skoleressurs: {}", skoleressurs);
