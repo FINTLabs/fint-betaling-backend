@@ -35,8 +35,8 @@ public class ClaimController {
     }
 
     @GetMapping
-    public List<Claim> getAllClaims() {
-        return claimService.getClaims();
+    public List<Claim> getAllClaims(@RequestHeader String schoolId) {
+        return claimService.getClaims(schoolId);
     }
 
     @GetMapping("/name/{name}")

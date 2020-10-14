@@ -16,6 +16,7 @@ import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpHeaders;
@@ -23,11 +24,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -216,8 +215,8 @@ public class ClaimService {
         claimRepository.updateClaim(query, update);
     }
 
-    public List<Claim> getClaims() {
-        return claimRepository.getClaims(queryService.createQuery());
+    public List<Claim> getClaims(String schoolId) {
+        return claimRepository.getClaims(queryService.createQuery().addCriteria(Criteria.where("organisationUnit.organisationNumber").is(schoolId)));
     }
 
     private List<Claim> getAcceptedClaims() {

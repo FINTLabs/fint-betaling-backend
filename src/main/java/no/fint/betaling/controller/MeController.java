@@ -1,6 +1,7 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.PersonNotFoundException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.repository.GroupRepository;
@@ -17,13 +18,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,15 +53,13 @@ public class MeController {
     public User getMe(
             @RequestHeader(name = "x-ePPN", required = false) String ePPN,
             @RequestHeader(name = "x-nin", required = false) String nin
-    ) {
+    ){
         if (StringUtils.isNotBlank(ePPN)) {
             User user = getUserFromSkoleressursByFeidenavn(ePPN);
 
             log.debug("User: {}", user);
             return user;
-        }
-
-        if (StringUtils.isNotBlank(nin)) {
+        } else if (StringUtils.isNotBlank(nin)) {
             User user = getUserFromPersonalressursByNIN(nin);
             log.debug("User: {}", user);
             return user;
@@ -109,11 +107,15 @@ public class MeController {
                 : String.format("%s %s %s", n.getFornavn(), n.getMellomnavn(), n.getEtternavn());
     }
 
-    private User getUserFromSkoleressursByFeidenavn(String ePPN) {
+    private User getUserFromSkoleressursByFeidenavn(String ePPN) throws PersonNotFoundException {
         User user = new User();
-
-        SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class,
-                UriComponentsBuilder.fromUriString(schoolResourceEndpoint).pathSegment("feidenavn", ePPN).build().toUriString());
+        SkoleressursResource skoleressurs;
+        try {
+            skoleressurs = restUtil.get(SkoleressursResource.class,
+                    UriComponentsBuilder.fromUriString(schoolResourceEndpoint).pathSegment("feidenavn", ePPN).build().toUriString());
+        } catch (RuntimeException ex) {
+            throw new PersonNotFoundException(ex.getMessage());
+        }
 
         log.debug("Skoleressurs: {}", skoleressurs);
 
@@ -168,5 +170,10 @@ public class MeController {
                         })
                         .sorted(Comparator.comparing(Organisation::getName))
                         .collect(Collectors.toList()));
+    }
+
+    @ExceptionHandler({PersonNotFoundException.class})
+    public ResponseEntity handlePersonNotFound() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Collections.singletonMap("message", "unable to find employee"));
     }
 }
