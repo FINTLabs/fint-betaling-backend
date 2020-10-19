@@ -50,6 +50,6 @@ public class FileController {
 
     @ExceptionHandler({HttpMediaTypeNotAcceptableException.class})
     public ResponseEntity handleUnsupportedMediaException(HttpMediaTypeNotAcceptableException ex) {
-        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(Collections.singletonMap("message", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(Collections.singletonMap("message", "invalid file type: " + ex.getMessage()));
     }
 }
