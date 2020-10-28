@@ -53,4 +53,10 @@ public class ClaimController {
     public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
         return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
     }
+
+    @DeleteMapping("/order-number/{order-number}")
+    public ResponseEntity cancelClaimsByID(@PathVariable("order-number") String orderNumber) {
+        claimService.cancelClaim(orderNumber);
+        return ResponseEntity.noContent().build();
+    }
 }
