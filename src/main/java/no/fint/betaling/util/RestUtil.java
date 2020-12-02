@@ -33,6 +33,7 @@ public class RestUtil {
         ConnectionPool okHttpConnectionPool = new ConnectionPool(50, 15, TimeUnit.SECONDS);
         builder.connectionPool(okHttpConnectionPool);
         builder.connectTimeout(60, TimeUnit.SECONDS);
+        builder.readTimeout(60, TimeUnit.SECONDS);
         builder.retryOnConnectionFailure(false);
 
         // embed the created okhttp client to a spring rest template
