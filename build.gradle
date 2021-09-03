@@ -27,7 +27,7 @@ repositories {
     jcenter()
     repositories {
         maven {
-            url "http://dl.bintray.com/fint/maven"
+            url "https://repo.fintlabs.no/releases"
         }
     }
     mavenLocal()
@@ -36,8 +36,8 @@ repositories {
 
 dependencies {
     compile("no.fint:fint-okonomi-model-java:${apiVersion}")
-    compile('no.fint:fint-utdanning-resource-model-java:3.4.0')
-    compile('no.fint:fint-oauth-token-service:1.4.0')
+    compile('no.fint:fint-utdanning-resource-model-java:3.9.0')
+    compile('no.fint:fint-oauth-token-service:1.6.1')
     compile('no.fint:fint-betaling-model:1.2.0')
 
     compile('org.apache.commons:commons-lang3:3.9')
