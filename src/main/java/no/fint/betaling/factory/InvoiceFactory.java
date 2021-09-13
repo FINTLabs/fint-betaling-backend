@@ -4,8 +4,9 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.service.PersonService;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
-import no.fint.model.resource.administrasjon.okonomi.FakturalinjeResource;
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
+import no.fint.model.resource.okonomi.faktura.FakturalinjeResource;
+import no.fint.model.resource.okonomi.faktura.FakturamottakerResource;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -33,7 +34,7 @@ public class InvoiceFactory {
             }
             invoiceLine.setAntall(orderItem.getItemQuantity() / 1.0f);
             invoiceLine.setFritekst(Collections.singletonList(orderItem.getDescription()));
-            invoiceLine.addVarelinje(Link.with(orderItem.getLineitem().getUri()));
+            invoiceLine.addVare(Link.with(orderItem.getLineitem().getUri()));
             return invoiceLine;
         }).collect(Collectors.toList());
 
@@ -41,9 +42,9 @@ public class InvoiceFactory {
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(invoiceLines);
         invoice.setLeveringsdato(Date.from(claim.getCreatedDate().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        invoice.setNetto(claim.getOriginalAmountDue());
-        invoice.addMottaker(personService.getPersonLinkById(claim.getCustomer().getId()));
-        invoice.addOppdragsgiver(Link.with(claim.getPrincipal().getUri()));
+        invoice.setNettobelop(claim.getOriginalAmountDue());
+        invoice.setMottaker(personService.getFakturamottakerByPersonId(claim.getCustomer().getId()));
+        invoice.addFakturautsteder(Link.with(claim.getPrincipal().getUri()));
 
         Identifikator identifikator = new Identifikator();
         identifikator.setIdentifikatorverdi(claim.getOrderNumber());

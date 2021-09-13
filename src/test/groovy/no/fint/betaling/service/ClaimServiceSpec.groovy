@@ -9,9 +9,7 @@ import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.betaling.util.RestUtil
-import no.fint.model.administrasjon.okonomi.Faktura
-import no.fint.model.resource.administrasjon.okonomi.FakturaResource
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.http.ResponseEntity

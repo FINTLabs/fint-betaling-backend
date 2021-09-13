@@ -4,8 +4,8 @@ package no.fint.betaling.util
 import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.okonomi.FakturaResource
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
+import no.fint.model.resource.okonomi.faktura.FakturaResource
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 
 import java.time.LocalDate
 import java.util.concurrent.ThreadLocalRandom

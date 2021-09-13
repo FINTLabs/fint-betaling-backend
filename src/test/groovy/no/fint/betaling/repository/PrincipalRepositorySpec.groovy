@@ -4,8 +4,8 @@ import no.fint.betaling.model.Lineitem
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResources
+import no.fint.model.resource.okonomi.faktura.FakturautstederResource
+import no.fint.model.resource.okonomi.faktura.FakturautstederResources
 import spock.lang.Specification
 
 class PrincipalRepositorySpec extends Specification {
@@ -17,8 +17,8 @@ class PrincipalRepositorySpec extends Specification {
 
     def 'Fetching principals should update first'() {
         given:
-        def oppdragsgiverResources = new OppdragsgiverResources()
-        def oppdragsgiverResource = new OppdragsgiverResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test'))
+        def oppdragsgiverResources = new FakturautstederResources()
+        def oppdragsgiverResource = new FakturautstederResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test'))
         oppdragsgiverResource.addSelf(Link.with('http://oppdragsgiver'))
         oppdragsgiverResource.addVarelinje(Link.with('http://varelinje'))
         oppdragsgiverResources.addResource(oppdragsgiverResource)
