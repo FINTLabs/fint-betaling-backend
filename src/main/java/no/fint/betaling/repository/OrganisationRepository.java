@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Repository
 public class OrganisationRepository {
 
-    @Value("${fint.betaling.endpoints.organisation}")
+    @Value("${fint.betaling.endpoints.organisation:/administrasjon/organisasjon/organisasjonselement}")
     private String organisationEndpoint;
 
     @Autowired

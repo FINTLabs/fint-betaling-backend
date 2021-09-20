@@ -33,10 +33,10 @@ import java.util.stream.Stream;
 @Slf4j
 public class MeController {
 
-    @Value("${fint.betaling.endpoints.school-resource}")
+    @Value("${fint.betaling.endpoints.school-resource:/utdanning/elev/skoleressurs}")
     private String schoolResourceEndpoint;
 
-    @Value("${fint.betaling.endpoints.employee}")
+    @Value("${fint.betaling.endpoints.employee:/administrasjon/personal/person}")
     private String employeeEndpoint;
 
     @Autowired

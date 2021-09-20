@@ -17,15 +17,15 @@ class RestUtilSpec extends Specification {
 
     void setup() {
         restTemplate = Mock(RestTemplate)
-        restUtil = new RestUtil(restTemplate: restTemplate)
+        restUtil = new RestUtil(restTemplate: restTemplate, environment: "beta", urlTemplate: "http://%s.localhost%s")
     }
 
     def "Get resource given invalid response throws InvalidResponseException"() {
         when:
-        restUtil.get(String, 'http://localhost')
+        restUtil.get(String, '/test')
 
         then:
-        1 * restTemplate.getForObject('http://localhost', _ as Class<String>) >> {
+        1 * restTemplate.getForObject('http://beta.localhost/test', _ as Class<String>) >> {
             throw new InvalidResponseException(HttpStatus.BAD_REQUEST, 'test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
@@ -33,10 +33,10 @@ class RestUtilSpec extends Specification {
 
     def "Set resource given invalid response throws InvalidResponseException"() {
         when:
-        restUtil.post('http://localhost'.toURI(), 'ping')
+        restUtil.post('/test', 'ping')
 
         then:
-        1 * restTemplate.postForLocation('http://localhost'.toURI(), _) >> {
+        1 * restTemplate.postForLocation('http://beta.localhost/test', _) >> {
             throw new InvalidResponseException(HttpStatus.BAD_REQUEST, 'test', Throwable.newInstance())
         }
         thrown(InvalidResponseException)
@@ -44,25 +44,25 @@ class RestUtilSpec extends Specification {
 
     def "Get ElevResource given valid url returns ElevResource"() {
         when:
-        def resource = restUtil.get(ElevResource, 'http://localhost')
+        def resource = restUtil.get(ElevResource, '/test')
 
         then:
-        1 * restTemplate.getForObject('http://localhost', _ as Class<ElevResource>) >> new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test'))
+        1 * restTemplate.getForObject('http://beta.localhost/test', _ as Class<ElevResource>) >> new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test'))
         resource.elevnummer.identifikatorverdi == 'test'
     }
 
     def "Post ElevResource given valid url returns valid response entity"() {
         when:
-        def response = restUtil.post('http://localhost'.toURI(), new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
+        def response = restUtil.post('/test', new ElevResource(elevnummer: new Identifikator(identifikatorverdi: 'test')))
 
         then:
-        1 * restTemplate.postForLocation('http://localhost'.toURI(), _ as ElevResource) >> new URI('link.to.Result')
+        1 * restTemplate.postForLocation('http://beta.localhost/test', _ as ElevResource) >> new URI('link.to.Result')
         response
     }
 
     def 'Get updates for a resource'() {
         given:
-        def uri = 'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs'
+        def uri = '/administrasjon/personal/personalressurs'
 
         when:
         def result = restUtil.getUpdates(PersonalressursResources, uri)
@@ -70,11 +70,11 @@ class RestUtilSpec extends Specification {
         then:
         result.totalItems == 1
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs/last-updated',
+                'http://beta.localhost/administrasjon/personal/personalressurs/last-updated',
                 _
         ) >> ['lastUpdated': "12345"]
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs?sinceTimeStamp=0',
+                'http://beta.localhost/administrasjon/personal/personalressurs?sinceTimeStamp=0',
                 _
         ) >> new PersonalressursResources(embedded: new AbstractCollectionResources.EmbeddedResources<PersonalressursResource>(entries:
                 [new PersonalressursResource(ansattnummer: new Identifikator(identifikatorverdi: '123456'))]))
@@ -85,11 +85,11 @@ class RestUtilSpec extends Specification {
         then:
         result2.totalItems == 0
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs/last-updated',
+                'http://beta.localhost/administrasjon/personal/personalressurs/last-updated',
                 _
         ) >> ['lastUpdated': "12345"]
         1 * restTemplate.getForObject(
-                'https://play-with-fint.felleskomponent.no/administrasjon/personal/personalressurs?sinceTimeStamp=12346',
+                'http://beta.localhost/administrasjon/personal/personalressurs?sinceTimeStamp=12346',
                 _
         ) >> new PersonalressursResources(embedded: new AbstractCollectionResources.EmbeddedResources<PersonalressursResource>(entries: []))
 

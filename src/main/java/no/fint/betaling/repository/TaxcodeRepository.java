@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Repository
 public class TaxcodeRepository {
 
-    @Value("${fint.betaling.endpoints.mva-code}")
+    @Value("${fint.betaling.endpoints.mva-code:/okonomi/kodeverk/merverdiavgift}")
     private String taxcodeEndpoint;
 
     @Autowired

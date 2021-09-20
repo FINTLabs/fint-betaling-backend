@@ -24,8 +24,8 @@ public class OrganisationService {
     private final RestUtil restUtil;
 
     public OrganisationService(
-            @Value("${fint.betaling.endpoints.school}") String schoolEndpoint,
-            @Value("${fint.betaling.endpoints.organisation}") String organisationEndpoint,
+            @Value("${fint.betaling.endpoints.school:/utdanning/utdanningsprogram/skole}") String schoolEndpoint,
+            @Value("${fint.betaling.endpoints.organisation:/administrasjon/organisasjon/organisasjonselement}") String organisationEndpoint,
             RestUtil restUtil) {
         this.schoolEndpoint = schoolEndpoint;
         this.organisationEndpoint = organisationEndpoint;

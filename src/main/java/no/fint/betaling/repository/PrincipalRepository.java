@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Repository
 public class PrincipalRepository {
 
-    @Value("${fint.betaling.endpoints.principal}")
+    @Value("${fint.betaling.endpoints.principal:/okonomi/faktura/fakturautsteder}")
     private String principalEndpoint;
 
     @Autowired
