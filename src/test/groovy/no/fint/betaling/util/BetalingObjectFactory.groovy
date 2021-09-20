@@ -121,10 +121,10 @@ class BetalingObjectFactory {
         faktura.setBetalt(r.nextBoolean())
         faktura.setFakturert(r.nextBoolean())
         faktura.setKreditert(r.nextBoolean())
-        faktura.setFakturabelop(r.nextLong(50000, 100000))
+        faktura.setBelop(r.nextLong(50000, 100000))
         faktura.setRestbelop(r.nextLong(10000,50000))
         faktura.setFakturanummer(new Identifikator(identifikatorverdi: r.nextLong(100000, 3000000)))
-        faktura.setFakturadato(new Date() - r.nextInt(0, 10))
+        faktura.setDato(new Date() - r.nextInt(0, 10))
         faktura.setForfallsdato(new Date() + r.nextInt(0, 10))
         return faktura
     }

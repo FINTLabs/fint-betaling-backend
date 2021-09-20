@@ -16,7 +16,7 @@ class TaxcodeRepositorySpec extends Specification {
     def 'Fetching tax codes should update first'() {
         given:
         def mvaCodes = new MerverdiavgiftResources()
-        def mvaCode = new MerverdiavgiftResource(kode: '25', navn: '25%', promille: 250, systemId: new Identifikator(identifikatorverdi: 'test'))
+        def mvaCode = new MerverdiavgiftResource(kode: '25', navn: '25%', sats: 250, systemId: new Identifikator(identifikatorverdi: 'test'))
         mvaCode.addSelf(Link.with('http://mvacode'))
         mvaCodes.addResource(mvaCode)
 
@@ -25,6 +25,6 @@ class TaxcodeRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(MvakodeResources, endpoint) >> mvaCodes
+        1 * restUtil.getUpdates(MerverdiavgiftResources, endpoint) >> mvaCodes
     }
 }

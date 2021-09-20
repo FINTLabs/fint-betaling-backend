@@ -24,7 +24,7 @@ class LineitemRepositorySpec extends Specification {
                 kode: 'code',
                 systemId: new Identifikator(identifikatorverdi: 'test'))
         varelinjeResource.addSelf(Link.with('http://varelinje'))
-        varelinjeResource.addMvakode(Link.with('http://mvakode/1234'))
+        varelinjeResource.addMerverdiavgift(Link.with('http://mvakode/1234'))
         def resources = new VareResources()
         resources.addResource(varelinjeResource)
 
@@ -46,7 +46,7 @@ class LineitemRepositorySpec extends Specification {
                 kode: 'code',
                 systemId: new Identifikator(identifikatorverdi: 'test'))
         varelinjeResource.addSelf(Link.with('http://varelinje'))
-        varelinjeResource.addMvakode(Link.with('http://mvakode/2345'))
+        varelinjeResource.addMerverdiavgift(Link.with('http://mvakode/2345'))
         def resources = new VareResources()
         resources.addResource(varelinjeResource)
 

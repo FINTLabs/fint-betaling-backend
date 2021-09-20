@@ -1,7 +1,6 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
@@ -50,7 +49,7 @@ public class PrincipalRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updatePrincipals() {
-       log.info("Updating principals from {} ...", principalEndpoint);
+        log.info("Updating principals from {} ...", principalEndpoint);
         restUtil.getUpdates(FakturautstederResources.class, principalEndpoint)
                 .getContent()
                 .forEach(o -> {
