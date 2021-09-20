@@ -3,8 +3,8 @@ package no.fint.betaling.repository
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.okonomi.MvakodeResource
-import no.fint.model.resource.administrasjon.okonomi.MvakodeResources
+import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource
+import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources
 import spock.lang.Specification
 
 class TaxcodeRepositorySpec extends Specification {
@@ -15,8 +15,8 @@ class TaxcodeRepositorySpec extends Specification {
 
     def 'Fetching tax codes should update first'() {
         given:
-        def mvaCodes = new MvakodeResources()
-        def mvaCode = new MvakodeResource(kode: '25', navn: '25%', promille: 250, systemId: new Identifikator(identifikatorverdi: 'test'))
+        def mvaCodes = new MerverdiavgiftResources()
+        def mvaCode = new MerverdiavgiftResource(kode: '25', navn: '25%', sats: 250, systemId: new Identifikator(identifikatorverdi: 'test'))
         mvaCode.addSelf(Link.with('http://mvacode'))
         mvaCodes.addResource(mvaCode)
 
@@ -25,6 +25,6 @@ class TaxcodeRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(MvakodeResources, endpoint) >> mvaCodes
+        1 * restUtil.getUpdates(MerverdiavgiftResources, endpoint) >> mvaCodes
     }
 }

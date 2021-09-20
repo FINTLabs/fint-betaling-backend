@@ -4,8 +4,8 @@ import no.fint.betaling.model.Lineitem
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResource
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResources
+import no.fint.model.resource.okonomi.faktura.FakturautstederResource
+import no.fint.model.resource.okonomi.faktura.FakturautstederResources
 import spock.lang.Specification
 
 class PrincipalRepositorySpec extends Specification {
@@ -17,18 +17,18 @@ class PrincipalRepositorySpec extends Specification {
 
     def 'Fetching principals should update first'() {
         given:
-        def oppdragsgiverResources = new OppdragsgiverResources()
-        def oppdragsgiverResource = new OppdragsgiverResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test'))
-        oppdragsgiverResource.addSelf(Link.with('http://oppdragsgiver'))
-        oppdragsgiverResource.addVarelinje(Link.with('http://varelinje'))
-        oppdragsgiverResources.addResource(oppdragsgiverResource)
+        def fakturautstederResources = new FakturautstederResources()
+        def fakturautstederResource = new FakturautstederResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test'))
+        fakturautstederResource.addSelf(Link.with('http://oppdragsgiver'))
+        fakturautstederResource.addVare(Link.with('http://varelinje'))
+        fakturautstederResources.addResource(fakturautstederResource)
 
         when:
         def result = repository.getPrincipals()
 
         then:
-        result.size() == 1
-        1 * restUtil.getUpdates(OppdragsgiverResources, endpoint) >> oppdragsgiverResources
+        1 * restUtil.getUpdates(FakturautstederResources , endpoint) >> fakturautstederResources
         1 * lineitemRepository.getLineitemByUri(_ as String) >> new Lineitem(itemCode: 'abc')
+        result.size() == 1
     }
 }

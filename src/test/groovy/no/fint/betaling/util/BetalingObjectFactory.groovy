@@ -4,8 +4,8 @@ package no.fint.betaling.util
 import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.okonomi.FakturaResource
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource
+import no.fint.model.resource.okonomi.faktura.FakturaResource
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 
 import java.time.LocalDate
 import java.util.concurrent.ThreadLocalRandom
@@ -121,10 +121,10 @@ class BetalingObjectFactory {
         faktura.setBetalt(r.nextBoolean())
         faktura.setFakturert(r.nextBoolean())
         faktura.setKreditert(r.nextBoolean())
-        faktura.setFakturabelop(r.nextLong(50000, 100000))
+        faktura.setBelop(r.nextLong(50000, 100000))
         faktura.setRestbelop(r.nextLong(10000,50000))
         faktura.setFakturanummer(new Identifikator(identifikatorverdi: r.nextLong(100000, 3000000)))
-        faktura.setFakturadato(new Date() - r.nextInt(0, 10))
+        faktura.setDato(new Date() - r.nextInt(0, 10))
         faktura.setForfallsdato(new Date() + r.nextInt(0, 10))
         return faktura
     }

@@ -11,8 +11,8 @@ import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.administrasjon.okonomi.FakturaResource;
-import no.fint.model.resource.administrasjon.okonomi.FakturagrunnlagResource;
+import no.fint.model.resource.okonomi.faktura.FakturaResource;
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -173,7 +173,7 @@ public class ClaimService {
                 .collect(Collectors.toList()));
 
         fakturaList.stream()
-                .map(FakturaResource::getFakturadato)
+                .map(FakturaResource::getDato)
                 .min(Comparator.naturalOrder())
                 .ifPresent(updater.acceptPartially("invoiceDate"));
 

@@ -1,11 +1,10 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.administrasjon.okonomi.OppdragsgiverResources;
+import no.fint.model.resource.okonomi.faktura.FakturautstederResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +16,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Repository
@@ -49,14 +49,14 @@ public class PrincipalRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updatePrincipals() {
-       log.info("Updating principals from {} ...", principalEndpoint);
-        restUtil.getUpdates(OppdragsgiverResources.class, principalEndpoint)
+        log.info("Updating principals from {} ...", principalEndpoint);
+        restUtil.getUpdates(FakturautstederResources.class, principalEndpoint)
                 .getContent()
                 .forEach(o -> {
                     Principal principal = new Principal();
                     principal.setCode(o.getSystemId().getIdentifikatorverdi());
                     principal.setDescription(o.getNavn());
-                    principal.setLineitems(o.getVarelinje()
+                    principal.setLineitems(o.getVare()
                             .stream()
                             .map(Link::getHref)
                             .map(lineitemRepository::getLineitemByUri)

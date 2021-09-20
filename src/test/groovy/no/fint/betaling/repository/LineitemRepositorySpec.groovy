@@ -4,8 +4,8 @@ import no.fint.betaling.model.Taxcode
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResource
-import no.fint.model.resource.administrasjon.okonomi.VarelinjeResources
+import no.fint.model.resource.okonomi.kodeverk.VareResource
+import no.fint.model.resource.okonomi.kodeverk.VareResources
 import spock.lang.Specification
 
 class LineitemRepositorySpec extends Specification {
@@ -17,15 +17,15 @@ class LineitemRepositorySpec extends Specification {
 
     def 'Update line items'() {
         given:
-        def varelinjeResource = new VarelinjeResource(
+        def varelinjeResource = new VareResource(
                 navn: 'testOrder',
                 enhet: 'unit',
                 pris: 1000,
                 kode: 'code',
                 systemId: new Identifikator(identifikatorverdi: 'test'))
         varelinjeResource.addSelf(Link.with('http://varelinje'))
-        varelinjeResource.addMvakode(Link.with('http://mvakode/1234'))
-        def resources = new VarelinjeResources()
+        varelinjeResource.addMerverdiavgift(Link.with('http://mvakode/1234'))
+        def resources = new VareResources()
         resources.addResource(varelinjeResource)
 
 
@@ -33,21 +33,21 @@ class LineitemRepositorySpec extends Specification {
         repository.updateLineitems()
 
         then:
-        1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as String) >> resources
+        1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> resources
         1 * taxcodeRepository.getTaxcodeByCode('1234') >> new Taxcode(rate: 0.25)
     }
 
     def 'Fetching lime items should update first'() {
         given:
-        def varelinjeResource = new VarelinjeResource(
+        def varelinjeResource = new VareResource(
                 navn: 'testOrder',
                 enhet: 'unit',
                 pris: 1000,
                 kode: 'code',
                 systemId: new Identifikator(identifikatorverdi: 'test'))
         varelinjeResource.addSelf(Link.with('http://varelinje'))
-        varelinjeResource.addMvakode(Link.with('http://mvakode/2345'))
-        def resources = new VarelinjeResources()
+        varelinjeResource.addMerverdiavgift(Link.with('http://mvakode/2345'))
+        def resources = new VareResources()
         resources.addResource(varelinjeResource)
 
         when:
@@ -55,7 +55,7 @@ class LineitemRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(_ as Class<VarelinjeResources>, _ as String) >> resources
+        1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> resources
         1 * taxcodeRepository.getTaxcodeByCode('2345') >> new Taxcode(rate: 0.25)
 
     }
