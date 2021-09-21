@@ -20,3 +20,7 @@ fint:
     date-range: "7, 14, 30"
     invoice-send-rate: "60000"
     invoice-update-rate: "150000"
+  oauth:
+    enabled: true
+    access-token-uri: https://idp.felleskomponent.no/nidp/oauth/nam/token
+    scope: fint-client

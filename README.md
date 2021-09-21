@@ -6,10 +6,18 @@
 | ---- | ---- | ---- |
 | fint.betaling.org-id |  | |
 | fint.betaling.endpoints.environment | | |
+| fint.oauth.username | | |
+| fint.oauth.password | | |
+| fint.oauth.client-id | | |
+| fint.oauth.client-secret | | |
+
 
 ### Optional properties
 | Key | Description | Default value |
 | ---- | ---- | ---- |
+| fint.oauth.enabled | | true |
+| fint.oauth.access-token-uri | | https://idp.felleskomponent.no/nidp/oauth/nam/token |
+| fint.oauth.scope | | fint-client |
 | fint.betaling.endpoints.principal | | /okonomi/faktura/fakturautsteder |
 | fint.betaling.endpoints.lineitem | | /okonomi/kodeverk/vare | 
 | fint.betaling.endpoints.organisation | | /administrasjon/organisasjon/organisasjonselement |

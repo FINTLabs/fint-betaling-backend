@@ -81,9 +81,19 @@ public class RestUtil {
 
 
     public <T> T get(Class<T> clazz, String uri) {
+        return getFromFullUri(clazz, getFullUri(uri));
+        //try {
+
+            //return restTemplate.getForObject(getFullUri(uri), clazz);
+        //} catch (HttpStatusCodeException e) {
+        //    throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
+        //}
+    }
+
+    public <T> T getFromFullUri(Class<T> clazz, String uri) {
         try {
-            log.info("GET {}", getFullUri(uri));
-            return restTemplate.getForObject(getFullUri(uri), clazz);
+            log.info("GET {}", uri);
+            return restTemplate.getForObject(uri, clazz);
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
