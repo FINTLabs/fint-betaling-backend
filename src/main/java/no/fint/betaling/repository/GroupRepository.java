@@ -33,22 +33,22 @@ public class GroupRepository {
     private final Map<Link, ElevforholdResource> studentRelations = new HashMap<>();
     private final Map<Link, PersonResource> students = new HashMap<>();
 
-    @Value("${fint.betaling.endpoints.school}")
+    @Value("${fint.betaling.endpoints.school:/utdanning/utdanningsprogram/skole}")
     private String schoolEndpoint;
 
-    @Value("${fint.betaling.endpoints.basis-group}")
+    @Value("${fint.betaling.endpoints.basis-group:/utdanning/elev/basisgruppe}")
     private String basisGroupEndpoint;
 
-    @Value("${fint.betaling.endpoints.teaching-group}")
+    @Value("${fint.betaling.endpoints.teaching-group:/utdanning/timeplan/undervisningsgruppe}")
     private String teachingGroupEndpoint;
 
-    @Value("${fint.betaling.endpoints.contact-teacher-group}")
+    @Value("${fint.betaling.endpoints.contact-teacher-group:/utdanning/elev/kontaktlarergruppe}")
     private String contactTeacherGroupEndpoint;
 
-    @Value("${fint.betaling.endpoints.student-relation}")
+    @Value("${fint.betaling.endpoints.student-relation:/utdanning/elev/elevforhold}")
     private String studentRelationEndpoint;
 
-    @Value("${fint.betaling.endpoints.person}")
+    @Value("${fint.betaling.endpoints.person:/utdanning/elev/person}")
     private String personEndpoint;
 
     public GroupRepository(RestUtil restUtil) {

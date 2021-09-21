@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Slf4j
 public class LineitemRepository {
 
-    @Value("${fint.betaling.endpoints.lineitem}")
+    @Value("${fint.betaling.endpoints.lineitem:/okonomi/kodeverk/vare}")
     private String lineitemEndpoint;
 
     @Autowired

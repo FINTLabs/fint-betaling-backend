@@ -5,6 +5,7 @@ import no.fint.betaling.exception.InvalidResponseException;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,12 @@ public class RestUtil {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Value("${fint.betaling.endpoints.url-template:https://%s.felleskomponent.no%s}")
+    private String urlTemplate;
+
+    @Value("${fint.betaling.endpoints.environment}")
+    private String environment;
+
     @PostConstruct
     public void init() {
         // create the okhttp client builder
@@ -42,6 +49,10 @@ public class RestUtil {
 
     private final ConcurrentMap<String, Long> lastUpdatedMap = new ConcurrentSkipListMap<>();
 
+    private String getFullUri(String uri) {
+        return String.format(urlTemplate, environment, uri);
+    }
+
     public <T> T getUpdates(Class<T> type, String uri) {
         long lastUpdated = Long.parseLong(
                 get(Map.class, UriComponentsBuilder
@@ -53,7 +64,7 @@ public class RestUtil {
                         .toString()
         );
         long since = lastUpdatedMap.getOrDefault(uri, -1L) + 1L;
-        log.info("Fetching {} since {}, last updated {} ...", uri, since, lastUpdated);
+        log.info("Fetching {} since {}, last updated {} ...", getFullUri(uri), since, lastUpdated);
         T result = get(type, UriComponentsBuilder.fromUriString(uri).queryParam("sinceTimeStamp", since).build().toUriString());
         lastUpdatedMap.put(uri, lastUpdated);
         return result;
@@ -61,8 +72,8 @@ public class RestUtil {
 
     public HttpHeaders head(String uri) {
         try {
-            log.info("GET {}", uri);
-            return restTemplate.headForHeaders(uri);
+            log.info("GET {}", getFullUri(uri));
+            return restTemplate.headForHeaders(getFullUri(uri));
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
@@ -70,6 +81,16 @@ public class RestUtil {
 
 
     public <T> T get(Class<T> clazz, String uri) {
+        return getFromFullUri(clazz, getFullUri(uri));
+        //try {
+
+            //return restTemplate.getForObject(getFullUri(uri), clazz);
+        //} catch (HttpStatusCodeException e) {
+        //    throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
+        //}
+    }
+
+    public <T> T getFromFullUri(Class<T> clazz, String uri) {
         try {
             log.info("GET {}", uri);
             return restTemplate.getForObject(uri, clazz);
@@ -78,10 +99,10 @@ public class RestUtil {
         }
     }
 
-    public <T> URI post(URI uri, T content) {
+    public <T> URI post(String uri, T content) {
         try {
-            log.info("POST {} {}", uri, content);
-            return restTemplate.postForLocation(uri, content);
+            log.info("POST {} {}", getFullUri(uri), content);
+            return restTemplate.postForLocation(getFullUri(uri), content);
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }

@@ -35,13 +35,12 @@ import java.util.stream.Collectors;
 public class ClaimService {
 
     private static final String INVOICE_URI = "invoiceUri";
-    //private static final String INVOICE_NUMBER = "invoiceNumber";
     private static final String AMOUNT_DUE = "amountDue";
     private static final String CLAIM_STATUS = "claimStatus";
     private static final String STATUS_MESSAGE = "statusMessage";
 
-    @Value("${fint.betaling.endpoints.invoice}")
-    private URI invoiceEndpoint;
+    @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/faktura}")
+    private String invoiceEndpoint;
 
     @Autowired
     private RestUtil restUtil;
