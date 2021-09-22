@@ -10,6 +10,8 @@
 | fint.oauth.password | | |
 | fint.oauth.client-id | | |
 | fint.oauth.client-secret | | |
+| spring.data.mongodb.database | | |
+| spring.data.mongodb.uri | | |
 
 
 ### Optional properties
