@@ -13,21 +13,31 @@ class PrincipalRepositorySpec extends Specification {
     def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/oppdragsgiver'
     def lineitemRepository = Mock(LineitemRepository)
-    def repository = new PrincipalRepository(restUtil: restUtil, principalEndpoint: endpoint, lineitemRepository: lineitemRepository)
+    def organisationRepository = Mock(OrganisationRepository)
+    def repository = new PrincipalRepository(
+            restUtil: restUtil,
+            principalEndpoint: endpoint,
+            lineitemRepository: lineitemRepository,
+            organisationRepository: organisationRepository,
+    )
 
     def 'Fetching principals should update first'() {
         given:
         def fakturautstederResources = new FakturautstederResources()
-        def fakturautstederResource = new FakturautstederResource(navn: 'test', systemId: new Identifikator(identifikatorverdi: 'test'))
+        def fakturautstederResource = new FakturautstederResource(
+                navn: 'test',
+                systemId: new Identifikator(identifikatorverdi: 'test')
+        )
         fakturautstederResource.addSelf(Link.with('http://oppdragsgiver'))
         fakturautstederResource.addVare(Link.with('http://varelinje'))
+        fakturautstederResource.addOrganisasjonselement(Link.with('http://organisasjonselement'))
         fakturautstederResources.addResource(fakturautstederResource)
 
         when:
         def result = repository.getPrincipals()
 
         then:
-        1 * restUtil.getUpdates(FakturautstederResources , endpoint) >> fakturautstederResources
+        1 * restUtil.getUpdates(FakturautstederResources, endpoint) >> fakturautstederResources
         1 * lineitemRepository.getLineitemByUri(_ as String) >> new Lineitem(itemCode: 'abc')
         result.size() == 1
     }
