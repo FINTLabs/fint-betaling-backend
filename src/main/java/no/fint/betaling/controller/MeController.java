@@ -123,6 +123,7 @@ public class MeController {
                 .map(Link::getHref)
                 .map(it -> restUtil.getFromFullUri(PersonalressursResource.class, it))
                 .peek(it -> log.debug("Personalressurs: {}", it))
+                .peek(it -> user.setEmployeeNumber(it.getAnsattnummer().getIdentifikatorverdi()))
                 .flatMap(it -> it.getPerson().stream())
                 .map(Link::getHref)
                 .map(it -> restUtil.getFromFullUri(PersonResource.class, it))

@@ -39,7 +39,7 @@ dependencies {
     compile("no.fint:fint-okonomi-resource-model-java:${apiVersion}")
     compile('no.fint:fint-utdanning-resource-model-java:3.9.0')
     compile('no.fint:fint-oauth-token-service:1.6.1')
-    compile('no.fint:fint-betaling-model:1.2.1')
+    //compile('no.fint:fint-betaling-model:1.2.1')
 
     compile('org.apache.commons:commons-lang3:3.9')
     compile('org.jooq:jool-java-8:0.9.14')
