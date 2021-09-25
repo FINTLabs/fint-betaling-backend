@@ -20,6 +20,7 @@
 | fint.oauth.enabled | | true |
 | fint.oauth.access-token-uri | | https://idp.felleskomponent.no/nidp/oauth/nam/token |
 | fint.oauth.scope | | fint-client |
+| fint.betaling.principal-matching-strategy | Strategy to use for matching pricipals (fakturautsteder) with the user | default |
 | fint.betaling.endpoints.principal | | /okonomi/faktura/fakturautsteder |
 | fint.betaling.endpoints.lineitem | | /okonomi/kodeverk/vare | 
 | fint.betaling.endpoints.organisation | | /administrasjon/organisasjon/organisasjonselement |
