@@ -1,6 +1,6 @@
 FROM fintlabsacr.azurecr.io/betaling-frontend:latest as client
 
-FROM gradle:4.10.2-jdk8-alpine as builder
+FROM gradle:7.2.0-jdk11 as builder
 USER root
 COPY . .
 COPY --from=client /src/build/ src/main/resources/static/
