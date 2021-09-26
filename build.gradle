@@ -8,6 +8,10 @@ plugins {
 group = 'no.fint'
 sourceCompatibility = '1.8'
 
+jar {
+    enabled = false
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
