@@ -7,13 +7,11 @@ spring:
   mvc:
     dispatch-options-request: true
 
-security:
-  basic:
-    enabled: false
-
-springfox:
-  title: '@title@'
-  version: '@version@'
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health, metrics, prometheus
 
 fint:
   betaling:

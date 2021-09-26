@@ -34,20 +34,26 @@ dependencies {
     implementation("no.fint:fint-okonomi-resource-model-java:${apiVersion}")
     implementation('no.fint:fint-utdanning-resource-model-java:3.9.0')
     implementation('no.fint:fint-oauth-token-service:1.6.1')
-    //implementation('no.fint:fint-betaling-model:1.2.1')
+
+    implementation('org.springframework.boot:spring-boot-starter')
+    implementation('org.springframework.boot:spring-boot-starter-cache')
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:")
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation('org.apache.commons:commons-lang3:3.9')
     implementation('org.jooq:jool-java-8:0.9.14')
-    implementation('org.springframework.boot:spring-boot-starter')
-    implementation('org.springframework.boot:spring-boot-starter-cache')
-    implementation('org.springframework.boot:spring-boot-starter-web')
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:")
-    //implementation('org.springframework.plugin:spring-plugin-core')
+
     implementation('com.fasterxml.jackson.core:jackson-databind')
     implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
-    //implementation("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
     implementation('org.apache.commons:commons-lang3:3.9')
     implementation('commons-beanutils:commons-beanutils:1.9.4')
     implementation('com.squareup.okhttp3:okhttp:4.4.0')
