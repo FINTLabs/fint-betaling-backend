@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'no.fint'
-sourceCompatibility = '1.8'
+sourceCompatibility = '11'
 
 jar {
     enabled = false
