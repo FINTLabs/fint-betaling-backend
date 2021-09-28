@@ -72,8 +72,8 @@ public class RestUtil {
 
     public HttpHeaders head(String uri) {
         try {
-            log.info("GET {}", getFullUri(uri));
-            return restTemplate.headForHeaders(getFullUri(uri));
+            log.info("GET {}", uri);
+            return restTemplate.headForHeaders(uri);
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
@@ -82,12 +82,6 @@ public class RestUtil {
 
     public <T> T get(Class<T> clazz, String uri) {
         return getFromFullUri(clazz, getFullUri(uri));
-        //try {
-
-            //return restTemplate.getForObject(getFullUri(uri), clazz);
-        //} catch (HttpStatusCodeException e) {
-        //    throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        //}
     }
 
     public <T> T getFromFullUri(Class<T> clazz, String uri) {
