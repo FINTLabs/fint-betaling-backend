@@ -54,7 +54,8 @@ public class LineitemRepository {
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();
-                    lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
+                    //lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
+                    lineitem.setItemCode(v.getKode());
                     lineitem.setItemPrice(v.getPris());
                     lineitem.setDescription(v.getNavn());
                     v.getMerverdiavgift()
