@@ -61,8 +61,8 @@ public class LineitemRepository {
                     v.getMerverdiavgift()
                             .stream()
                             .map(Link::getHref)
-                            .map(href -> StringUtils.substringAfterLast(href, "/"))
-                            .map(taxcodeRepository::getTaxcodeByCode)
+                            //.map(href -> StringUtils.substringAfterLast(href, "/"))
+                            .map(taxcodeRepository::getTaxcodeByUri)
                             .filter(Objects::nonNull)
                             .map(Taxcode::getRate)
                             .forEach(lineitem::setTaxrate);
