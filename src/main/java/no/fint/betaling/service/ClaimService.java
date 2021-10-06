@@ -163,7 +163,7 @@ public class ClaimService {
         List<FakturaResource> fakturaList = invoice.getFaktura()
                 .stream()
                 .map(Link::getHref)
-                .map(uri -> restUtil.get(FakturaResource.class, uri))
+                .map(uri -> restUtil.getFromFullUri(FakturaResource.class, uri))
                 .collect(Collectors.toList());
 
         updater.accept("invoiceNumbers", fakturaList.stream()
