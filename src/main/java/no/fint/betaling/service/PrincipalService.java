@@ -23,7 +23,7 @@ public class PrincipalService {
         Organisation organisation = organisationService.getOrganisationByOrganisationNumber(schoolId);
         return principalRepository.getPrincipals()
                 .stream()
-                .filter(p -> StringUtils.startsWithIgnoreCase(p.getDescription(), organisation.getName()))
+                .filter(p -> StringUtils.startsWithIgnoreCase(organisation.getName(), p.getDescription()))
                 .map(CloneUtil::cloneObject)
                 .peek(p -> p.setOrganisation(organisation))
                 .findFirst()
