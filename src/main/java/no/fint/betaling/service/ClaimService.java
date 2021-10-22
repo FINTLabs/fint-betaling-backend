@@ -8,6 +8,7 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
+import no.fint.betaling.util.DelayOrderSending;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
@@ -58,6 +59,9 @@ public class ClaimService {
     @Autowired
     private QueryService queryService;
 
+    @Autowired
+    private DelayOrderSending delayOrderSending;
+
     public List<Claim> storeClaims(Order order) {
         return claimFactory
                 .createClaims(order)
@@ -72,6 +76,7 @@ public class ClaimService {
                 .peek(claim -> {
                     try {
                         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
+                        delayOrderSending.sleepIfNecessary();
                         URI location = restUtil.post(invoiceEndpoint, invoice);
                         if (location != null) {
                             claim.setInvoiceUri(location.toString());
