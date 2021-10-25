@@ -8,6 +8,7 @@ import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
+import no.fint.betaling.util.DelayOrderSending
 import no.fint.betaling.util.RestUtil
 import no.fint.model.administrasjon.okonomi.Faktura
 import no.fint.model.resource.administrasjon.okonomi.FakturaResource
@@ -38,7 +39,8 @@ class ClaimServiceSpec extends Specification {
                 claimRepository: claimRepository,
                 claimFactory: claimFactory,
                 invoiceFactory: invoiceFactory,
-                queryService: queryService)
+                queryService: queryService,
+                delayOrderSending: new DelayOrderSending())
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
