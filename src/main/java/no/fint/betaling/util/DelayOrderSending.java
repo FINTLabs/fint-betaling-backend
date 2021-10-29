@@ -24,6 +24,9 @@ public class DelayOrderSending {
 
         if (millisSincePrevious < delayBetweenOrders){
             sleep(delayBetweenOrders - millisSincePrevious);
+            log.info("Wait between order: Wait" + (delayBetweenOrders - millisSincePrevious) + "ms between orders");
+        } else {
+            log.info("Wait between order: No need to wait");
         }
 
         previousTime = System.currentTimeMillis();
