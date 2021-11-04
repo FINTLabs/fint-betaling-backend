@@ -1,30 +1,25 @@
-buildscript {
-    apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.7.0/dependencies.gradle'
-    ext {
-        springBootVersion = springBootVersion
-    }
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("com.github.ben-manes:gradle-versions-plugin:0.21.0")
+plugins {
+    id 'org.springframework.boot' version '2.5.5'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'groovy'
+}
+
+group = 'no.fint'
+sourceCompatibility = '11'
+
+jar {
+    enabled = false
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'groovy'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'com.github.ben-manes.versions'
-
-group = 'no.fint'
-sourceCompatibility = 1.8
-
 repositories {
     mavenCentral()
-    jcenter()
     repositories {
         maven {
             url "https://repo.fintlabs.no/releases"
@@ -35,84 +30,48 @@ repositories {
 
 
 dependencies {
-    compile("no.fint:fint-okonomi-model-java:${apiVersion}")
-    compile("no.fint:fint-okonomi-resource-model-java:${apiVersion}")
-    compile('no.fint:fint-utdanning-resource-model-java:3.9.0')
-    compile('no.fint:fint-oauth-token-service:1.6.1')
-    compile('no.fint:fint-betaling-model:1.2.1')
+    implementation("no.fint:fint-okonomi-model-java:${apiVersion}")
+    implementation("no.fint:fint-okonomi-resource-model-java:${apiVersion}")
+    implementation('no.fint:fint-utdanning-resource-model-java:3.9.0')
+    implementation('no.fint:fint-oauth-token-service:1.6.1')
 
-    compile('org.apache.commons:commons-lang3:3.9')
-    compile('org.jooq:jool-java-8:0.9.14')
-    compile('org.springframework.boot:spring-boot-starter')
-    compile('org.springframework.boot:spring-boot-starter-cache')
-    compile('org.springframework.boot:spring-boot-starter-web')
-    compile("org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}")
-    compile('org.springframework.plugin:spring-plugin-core')
-    compile('com.fasterxml.jackson.core:jackson-databind')
-    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
-    compile("com.github.springfox.loader:springfox-loader:${springfoxLoaderVersion}")
-    compileOnly("org.projectlombok:lombok:${lombokVersion}")
-    compile('org.apache.commons:commons-lang3:3.9')
-    compile('commons-beanutils:commons-beanutils:1.9.4')
-    compile('com.squareup.okhttp3:okhttp:4.4.0')
-    compile('com.github.ben-manes.caffeine:caffeine')
+    implementation('org.springframework.boot:spring-boot-starter')
+    implementation('org.springframework.boot:spring-boot-starter-cache')
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:")
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation('org.apache.commons:commons-lang3:3.9')
+    implementation('org.jooq:jool-java-8:0.9.14')
+
+    implementation('com.fasterxml.jackson.core:jackson-databind')
+    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+    implementation('org.apache.commons:commons-lang3:3.9')
+    implementation('commons-beanutils:commons-beanutils:1.9.4')
+    implementation('com.squareup.okhttp3:okhttp:4.4.0')
+    implementation('com.github.ben-manes.caffeine:caffeine')
+
     // https://mvnrepository.com/artifact/org.apache.poi/poi
-    compile 'org.apache.poi:poi:4.0.0'
-    compile 'org.apache.poi:poi-ooxml:4.0.0'
+    implementation 'org.apache.poi:poi:4.0.0'
+    implementation 'org.apache.poi:poi-ooxml:4.0.0'
 
-    runtime('org.springframework.boot:spring-boot-actuator')
-    compile 'org.apache.tika:tika-parsers:1.24.1'
+    implementation 'org.apache.tika:tika-parsers:1.24.1'
 
-    testCompile('no.fint:fint-test-utils:0.0.6')
-    testCompile("cglib:cglib-nodep:${cglibVersion}")
-    testCompile("org.spockframework:spock-spring:${spockSpringVersion}")
-    testCompile("org.spockframework:spock-core:${spockSpringVersion}")
-    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testImplementation('no.fint:fint-test-utils:0.0.6')
+    testImplementation("cglib:cglib-nodep:3.3.0")
+    testImplementation("org.spockframework:spock-spring:2.0-groovy-3.0")
+    testImplementation("org.spockframework:spock-core:2.0-groovy-3.0")
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 
 test {
-    testLogging {
-        events 'passed', 'skipped', 'failed'
-    }
+    useJUnitPlatform()
 }
-
-task copyExternalDependencies(type: Copy) {
-    from configurations.runtime
-    into "$buildDir/deps/external"
-    exclude '**/fint-*.jar'
-}
-
-task copyFintDependencies(type: Copy) {
-    from configurations.runtime
-    into "$buildDir/deps/fint"
-    include '**/fint-*.jar'
-}
-
-build.dependsOn(copyExternalDependencies)
-build.dependsOn(copyFintDependencies)
-
-jar {
-    manifest {
-        attributes(
-                "Manifest-Version": "1.0",
-                "Main-Class": "no.fint.betaling.Application",
-                "Specification-Version": "${version}",
-                "Implementation-Version": "${version}",
-                "Class-Path": configurations.runtime.collect { it.getName() }.join(' ')
-        )
-    }
-}
-
-import org.apache.tools.ant.filters.ReplaceTokens
-
-afterEvaluate {
-    configure(processResources) {
-        filesMatching('**/*.yml') {
-            filter(ReplaceTokens, tokens: [version: jar.version, title: jar.baseName])
-        }
-    }
-}
-
-bootRepackage.enabled = false
-
-apply from: 'https://raw.githubusercontent.com/FINTlibs/fint-buildscripts/v1.7.0/dependencyReport.gradle'

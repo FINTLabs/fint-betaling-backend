@@ -1,6 +1,6 @@
 package no.fint.betaling.util
 
-
+import groovy.time.TimeCategory
 import no.fint.betaling.model.*
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
@@ -118,14 +118,18 @@ class BetalingObjectFactory {
     static FakturaResource newFaktura() {
         ThreadLocalRandom r = ThreadLocalRandom.current()
         def faktura = new FakturaResource()
+
         faktura.setBetalt(r.nextBoolean())
         faktura.setFakturert(r.nextBoolean())
         faktura.setKreditert(r.nextBoolean())
         faktura.setBelop(r.nextLong(50000, 100000))
-        faktura.setRestbelop(r.nextLong(10000,50000))
+        faktura.setRestbelop(r.nextLong(10000, 50000))
         faktura.setFakturanummer(new Identifikator(identifikatorverdi: r.nextLong(100000, 3000000)))
-        faktura.setDato(new Date() - r.nextInt(0, 10))
-        faktura.setForfallsdato(new Date() + r.nextInt(0, 10))
+        use(TimeCategory) {
+            def now = new Date()
+            faktura.setDato(now - 12.days)
+            faktura.setForfallsdato(now + 14.days)
+        }
         return faktura
     }
 }

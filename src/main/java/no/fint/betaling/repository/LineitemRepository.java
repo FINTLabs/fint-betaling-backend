@@ -54,14 +54,15 @@ public class LineitemRepository {
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();
-                    lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
+                    //lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
+                    lineitem.setItemCode(v.getKode());
                     lineitem.setItemPrice(v.getPris());
                     lineitem.setDescription(v.getNavn());
                     v.getMerverdiavgift()
                             .stream()
                             .map(Link::getHref)
-                            .map(href -> StringUtils.substringAfterLast(href, "/"))
-                            .map(taxcodeRepository::getTaxcodeByCode)
+                            //.map(href -> StringUtils.substringAfterLast(href, "/"))
+                            .map(taxcodeRepository::getTaxcodeByUri)
                             .filter(Objects::nonNull)
                             .map(Taxcode::getRate)
                             .forEach(lineitem::setTaxrate);

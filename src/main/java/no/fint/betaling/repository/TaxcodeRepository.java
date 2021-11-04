@@ -36,13 +36,13 @@ public class TaxcodeRepository {
         return taxcodes.get(uri);
     }
 
-    public Taxcode getTaxcodeByCode(String code) {
-        return getTaxcodes()
-                .stream()
-                .filter(tax -> StringUtils.equals(code, tax.getCode()))
-                .findFirst()
-                .orElse(null);
-    }
+//    public Taxcode getTaxcodeByCode(String code) {
+//        return getTaxcodes()
+//                .stream()
+//                .filter(tax -> StringUtils.equals(code, tax.getCode()))
+//                .findFirst()
+//                .orElse(null);
+//    }
 
     public Collection<Taxcode> getTaxcodes() {
         if (taxcodes.isEmpty()) {

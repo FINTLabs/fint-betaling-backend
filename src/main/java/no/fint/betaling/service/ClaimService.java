@@ -39,7 +39,7 @@ public class ClaimService {
     private static final String CLAIM_STATUS = "claimStatus";
     private static final String STATUS_MESSAGE = "statusMessage";
 
-    @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/faktura}")
+    @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
     @Autowired
@@ -107,7 +107,7 @@ public class ClaimService {
                     claim.setInvoiceUri(null);
                 } else {
                     try {
-                        String result = restUtil.get(String.class, claim.getInvoiceUri());
+                        String result = restUtil.getFromFullUri(String.class, claim.getInvoiceUri());
                         log.error("Unexpected result! {}", result);
                     } catch (InvalidResponseException e2) {
                         if (e2.getStatus().is4xxClientError()) {
@@ -126,7 +126,7 @@ public class ClaimService {
         // TODO Accepted claims should be checked less often
         getAcceptedClaims().forEach(claim -> {
             try {
-                FakturagrunnlagResource invoice = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
+                FakturagrunnlagResource invoice = restUtil.getFromFullUri(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 ClaimStatus newStatus = updateClaim(invoice);
                 claim.setClaimStatus(newStatus);
                 claim.setStatusMessage(null);
@@ -163,7 +163,7 @@ public class ClaimService {
         List<FakturaResource> fakturaList = invoice.getFaktura()
                 .stream()
                 .map(Link::getHref)
-                .map(uri -> restUtil.get(FakturaResource.class, uri))
+                .map(uri -> restUtil.getFromFullUri(FakturaResource.class, uri))
                 .collect(Collectors.toList());
 
         updater.accept("invoiceNumbers", fakturaList.stream()

@@ -16,7 +16,8 @@ public class PrincipalController {
     }
 
     @GetMapping
-    public Principal getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return principalService.getPrincipalByOrganisationId(schoolId);
+    public Principal getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId,
+                                             @RequestHeader(name = "x-feide-upn") String feideUpn) {
+        return principalService.getPrincipalByOrganisationId(schoolId, feideUpn);
     }
 }

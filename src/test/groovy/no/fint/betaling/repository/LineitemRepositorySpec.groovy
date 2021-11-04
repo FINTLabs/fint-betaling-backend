@@ -34,7 +34,7 @@ class LineitemRepositorySpec extends Specification {
 
         then:
         1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> resources
-        1 * taxcodeRepository.getTaxcodeByCode('1234') >> new Taxcode(rate: 0.25)
+        1 * taxcodeRepository.getTaxcodeByUri('http://mvakode/1234') >> new Taxcode(rate: 0.25)
     }
 
     def 'Fetching lime items should update first'() {
@@ -56,7 +56,7 @@ class LineitemRepositorySpec extends Specification {
         then:
         result.size() == 1
         1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> resources
-        1 * taxcodeRepository.getTaxcodeByCode('2345') >> new Taxcode(rate: 0.25)
+        1 * taxcodeRepository.getTaxcodeByUri(_ as String) >> new Taxcode(rate: 0.25)
 
     }
 }

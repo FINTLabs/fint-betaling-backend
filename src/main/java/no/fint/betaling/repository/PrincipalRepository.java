@@ -27,9 +27,10 @@ public class PrincipalRepository {
 
     @Autowired
     private RestUtil restUtil;
-
     @Autowired
     private LineitemRepository lineitemRepository;
+    @Autowired
+    private OrganisationRepository organisationRepository;
 
     private final ConcurrentMap<String, Principal> principals = new ConcurrentSkipListMap<>();
 
@@ -52,17 +53,18 @@ public class PrincipalRepository {
         log.info("Updating principals from {} ...", principalEndpoint);
         restUtil.getUpdates(FakturautstederResources.class, principalEndpoint)
                 .getContent()
-                .forEach(o -> {
+                .forEach(fakturautsteder -> {
                     Principal principal = new Principal();
-                    principal.setCode(o.getSystemId().getIdentifikatorverdi());
-                    principal.setDescription(o.getNavn());
-                    principal.setLineitems(o.getVare()
+                    principal.setOrganisation(organisationRepository.getOrganisationByHref(fakturautsteder.getOrganisasjonselement().get(0).getHref()));
+                    principal.setCode(fakturautsteder.getSystemId().getIdentifikatorverdi());
+                    principal.setDescription(fakturautsteder.getNavn());
+                    principal.setLineitems(fakturautsteder.getVare()
                             .stream()
                             .map(Link::getHref)
                             .map(lineitemRepository::getLineitemByUri)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toSet()));
-                    o.getSelfLinks()
+                    fakturautsteder.getSelfLinks()
                             .stream()
                             .map(Link::getHref)
                             .forEach(principal::setUri);
