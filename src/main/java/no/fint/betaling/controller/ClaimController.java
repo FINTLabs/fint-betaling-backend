@@ -20,13 +20,11 @@ import java.util.List;
 @RequestMapping(value = "/api/claim")
 public class ClaimController {
 
-    private final ClaimService claimService;
-    private final ScheduleService scheduleService;
+    @Autowired
+    private ClaimService claimService;
 
-    public ClaimController(ClaimService claimService, ScheduleService scheduleService) {
-        this.claimService = claimService;
-        this.scheduleService = scheduleService;
-    }
+    @Autowired
+    private ScheduleService scheduleService;
 
     @PostMapping
     public ResponseEntity<?> storeClaim(@RequestBody Order order) {
