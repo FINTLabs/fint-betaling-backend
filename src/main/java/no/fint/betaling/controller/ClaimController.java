@@ -5,6 +5,7 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
+import no.fint.betaling.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,13 @@ import java.util.List;
 @RequestMapping(value = "/api/claim")
 public class ClaimController {
 
-    @Autowired
-    private ClaimService claimService;
+    private final ClaimService claimService;
+    private final ScheduleService scheduleService;
+
+    public ClaimController(ClaimService claimService, ScheduleService scheduleService) {
+        this.claimService = claimService;
+        this.scheduleService = scheduleService;
+    }
 
     @PostMapping
     public ResponseEntity<?> storeClaim(@RequestBody Order order) {
@@ -58,5 +64,10 @@ public class ClaimController {
     public ResponseEntity cancelClaimsByID(@PathVariable("order-number") String orderNumber) {
         claimService.cancelClaim(orderNumber);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/update/all")
+    public void updateAll() {
+        scheduleService.updateClaims();
     }
 }
