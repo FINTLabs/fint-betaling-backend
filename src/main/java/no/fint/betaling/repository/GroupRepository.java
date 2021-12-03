@@ -72,7 +72,7 @@ public class GroupRepository {
         SkoleResources resources;
 
         try {
-            resources = restUtil.getUpdates(SkoleResources.class, schoolEndpoint);
+            resources = restUtil.getFromFullUri(SkoleResources.class, schoolEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -132,7 +132,7 @@ public class GroupRepository {
         UndervisningsgruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(UndervisningsgruppeResources.class, teachingGroupEndpoint);
+            resources = restUtil.getFromFullUri(UndervisningsgruppeResources.class, teachingGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -192,7 +192,7 @@ public class GroupRepository {
         ElevforholdResources resources;
 
         try {
-            resources = restUtil.getUpdates(ElevforholdResources.class, studentRelationEndpoint);
+            resources = restUtil.getFromFullUri(ElevforholdResources.class, studentRelationEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -222,7 +222,7 @@ public class GroupRepository {
         PersonResources resources;
 
         try {
-            resources = restUtil.getUpdates(PersonResources.class, personEndpoint);
+            resources = restUtil.getFromFullUri(PersonResources.class, personEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
