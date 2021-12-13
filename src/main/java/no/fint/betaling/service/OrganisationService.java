@@ -42,7 +42,7 @@ public class OrganisationService {
     @Cacheable("organisations")
     public Organisation getOrganisationByOrganisationNumber(String id) {
         try {
-            SkoleResource skoleResource = restUtil.get(SkoleResource.class,
+            SkoleResource skoleResource = restUtil.getFromFullUri(SkoleResource.class,
                     UriComponentsBuilder.fromUriString(schoolEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString());
             return createOrganisation(skoleResource.getOrganisasjonsnummer(),
                     skoleResource.getJuridiskNavn(),

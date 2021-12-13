@@ -31,6 +31,7 @@ fint:
     date-range: "7, 14, 30"
     demo: "true"
     demo-user-feide: "nora.lys@osloskole.no"
+    principal-matching-strategy: "byOrgnummer"
     endpoints:
       environment: "play-with-fint"
       #invoice: "https://play-with-fint.felleskomponent.no/betaling/fakturagrunnlag"
@@ -43,3 +44,4 @@ fint:
       kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
       person: "https://play-with-fint.felleskomponent.no/utdanning/elev/person"
       student-relation: "https://play-with-fint.felleskomponent.no/utdanning/elev/elevforhold"
+
