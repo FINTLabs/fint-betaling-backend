@@ -53,6 +53,7 @@ public class GroupService {
                         e -> e.getSystemId().getIdentifikatorverdi(),
                         e -> e.getElev()
                                 .stream()
+                                .filter(Objects::nonNull)
                                 .map(groupRepository.getStudents()::get)
                                 .map(CustomerFactory::toCustomer)
                                 .distinct()
