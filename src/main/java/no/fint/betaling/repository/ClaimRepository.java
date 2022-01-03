@@ -3,10 +3,15 @@ package no.fint.betaling.repository;
 import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
 
@@ -36,6 +41,16 @@ public class ClaimRepository {
 
     public List<Claim> getClaims(Query query) {
         return mongoTemplate.find(query, Claim.class);
+    }
+
+    public Page<Claim> getClaimsWithPagination(Query query, Pageable pageable) {
+        //Pageable pageable = PageRequest.of(1, 10);
+        //Query query = new Query().with(pageable);
+        List<Claim> list = mongoTemplate.find(query.with(pageable), Claim.class);
+        return PageableExecutionUtils.getPage(
+                list,
+                pageable,
+                () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Claim.class));
     }
 
     public void updateClaim(Query query, Update update) {
