@@ -45,10 +45,11 @@ public class GroupService {
     }
 
     public Map<String, Customer> getCustomersForSchoolWithVisIdKey(String schoolId) {
-         return getSchool(schoolId)
+        return getSchool(schoolId)
                 .getElevforhold()
                 .stream()
                 .map(groupRepository.getStudentRelations()::get)
+                .filter(e -> e != null && e.getSystemId() != null && e.getSystemId().getIdentifikatorverdi() != null)
                 .collect(Collectors.toMap(
                         e -> e.getSystemId().getIdentifikatorverdi(),
                         e -> e.getElev()
