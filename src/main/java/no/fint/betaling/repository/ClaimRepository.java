@@ -1,5 +1,6 @@
 package no.fint.betaling.repository;
 
+import com.mchange.v1.identicator.IdList;
 import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,6 +49,7 @@ public class ClaimRepository {
         //Pageable pageable = PageRequest.of(1, 10);
         //Query query = new Query().with(pageable);
         List<Claim> list = mongoTemplate.find(query.with(pageable), Claim.class);
+        if (list == null) list = new ArrayList<>();
         return PageableExecutionUtils.getPage(
                 list,
                 pageable,
