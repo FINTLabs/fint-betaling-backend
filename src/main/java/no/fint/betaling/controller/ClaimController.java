@@ -5,6 +5,7 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
+import no.fint.betaling.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,9 @@ public class ClaimController {
 
     @Autowired
     private ClaimService claimService;
+
+    @Autowired
+    private ScheduleService scheduleService;
 
     @PostMapping
     public ResponseEntity<?> storeClaim(@RequestBody Order order) {
@@ -58,5 +62,10 @@ public class ClaimController {
     public ResponseEntity cancelClaimsByID(@PathVariable("order-number") String orderNumber) {
         claimService.cancelClaim(orderNumber);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/update/all")
+    public void updateAll() {
+        scheduleService.updateClaims();
     }
 }

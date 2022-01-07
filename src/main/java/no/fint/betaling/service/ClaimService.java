@@ -90,6 +90,8 @@ public class ClaimService {
 
     void updateClaims() {
         getSentClaims().forEach(claim -> {
+            //.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.PAID) && claim.getCreatedDate() > 1 uke )
+            // TODO: 29/11/2021 Trond: complete filter to reduce orders to check
             try {
                 HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
                 if (headers.getLocation() != null) {
@@ -119,6 +121,9 @@ public class ClaimService {
                         log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatus(), e2.getMessage());
                     }
                 }
+            } catch (Exception e) {
+                log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+                log.error("Exception: " + e.getMessage(), e);
             }
             updateClaimStatus(claim);
         });
@@ -135,6 +140,9 @@ public class ClaimService {
                 claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                 claim.setStatusMessage(e.getMessage());
                 log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatus(), e.getMessage());
+            } catch (Exception e) {
+                log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+                log.error("Exception: " + e.getMessage(), e);
             }
             updateClaimStatus(claim);
         });

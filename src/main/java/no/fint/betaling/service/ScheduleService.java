@@ -26,7 +26,7 @@ public class ScheduleService {
     }
     */
 
-    @Scheduled(initialDelay = 20000, fixedRateString = "${fint.betaling.invoice-update-rate}")
+    @Scheduled(cron = "${fint.betaling.invoice-update-cron}")
     public void updateClaims() {
         log.info("Updating claims...");
         try {
