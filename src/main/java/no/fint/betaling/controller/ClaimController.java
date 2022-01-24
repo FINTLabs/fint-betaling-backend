@@ -7,6 +7,7 @@ import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
 import no.fint.betaling.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,11 @@ public class ClaimController {
     @GetMapping
     public List<Claim> getAllClaims() {
         return claimService.getClaims();
+    }
+
+    @GetMapping("paged")
+    public Page<Claim> getClaimsPaged(@RequestParam int page, @RequestParam int size, @RequestParam(defaultValue = "id,desc") String[] sort) {
+        return claimService.getClaimsPaged(page, size, sort);
     }
 
     @GetMapping("/name/{name}")

@@ -16,7 +16,7 @@ springfox:
 
 fint:
   oauth:
-    enabled: true
+    enabled: false
     username: pwfatut
     password: pwfatut
     client-id: 6e1cf7b4-b107-42b3-9435-8fda70726c6a
@@ -26,22 +26,27 @@ fint:
 
   betaling:
     client-name: "FINT-Betaling"
-    default-org-id: "fake.no"
+    default-org-id: "pwf.no"
     default-school-org-id: "970123459"
     date-range: "7, 14, 30"
     demo: "true"
     demo-user-feide: "nora.lys@osloskole.no"
     principal-matching-strategy: "byOrgnummer"
+    invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
       environment: "play-with-fint"
-      #invoice: "https://play-with-fint.felleskomponent.no/betaling/fakturagrunnlag"
-      #order-line: "https://play-with-fint.felleskomponent.no/betaling/varelinje"
-      #mva-code: "https://play-with-fint.felleskomponent.no/betaling/mvakode"
-      #employer: "https://play-with-fint.felleskomponent.no/betaling/oppdragsgiver"
+      order-line: "https://play-with-fint.felleskomponent.no/okonomi/faktura/fakturagrunnlag"
+      mva-code: "https://play-with-fint.felleskomponent.no/okonomi/kodeverk/merverdiavgift"
       school: "https://play-with-fint.felleskomponent.no/utdanning/utdanningsprogram/skole"
-      basisgruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
+      basis-group: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
       teaching-group: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
-      kontaktlarergruppe: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
+      contact-teacher-group: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
       person: "https://play-with-fint.felleskomponent.no/utdanning/elev/person"
       student-relation: "https://play-with-fint.felleskomponent.no/utdanning/elev/elevforhold"
+      school-resource: "https://play-with-fint.felleskomponent.no/utdanning/elev/skoleressurs"
+      employee: "https://play-with-fint.felleskomponent.no/administrasjon/personal/person"
+      organisation: "https://play-with-fint.felleskomponent.no/administrasjon/organisasjon/organisasjonselement"
+      principal: "https://play-with-fint.felleskomponent.no/okonomi/faktura/fakturautsteder"
+      lineitem: "https://play-with-fint.felleskomponent.no/okonomi/kodeverk/vare"
+
 
