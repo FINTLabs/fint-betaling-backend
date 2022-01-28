@@ -7,17 +7,16 @@ import no.fint.model.resource.administrasjon.personal.PersonalressursResource
 import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 
-class RestUtilSpec extends Specification {
+class FintEndpointsRepositorySpec extends Specification {
     private RestTemplate restTemplate
-    private RestUtil restUtil
+    private FintEndpointsRepository restUtil
 
     void setup() {
         restTemplate = Mock(RestTemplate)
-        restUtil = new RestUtil(restTemplate: restTemplate, environment: "beta", urlTemplate: "http://%s.localhost%s")
+        restUtil = new FintEndpointsRepository(restTemplate: restTemplate, environment: "beta", urlTemplate: "http://%s.localhost%s")
     }
 
     def "Get resource given invalid response throws InvalidResponseException"() {

@@ -1,7 +1,7 @@
 package no.fint.betaling.repository
 
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.util.FintEndpointsRepository
 import no.fint.model.resource.Link
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources
 import org.codehaus.jackson.map.ObjectMapper
@@ -9,7 +9,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 class GroupRepositorySpec extends Specification {
-    private RestUtil restUtil
+    private FintEndpointsRepository restUtil
     private GroupRepository groupRepository
     private ObjectMapper objectMapper
     private FintObjectFactory fintObjectFactory

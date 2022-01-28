@@ -2,7 +2,7 @@ package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Organisation;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.FintEndpointsRepository;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResources;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +24,7 @@ public class OrganisationRepository {
     private String organisationEndpoint;
 
     @Autowired
-    private RestUtil restUtil;
+    private FintEndpointsRepository fintEndpointsRepository;
 
     private final ConcurrentMap<String, Organisation> organisations = new ConcurrentSkipListMap<>();
     private final ConcurrentMap<String, String> superiors = new ConcurrentSkipListMap<>();
@@ -59,7 +59,7 @@ public class OrganisationRepository {
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateOrganisations() {
         log.info("Updating organisations from {} ...", organisationEndpoint);
-        restUtil.getUpdates(OrganisasjonselementResources.class, organisationEndpoint)
+        fintEndpointsRepository.getUpdates(OrganisasjonselementResources.class, organisationEndpoint)
                 .getContent()
                 .forEach(o -> {
                     Organisation organisation = new Organisation();

@@ -1,7 +1,7 @@
 package no.fint.betaling.repository
 
 import no.fint.betaling.model.Taxcode
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.util.FintEndpointsRepository
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.kodeverk.VareResource
@@ -11,9 +11,9 @@ import spock.lang.Specification
 class LineitemRepositorySpec extends Specification {
 
     def taxcodeRepository = Mock(TaxcodeRepository)
-    def restUtil = Mock(RestUtil)
+    def restUtil = Mock(FintEndpointsRepository)
     def endpoint = 'http://localhost/varelinje'
-    def repository = new LineitemRepository(restUtil: restUtil, lineitemEndpoint: endpoint, taxcodeRepository: taxcodeRepository)
+    def repository = new LineitemRepository(fintEndpointsRepository: restUtil, lineitemEndpoint: endpoint, taxcodeRepository: taxcodeRepository)
 
     def 'Update line items'() {
         given:

@@ -8,7 +8,7 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.FintEndpointsRepository;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
@@ -43,7 +43,7 @@ public class ClaimService {
     private String invoiceEndpoint;
 
     @Autowired
-    private RestUtil restUtil;
+    private FintEndpointsRepository fintEndpointsRepository;
 
     @Autowired
     private ClaimRepository claimRepository;
@@ -71,7 +71,7 @@ public class ClaimService {
                 .peek(claim -> {
                     try {
                         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-                        URI location = restUtil.post(invoiceEndpoint, invoice);
+                        URI location = fintEndpointsRepository.post(invoiceEndpoint, invoice);
                         if (location != null) {
                             claim.setInvoiceUri(location.toString());
                             claim.setClaimStatus(ClaimStatus.SENT);
@@ -93,7 +93,7 @@ public class ClaimService {
             //.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.PAID) && claim.getCreatedDate() > 1 uke )
             // TODO: 29/11/2021 Trond: complete filter to reduce orders to check
             try {
-                HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
+                HttpHeaders headers = fintEndpointsRepository.head(claim.getInvoiceUri());
                 if (headers.getLocation() != null) {
                     claim.setInvoiceUri(headers.getLocation().toString());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
@@ -109,7 +109,7 @@ public class ClaimService {
                     claim.setInvoiceUri(null);
                 } else {
                     try {
-                        String result = restUtil.getFromFullUri(String.class, claim.getInvoiceUri());
+                        String result = fintEndpointsRepository.getFromFullUri(String.class, claim.getInvoiceUri());
                         log.error("Unexpected result! {}", result);
                     } catch (InvalidResponseException e2) {
                         if (e2.getStatus().is4xxClientError()) {
@@ -131,7 +131,7 @@ public class ClaimService {
         // TODO Accepted claims should be checked less often
         getAcceptedClaims().forEach(claim -> {
             try {
-                FakturagrunnlagResource invoice = restUtil.getFromFullUri(FakturagrunnlagResource.class, claim.getInvoiceUri());
+                FakturagrunnlagResource invoice = fintEndpointsRepository.getFromFullUri(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 ClaimStatus newStatus = updateClaim(invoice);
                 claim.setClaimStatus(newStatus);
                 claim.setStatusMessage(null);
@@ -171,7 +171,7 @@ public class ClaimService {
         List<FakturaResource> fakturaList = invoice.getFaktura()
                 .stream()
                 .map(Link::getHref)
-                .map(uri -> restUtil.getFromFullUri(FakturaResource.class, uri))
+                .map(uri -> fintEndpointsRepository.getFromFullUri(FakturaResource.class, uri))
                 .collect(Collectors.toList());
 
         updater.accept("invoiceNumbers", fakturaList.stream()

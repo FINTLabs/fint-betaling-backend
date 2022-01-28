@@ -2,11 +2,9 @@ package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Taxcode;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.FintEndpointsRepository;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource;
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,7 +23,7 @@ public class TaxcodeRepository {
     private String taxcodeEndpoint;
 
     @Autowired
-    private RestUtil restUtil;
+    private FintEndpointsRepository fintEndpointsRepository;
 
     private final ConcurrentMap<String, Taxcode> taxcodes = new ConcurrentSkipListMap<>();
 
@@ -54,7 +52,7 @@ public class TaxcodeRepository {
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateTaxcodes() {
         log.info("Updating tax codes from {} ...", taxcodeEndpoint);
-        restUtil.getUpdates(MerverdiavgiftResources.class, taxcodeEndpoint)
+        fintEndpointsRepository.getUpdates(MerverdiavgiftResources.class, taxcodeEndpoint)
                 .getContent()
                 .forEach(m -> {
                     Taxcode taxcode = new Taxcode();

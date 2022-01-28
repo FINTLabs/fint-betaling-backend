@@ -2,7 +2,7 @@ package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.FintEndpointsRepository;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
@@ -24,7 +24,7 @@ import java.util.Map;
 @Repository
 public class GroupRepository {
 
-    private final RestUtil restUtil;
+    private final FintEndpointsRepository fintEndpointsRepository;
 
     private final Map<Link, SkoleResource> schools = new HashMap<>();
     private final Map<Link, BasisgruppeResource> basisGroups = new HashMap<>();
@@ -51,8 +51,8 @@ public class GroupRepository {
     @Value("${fint.betaling.endpoints.person:/utdanning/elev/person}")
     private String personEndpoint;
 
-    public GroupRepository(RestUtil restUtil) {
-        this.restUtil = restUtil;
+    public GroupRepository(FintEndpointsRepository fintEndpointsRepository) {
+        this.fintEndpointsRepository = fintEndpointsRepository;
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
@@ -72,7 +72,7 @@ public class GroupRepository {
         SkoleResources resources;
 
         try {
-            resources = restUtil.getFromFullUri(SkoleResources.class, schoolEndpoint);
+            resources = fintEndpointsRepository.get(SkoleResources.class, schoolEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -102,7 +102,7 @@ public class GroupRepository {
         BasisgruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(BasisgruppeResources.class, basisGroupEndpoint);
+            resources = fintEndpointsRepository.getUpdates(BasisgruppeResources.class, basisGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -132,7 +132,7 @@ public class GroupRepository {
         UndervisningsgruppeResources resources;
 
         try {
-            resources = restUtil.getFromFullUri(UndervisningsgruppeResources.class, teachingGroupEndpoint);
+            resources = fintEndpointsRepository.get(UndervisningsgruppeResources.class, teachingGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -162,7 +162,7 @@ public class GroupRepository {
         KontaktlarergruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
+            resources = fintEndpointsRepository.getUpdates(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -192,7 +192,7 @@ public class GroupRepository {
         ElevforholdResources resources;
 
         try {
-            resources = restUtil.getFromFullUri(ElevforholdResources.class, studentRelationEndpoint);
+            resources = fintEndpointsRepository.get(ElevforholdResources.class, studentRelationEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -222,7 +222,7 @@ public class GroupRepository {
         PersonResources resources;
 
         try {
-            resources = restUtil.getFromFullUri(PersonResources.class, personEndpoint);
+            resources = fintEndpointsRepository.get(PersonResources.class, personEndpoint);
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;

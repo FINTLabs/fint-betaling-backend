@@ -3,10 +3,9 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Taxcode;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.FintEndpointsRepository;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.kodeverk.VareResources;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,7 +25,7 @@ public class LineitemRepository {
     private String lineitemEndpoint;
 
     @Autowired
-    private RestUtil restUtil;
+    private FintEndpointsRepository fintEndpointsRepository;
 
     @Autowired
     private TaxcodeRepository taxcodeRepository;
@@ -50,7 +49,7 @@ public class LineitemRepository {
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateLineitems() {
         log.info("Updating line items from {} ...", lineitemEndpoint);
-        restUtil.getUpdates(VareResources.class, lineitemEndpoint)
+        fintEndpointsRepository.getUpdates(VareResources.class, lineitemEndpoint)
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();

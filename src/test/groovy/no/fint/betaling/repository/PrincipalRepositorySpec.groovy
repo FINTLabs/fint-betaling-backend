@@ -1,7 +1,7 @@
 package no.fint.betaling.repository
 
 import no.fint.betaling.model.Lineitem
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.util.FintEndpointsRepository
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.faktura.FakturautstederResource
@@ -10,12 +10,12 @@ import spock.lang.Specification
 
 class PrincipalRepositorySpec extends Specification {
 
-    def restUtil = Mock(RestUtil)
+    def restUtil = Mock(FintEndpointsRepository)
     def endpoint = 'http://localhost/oppdragsgiver'
     def lineitemRepository = Mock(LineitemRepository)
     def organisationRepository = Mock(OrganisationRepository)
     def repository = new PrincipalRepository(
-            restUtil: restUtil,
+            fintEndpointsRepository: restUtil,
             principalEndpoint: endpoint,
             lineitemRepository: lineitemRepository,
             organisationRepository: organisationRepository,
