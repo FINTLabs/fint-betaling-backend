@@ -42,7 +42,7 @@ public class OrganisationService {
     @Cacheable("organisations")
     public Organisation getOrganisationByOrganisationNumber(String id) {
         try {
-            SkoleResource skoleResource = fintEndpointsRepository.getFromFullUri(SkoleResource.class,
+            SkoleResource skoleResource = fintEndpointsRepository.get(SkoleResource.class,
                     UriComponentsBuilder.fromUriString(schoolEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString());
             return createOrganisation(skoleResource.getOrganisasjonsnummer(),
                     skoleResource.getJuridiskNavn(),
