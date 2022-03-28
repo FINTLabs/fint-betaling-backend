@@ -6,6 +6,11 @@ spring:
     type: CAFFEINE
   mvc:
     dispatch-options-request: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://idp.felleskomponent.no/nidp/oauth/nam
 
 management:
   endpoints:
