@@ -3,9 +3,11 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
 import no.fint.betaling.service.ScheduleService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -40,8 +42,15 @@ public class ClaimController {
     }
 
     @GetMapping
-    public List<Claim> getAllClaims() {
-        return claimService.getClaims();
+    public List<Claim> getAllClaims(@RequestParam(required = false) String periodSelection, @RequestParam(required = false) String organisationNumber) {
+
+        if (StringUtils.isBlank(periodSelection) && StringUtils.isBlank(organisationNumber)){
+                return claimService.getClaims();
+        } else {
+            if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
+            ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
+            return claimService.getClaims(period, organisationNumber);
+        }
     }
 
     @GetMapping("paged")

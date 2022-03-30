@@ -2,6 +2,7 @@ package no.fint.betaling.service;
 
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -33,5 +34,17 @@ public class QueryService {
 
     public Query queryByCustomerNameRegex(String name) {
         return createQuery().addCriteria(Criteria.where("customer.name").regex(name, "i"));
+    }
+
+    public Query queryByDateAndSchool(String date, String schooldOrganisationNumber) {
+        Query query = createQuery();
+
+        if (StringUtils.isNotBlank(date))
+            query.addCriteria(Criteria.where("createdDate").gte(date));
+
+        if (StringUtils.isNotBlank(schooldOrganisationNumber))
+            query.addCriteria(Criteria.where("organisationUnit.organisationNumber").is(schooldOrganisationNumber));
+
+        return query;
     }
 }

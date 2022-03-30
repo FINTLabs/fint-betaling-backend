@@ -6,6 +6,7 @@ import no.fint.betaling.factory.ClaimFactory;
 import no.fint.betaling.factory.InvoiceFactory;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.FintEndpointsRepository;
@@ -24,7 +25,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.NotSupportedException;
 import java.net.URI;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -269,5 +272,47 @@ public class ClaimService {
 
     public Page<Claim> getClaimsPaged(int page, int size, String[] sort) {
         return claimRepository.getClaimsWithPagination(queryService.createQuery(), PageRequest.of(page, size));
+    }
+
+    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber) {
+
+        return claimRepository.getClaims(
+                queryService.queryByDateAndSchool(
+                        claimsDatePeriodToTimestamp(period),
+                        organisationNumber)
+        );
+    }
+
+    private String claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+        switch (period) {
+            case ALL:
+                return "";
+            case WEEK:
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                calendar.clear(Calendar.MINUTE);
+                calendar.clear(Calendar.SECOND);
+                calendar.clear(Calendar.MILLISECOND);
+                return String.valueOf(calendar.getTime().getTime());
+            case MONTH:
+                Calendar calendar2 = Calendar.getInstance();
+                calendar2.set(Calendar.DAY_OF_MONTH, 1);
+                calendar2.set(Calendar.HOUR_OF_DAY, 0);
+                calendar2.clear(Calendar.MINUTE);
+                calendar2.clear(Calendar.SECOND);
+                calendar2.clear(Calendar.MILLISECOND);
+                return String.valueOf(calendar2.getTime().getTime());
+            case YEAR:
+                Calendar calendar3 = Calendar.getInstance();
+                calendar3.set(Calendar.DAY_OF_YEAR, 1);
+                calendar3.set(Calendar.HOUR_OF_DAY, 0);
+                calendar3.clear(Calendar.MINUTE);
+                calendar3.clear(Calendar.SECOND);
+                calendar3.clear(Calendar.MILLISECOND);
+                return String.valueOf(calendar3.getTime().getTime());
+        }
+
+        throw new NotSupportedException("Not implemented for " + period);
     }
 }
