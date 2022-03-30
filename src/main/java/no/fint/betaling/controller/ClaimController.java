@@ -53,11 +53,6 @@ public class ClaimController {
         }
     }
 
-    @GetMapping("paged")
-    public Page<Claim> getClaimsPaged(@RequestParam int page, @RequestParam int size, @RequestParam(defaultValue = "id,desc") String[] sort) {
-        return claimService.getClaimsPaged(page, size, sort);
-    }
-
     @GetMapping("/name/{name}")
     public List<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
         return claimService.getClaimsByCustomerName(name);

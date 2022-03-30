@@ -45,17 +45,6 @@ public class ClaimRepository {
         return mongoTemplate.find(query, Claim.class);
     }
 
-    public Page<Claim> getClaimsWithPagination(Query query, Pageable pageable) {
-        //Pageable pageable = PageRequest.of(1, 10);
-        //Query query = new Query().with(pageable);
-        List<Claim> list = mongoTemplate.find(query.with(pageable), Claim.class);
-        if (list == null) list = new ArrayList<>();
-        return PageableExecutionUtils.getPage(
-                list,
-                pageable,
-                () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Claim.class));
-    }
-
     public void updateClaim(Query query, Update update) {
         update.set("timestamp", System.currentTimeMillis());
         mongoTemplate.upsert(query, update, Claim.class);

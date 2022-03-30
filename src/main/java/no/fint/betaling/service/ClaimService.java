@@ -270,10 +270,6 @@ public class ClaimService {
                 .forEach(this::updateClaimStatus);
     }
 
-    public Page<Claim> getClaimsPaged(int page, int size, String[] sort) {
-        return claimRepository.getClaimsWithPagination(queryService.createQuery(), PageRequest.of(page, size));
-    }
-
     public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber) {
 
         return claimRepository.getClaims(
