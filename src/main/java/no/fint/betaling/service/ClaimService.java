@@ -280,35 +280,26 @@ public class ClaimService {
     }
 
     private String claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.clear(Calendar.MINUTE);
+        calendar.clear(Calendar.SECOND);
+        calendar.clear(Calendar.MILLISECOND);
+
         switch (period) {
             case ALL:
-                return "";
+                break;
             case WEEK:
-                Calendar calendar = Calendar.getInstance();
                 calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                calendar.clear(Calendar.MINUTE);
-                calendar.clear(Calendar.SECOND);
-                calendar.clear(Calendar.MILLISECOND);
-                return String.valueOf(calendar.getTime().getTime());
+                break;
             case MONTH:
-                Calendar calendar2 = Calendar.getInstance();
-                calendar2.set(Calendar.DAY_OF_MONTH, 1);
-                calendar2.set(Calendar.HOUR_OF_DAY, 0);
-                calendar2.clear(Calendar.MINUTE);
-                calendar2.clear(Calendar.SECOND);
-                calendar2.clear(Calendar.MILLISECOND);
-                return String.valueOf(calendar2.getTime().getTime());
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                break;
             case YEAR:
-                Calendar calendar3 = Calendar.getInstance();
-                calendar3.set(Calendar.DAY_OF_YEAR, 1);
-                calendar3.set(Calendar.HOUR_OF_DAY, 0);
-                calendar3.clear(Calendar.MINUTE);
-                calendar3.clear(Calendar.SECOND);
-                calendar3.clear(Calendar.MILLISECOND);
-                return String.valueOf(calendar3.getTime().getTime());
+                calendar.set(Calendar.DAY_OF_YEAR, 1);
+                break;
         }
 
-        throw new NotSupportedException("Not implemented for " + period);
+        return period == ClaimsDatePeriod.ALL ? "" : String.valueOf(calendar.getTime().getTime());
     }
 }
