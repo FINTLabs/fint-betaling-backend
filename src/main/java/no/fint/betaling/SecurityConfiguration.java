@@ -13,7 +13,7 @@ public class SecurityConfiguration {
     @Value("${fint.betaling.authorized-org-id:vigo.no}")
     private String authorizedOrgId;
 
-    @Value("${fint.betaling.authorized-role:https://role-catalog.vigoiks.no/vigo/skjema/test/user}")
+    @Value("${fint.betaling.authorized-role:https://role-catalog.vigoiks.no/vigo/elevfakturering/user}")
     private String authorizedRole;
 
     @Bean
