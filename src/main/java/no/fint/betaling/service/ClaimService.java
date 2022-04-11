@@ -23,11 +23,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -71,7 +69,7 @@ public class ClaimService {
                 .peek(claim -> {
                     try {
                         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-                        URI location = restUtil.post(invoiceEndpoint, invoice);
+                        URI location = restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class);
                         if (location != null) {
                             claim.setInvoiceUri(location.toString());
                             claim.setClaimStatus(ClaimStatus.SENT);
