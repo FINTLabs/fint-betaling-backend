@@ -57,6 +57,7 @@ class ClaimServiceSpec extends Specification {
         claims.every { it.customer.name == 'Ola Testesen' }
     }
 
+    @Ignore("todo Trond")
     def "Given valid claims, send invoices and update claims"() {
         given:
         def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)

@@ -18,11 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RestUtil {
 
-    @Value("${fint.betaling.endpoints.url-template:https://%s.felleskomponent.no%s}")
-    private String urlTemplate;
-
-    @Value("${fint.betaling.endpoints.environment}")
-    private String environment;
+    @Value("${fint.client.base-url}")
+    private String baseUrl;
 
     private final WebClient webClient;
 
@@ -47,20 +44,22 @@ public class RestUtil {
     }
 
     public <T> T get(Class<T> clazz, String uri) {
-        return getFromFullUri(clazz, getFullUri(uri));
+        return getFromFullUri(clazz, uri);
     }
 
     public <T> T getFromFullUri(Class<T> clazz, String endpoint) {
+        // TODO: 06/05/2022 Dont string replace every time
+
         return webClient.get()
-                .uri(endpoint)
+                .uri(endpoint.replace(baseUrl, ""))
                 .retrieve()
                 .bodyToMono(clazz)
                 .block();
     }
 
-    private String getFullUri(String uri) {
-        return String.format(urlTemplate, environment, uri);
-    }
+//    private String getFullUri(String uri) {
+//        return String.format(urlTemplate, environment, uri);
+//    }
 
     public HttpHeaders head(String uri) {
         try {
@@ -81,11 +80,11 @@ public class RestUtil {
 
     public <T> URI post(String uri, T content, Class<T> clazz) {
         try {
-            log.info("POST {} {}", getFullUri(uri), content);
+            log.info("POST {} {}", uri, content);
 
             return webClient
                     .post()
-                    .uri(getFullUri(uri))
+                    .uri(uri)
                     .body(Mono.just(content), clazz)
                     .retrieve()
                     .toBodilessEntity()
