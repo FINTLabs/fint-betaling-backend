@@ -45,6 +45,10 @@ public class ClaimRepository {
         return mongoTemplate.find(query, Claim.class);
     }
 
+    public int countClaims(Query query) {
+        return Math.toIntExact(mongoTemplate.count(query, Claim.class));
+    }
+
     public void updateClaim(Query query, Update update) {
         update.set("timestamp", System.currentTimeMillis());
         mongoTemplate.upsert(query, update, Claim.class);
