@@ -258,6 +258,10 @@ public class ClaimService {
         return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
     }
 
+    public int countClaimsByStatus(ClaimStatus[] statuses) {
+        return claimRepository.countClaims(queryService.queryByClaimStatus(statuses));
+    }
+
     public void cancelClaim(String orderNumber) {
         List<Claim> claimsByOrderNumber = getClaimsByOrderNumber(orderNumber);
         claimsByOrderNumber

@@ -55,7 +55,12 @@ public class ClaimController {
 
     @GetMapping("/status/{status}")
     public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
-        return claimService.getClaimsByStatus(Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new));
+        return claimService.getClaimsByStatus(toClaimStatus(status));
+    }
+
+    @GetMapping("/count/by-status/{status}")
+    public int getCountByStatus(@PathVariable("status") String[] status) {
+         return claimService.countClaimsByStatus(toClaimStatus(status));
     }
 
     @DeleteMapping("/order-number/{order-number}")
@@ -67,5 +72,9 @@ public class ClaimController {
     @GetMapping("/update/all")
     public void updateAll() {
         scheduleService.updateClaims();
+    }
+
+    private ClaimStatus[] toClaimStatus(String[] status) {
+        return Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new);
     }
 }
