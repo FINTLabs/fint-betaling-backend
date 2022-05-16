@@ -8,7 +8,7 @@ import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
-import no.fint.betaling.util.FintEndpointsRepository
+import no.fint.betaling.util.RestUtil
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -20,7 +20,7 @@ class ClaimServiceSpec extends Specification {
     private ClaimRepository claimRepository
     private ClaimFactory claimFactory
     private InvoiceFactory invoiceFactory
-    private FintEndpointsRepository restUtil
+    private RestUtil restUtil
     private BetalingObjectFactory betalingObjectFactory
     private QueryService queryService
 
@@ -31,7 +31,7 @@ class ClaimServiceSpec extends Specification {
         invoiceFactory = Mock()
         queryService = new QueryService('mock.no')
         claimService = new ClaimService(
-                fintEndpointsRepository: restUtil,
+                restUtil: restUtil,
                 claimRepository: claimRepository,
                 claimFactory: claimFactory,
                 invoiceFactory: invoiceFactory,

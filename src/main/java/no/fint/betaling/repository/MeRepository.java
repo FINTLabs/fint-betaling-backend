@@ -3,7 +3,7 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
-import no.fint.betaling.util.FintEndpointsRepository;
+import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
@@ -34,15 +34,15 @@ public class MeRepository {
     @Value("${fint.betaling.endpoints.employee:/administrasjon/personal/person}")
     private String employeeEndpoint;
 
-    private final FintEndpointsRepository fintEndpointsRepository;
+    private final RestUtil restUtil;
     private final GroupRepository groupRepository;
     private final OrganisationRepository organisationRepository;
 
     private final ConcurrentMap<String, User> users = new ConcurrentSkipListMap<>();
 
 
-    public MeRepository(FintEndpointsRepository fintEndpointsRepository, GroupRepository groupRepository, OrganisationRepository organisationRepository) {
-        this.fintEndpointsRepository = fintEndpointsRepository;
+    public MeRepository(RestUtil restUtil, GroupRepository groupRepository, OrganisationRepository organisationRepository) {
+        this.restUtil = restUtil;
         this.groupRepository = groupRepository;
         this.organisationRepository = organisationRepository;
     }
@@ -78,7 +78,7 @@ public class MeRepository {
     private User getUserFromSkoleressursByFeidenavn(String feideUpn) {
         User user = new User();
 
-        SkoleressursResource skoleressurs = fintEndpointsRepository.get(SkoleressursResource.class,
+        SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class,
                 UriComponentsBuilder.fromUriString(schoolResourceEndpoint).pathSegment("feidenavn", feideUpn).build().toUriString());
 
         log.debug("Skoleressurs: {}", skoleressurs);
@@ -87,12 +87,12 @@ public class MeRepository {
                 .getPersonalressurs()
                 .stream()
                 .map(Link::getHref)
-                .map(it -> fintEndpointsRepository.getFromFullUri(PersonalressursResource.class, it))
+                .map(it -> restUtil.getFromFullUri(PersonalressursResource.class, it))
                 .peek(it -> log.debug("Personalressurs: {}", it))
                 .peek(it -> user.setEmployeeNumber(it.getAnsattnummer().getIdentifikatorverdi()))
                 .flatMap(it -> it.getPerson().stream())
                 .map(Link::getHref)
-                .map(it -> fintEndpointsRepository.getFromFullUri(PersonResource.class, it))
+                .map(it -> restUtil.getFromFullUri(PersonResource.class, it))
                 .peek(it -> log.debug("Person: {}", it))
                 .map(this::getName)
                 .findFirst()

@@ -2,7 +2,7 @@ package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Principal;
-import no.fint.betaling.util.FintEndpointsRepository;
+import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResource;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResources;
@@ -27,7 +27,7 @@ public class PrincipalRepository {
     private String principalEndpoint;
 
     @Autowired
-    private FintEndpointsRepository fintEndpointsRepository;
+    private RestUtil restUtil;
     @Autowired
     private LineitemRepository lineitemRepository;
     @Autowired
@@ -52,7 +52,7 @@ public class PrincipalRepository {
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updatePrincipals() {
         log.info("Updating principals from {} ...", principalEndpoint);
-        fintEndpointsRepository.getUpdates(FakturautstederResources.class, principalEndpoint)
+        restUtil.getUpdates(FakturautstederResources.class, principalEndpoint)
                 .getContent()
                 .forEach(fakturautsteder -> {
                     Principal principal = new Principal();

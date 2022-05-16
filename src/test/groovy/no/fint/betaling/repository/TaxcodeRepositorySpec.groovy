@@ -1,6 +1,6 @@
 package no.fint.betaling.repository
 
-import no.fint.betaling.util.FintEndpointsRepository
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource
@@ -9,9 +9,9 @@ import spock.lang.Specification
 
 class TaxcodeRepositorySpec extends Specification {
 
-    def restUtil = Mock(FintEndpointsRepository)
+    def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/mvakode'
-    def repository = new TaxcodeRepository(fintEndpointsRepository: restUtil, taxcodeEndpoint: endpoint)
+    def repository = new TaxcodeRepository(restUtil: restUtil, taxcodeEndpoint: endpoint)
 
     def 'Fetching tax codes should update first'() {
         given:

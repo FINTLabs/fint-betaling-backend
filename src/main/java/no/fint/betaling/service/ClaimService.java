@@ -9,7 +9,7 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
-import no.fint.betaling.util.FintEndpointsRepository;
+import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
@@ -17,15 +17,12 @@ import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.ws.rs.NotSupportedException;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -46,7 +43,7 @@ public class ClaimService {
     private String invoiceEndpoint;
 
     @Autowired
-    private FintEndpointsRepository fintEndpointsRepository;
+    private RestUtil restUtil;
 
     @Autowired
     private ClaimRepository claimRepository;
@@ -74,7 +71,7 @@ public class ClaimService {
                 .peek(claim -> {
                     try {
                         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-                        URI location = fintEndpointsRepository.post(invoiceEndpoint, invoice);
+                        URI location = restUtil.post(invoiceEndpoint, invoice);
                         if (location != null) {
                             claim.setInvoiceUri(location.toString());
                             claim.setClaimStatus(ClaimStatus.SENT);
@@ -96,7 +93,7 @@ public class ClaimService {
             //.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.PAID) && claim.getCreatedDate() > 1 uke )
             // TODO: 29/11/2021 Trond: complete filter to reduce orders to check
             try {
-                HttpHeaders headers = fintEndpointsRepository.head(claim.getInvoiceUri());
+                HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
                 if (headers.getLocation() != null) {
                     claim.setInvoiceUri(headers.getLocation().toString());
                     claim.setClaimStatus(ClaimStatus.ACCEPTED);
@@ -112,7 +109,7 @@ public class ClaimService {
                     claim.setInvoiceUri(null);
                 } else {
                     try {
-                        String result = fintEndpointsRepository.getFromFullUri(String.class, claim.getInvoiceUri());
+                        String result = restUtil.getFromFullUri(String.class, claim.getInvoiceUri());
                         log.error("Unexpected result! {}", result);
                     } catch (InvalidResponseException e2) {
                         if (e2.getStatus().is4xxClientError()) {
@@ -134,7 +131,7 @@ public class ClaimService {
         // TODO Accepted claims should be checked less often
         getAcceptedClaims().forEach(claim -> {
             try {
-                FakturagrunnlagResource invoice = fintEndpointsRepository.getFromFullUri(FakturagrunnlagResource.class, claim.getInvoiceUri());
+                FakturagrunnlagResource invoice = restUtil.getFromFullUri(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 ClaimStatus newStatus = updateClaim(invoice);
                 claim.setClaimStatus(newStatus);
                 claim.setStatusMessage(null);
@@ -174,7 +171,7 @@ public class ClaimService {
         List<FakturaResource> fakturaList = invoice.getFaktura()
                 .stream()
                 .map(Link::getHref)
-                .map(uri -> fintEndpointsRepository.getFromFullUri(FakturaResource.class, uri))
+                .map(uri -> restUtil.getFromFullUri(FakturaResource.class, uri))
                 .collect(Collectors.toList());
 
         updater.accept("invoiceNumbers", fakturaList.stream()

@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-public class FintEndpointsRepository {
+public class RestUtil {
 
     @Autowired
     private RestTemplate restTemplate;

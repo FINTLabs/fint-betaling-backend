@@ -1,14 +1,14 @@
 package no.fint.betaling.factory
 
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.betaling.util.FintEndpointsRepository
+import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.felles.PersonResource
 import spock.lang.Specification
 
 class CustomerFactorySpec extends Specification {
-    private FintEndpointsRepository restUtil
+    private RestUtil restUtil
     private FintObjectFactory fintObjectFactory
 
     void setup() {

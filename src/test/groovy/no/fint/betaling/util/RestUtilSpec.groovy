@@ -10,13 +10,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 
-class FintEndpointsRepositorySpec extends Specification {
+class RestUtilSpec extends Specification {
     private RestTemplate restTemplate
-    private FintEndpointsRepository restUtil
+    private RestUtil restUtil
 
     void setup() {
         restTemplate = Mock(RestTemplate)
-        restUtil = new FintEndpointsRepository(restTemplate: restTemplate, environment: "beta", urlTemplate: "http://%s.localhost%s")
+        restUtil = new RestUtil(restTemplate: restTemplate, environment: "beta", urlTemplate: "http://%s.localhost%s")
     }
 
     def "Get resource given invalid response throws InvalidResponseException"() {
