@@ -6,6 +6,7 @@ import no.fint.betaling.factory.ClaimFactory;
 import no.fint.betaling.factory.InvoiceFactory;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.RestUtil;
@@ -23,11 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.text.ParseException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -269,5 +267,39 @@ public class ClaimService {
                 .filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED))
                 .peek(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED))
                 .forEach(this::updateClaimStatus);
+    }
+
+    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) throws ParseException {
+
+        return claimRepository.getClaims(
+                queryService.queryByDateAndSchoolAndStatus(
+                        claimsDatePeriodToTimestamp(period),
+                        organisationNumber,
+                        statuses)
+        );
+    }
+
+    private Date claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.clear(Calendar.MINUTE);
+        calendar.clear(Calendar.SECOND);
+        calendar.clear(Calendar.MILLISECOND);
+
+        switch (period) {
+            case ALL:
+                break;
+            case WEEK:
+                calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+                break;
+            case MONTH:
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                break;
+            case YEAR:
+                calendar.set(Calendar.DAY_OF_YEAR, 1);
+                break;
+        }
+
+        return period == ClaimsDatePeriod.ALL ? null : calendar.getTime();
     }
 }

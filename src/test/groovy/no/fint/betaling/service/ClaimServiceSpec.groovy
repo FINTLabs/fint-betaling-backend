@@ -9,7 +9,6 @@ import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.betaling.util.RestUtil
-import no.fint.model.resource.okonomi.faktura.FakturaResources
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update

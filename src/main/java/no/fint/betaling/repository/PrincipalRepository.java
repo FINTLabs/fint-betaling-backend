@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.okonomi.faktura.FakturautstederResource;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +56,7 @@ public class PrincipalRepository {
                 .getContent()
                 .forEach(fakturautsteder -> {
                     Principal principal = new Principal();
+                    if (isOrganisasjonselementMissing(fakturautsteder)) return;
                     principal.setOrganisation(organisationRepository.getOrganisationByHref(fakturautsteder.getOrganisasjonselement().get(0).getHref()));
                     principal.setCode(fakturautsteder.getSystemId().getIdentifikatorverdi());
                     principal.setDescription(fakturautsteder.getNavn());
@@ -71,6 +73,18 @@ public class PrincipalRepository {
                     principals.put(principal.getUri(), principal);
                 });
         log.info("Update completed, {} principals.", principals.size());
+    }
+
+    private boolean isOrganisasjonselementMissing(FakturautstederResource fakturautsteder) {
+        if (fakturautsteder.getOrganisasjonselement().isEmpty()) {
+            log.warn(String.format(
+                    "Skipping fakturautsteder %s \"%s\" because organisasjonselement is missing.",
+                    fakturautsteder.getNavn(),
+                    fakturautsteder.getSystemId().getIdentifikatorverdi())
+            );
+            return true;
+        }
+        return false;
     }
 
 }

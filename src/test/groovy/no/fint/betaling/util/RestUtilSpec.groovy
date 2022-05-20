@@ -7,7 +7,6 @@ import no.fint.model.resource.administrasjon.personal.PersonalressursResource
 import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
 import spock.lang.Specification
 
