@@ -24,10 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.text.ParseException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -271,16 +269,17 @@ public class ClaimService {
                 .forEach(this::updateClaimStatus);
     }
 
-    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber) {
+    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) throws ParseException {
 
         return claimRepository.getClaims(
-                queryService.queryByDateAndSchool(
+                queryService.queryByDateAndSchoolAndStatus(
                         claimsDatePeriodToTimestamp(period),
-                        organisationNumber)
+                        organisationNumber,
+                        statuses)
         );
     }
 
-    private String claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+    private Date claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.clear(Calendar.MINUTE);
@@ -301,6 +300,6 @@ public class ClaimService {
                 break;
         }
 
-        return period == ClaimsDatePeriod.ALL ? "" : String.valueOf(calendar.getTime().getTime());
+        return period == ClaimsDatePeriod.ALL ? null : calendar.getTime();
     }
 }

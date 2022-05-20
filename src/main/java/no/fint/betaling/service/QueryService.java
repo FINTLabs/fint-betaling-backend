@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Date;
 
 @Service
 public class QueryService {
@@ -36,14 +37,15 @@ public class QueryService {
         return createQuery().addCriteria(Criteria.where("customer.name").regex(name, "i"));
     }
 
-    public Query queryByDateAndSchool(String date, String schooldOrganisationNumber) {
+    public Query queryByDateAndSchoolAndStatus(Date date, String schoolOrganisationNumber, ClaimStatus... statuses) {
         Query query = createQuery();
 
-        if (StringUtils.isNotBlank(date))
+        if (date != null)
             query.addCriteria(Criteria.where("createdDate").gte(date));
-
-        if (StringUtils.isNotBlank(schooldOrganisationNumber))
-            query.addCriteria(Criteria.where("organisationUnit.organisationNumber").is(schooldOrganisationNumber));
+        if (StringUtils.isNotBlank(schoolOrganisationNumber))
+            query.addCriteria(Criteria.where("organisationUnit.organisationNumber").is(schoolOrganisationNumber));
+        if (statuses != null && statuses.length > 0)
+            query.addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)));
 
         return query;
     }

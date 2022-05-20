@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,14 +43,16 @@ public class ClaimController {
     }
 
     @GetMapping
-    public List<Claim> getAllClaims(@RequestParam(required = false) String periodSelection, @RequestParam(required = false) String organisationNumber) {
+    public List<Claim> getAllClaims(@RequestParam(required = false) String periodSelection,
+                                    @RequestParam(required = false) String schoolSelection,
+                                    @RequestParam(required = false) String[] status) throws ParseException {
 
-        if (StringUtils.isBlank(periodSelection) && StringUtils.isBlank(organisationNumber)){
+        if (StringUtils.isBlank(periodSelection) && StringUtils.isBlank(schoolSelection)){
                 return claimService.getClaims();
         } else {
             if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
             ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-            return claimService.getClaims(period, organisationNumber);
+            return claimService.getClaims(period, schoolSelection, toClaimStatus(status));
         }
     }
 
@@ -85,6 +88,9 @@ public class ClaimController {
     }
 
     private ClaimStatus[] toClaimStatus(String[] status) {
-        return Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new);
+        if(status != null && status.length > 0)
+            return Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new);
+        else
+            return null;
     }
 }
