@@ -47,6 +47,6 @@ public class MeController {
 
     @GetMapping("ping")
     public ResponseEntity<String> ping() throws URISyntaxException {
-        return ResponseEntity.ok("Greatings for FINTLabs :)");
+        return ResponseEntity.ok("Greetings from FINTLabs :)");
     }
 }
