@@ -28,25 +28,21 @@ springfox:
   version: '0.0.1-SNAPSHOT'
 
 fint:
-#  oauth:
-#    enabled: true
-#    username: pwfatut
-#    password: pwfatut
-#    client-id: 6e1cf7b4-b107-42b3-9435-8fda70726c6a
-#    client-secret: 6y4FUuP9BfAXeVqguNKT0ofToIwN5RdB1PaUvx_nCMiQbH9NeGq3pp0jQB9zOQ0APOxEbodzJXp-8RVux6318A
-#    access-token-uri: https://idp.felleskomponent.no/nidp/oauth/nam/token
-#    request-url: https://beta.felleskomponent.no/utdanning/elev/person
 
   client:
     base-url: https://play-with-fint.felleskomponent.no
 
   betaling:
     client-name: "FINT-Betaling"
-    default-org-id: "fake.no"
+    default-org-id: "pwf.no"
     default-school-org-id: "970123459"
     date-range: "7, 14, 30"
-    invoice-update-cron: "0 30 16 ? * MON-FRI"
+    demo: "true"
+    demo-user-feide: "nora.lys@osloskole.no"
+    principal-matching-strategy: "byOrgnummer"
+    invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
+      environment: "play-with-fint"
       invoice: "/okonomi/faktura/fakturagrunnlag"
       order-line: "/okonomi/faktura/fakturalinje"
       mva-code: "/okonomi/kodeverk/merverdiavgift"

@@ -42,6 +42,16 @@ public class PrincipalService {
                     .orElseThrow(() -> new PrincipalNotFoundException(schoolId));
         }
 
+        if (principalMatchingStrategy.equalsIgnoreCase("byOrgnummer")) {
+            return principalRepository.getPrincipals()
+                    .stream()
+                    .filter(p -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), schoolId))
+                    .map(CloneUtil::cloneObject)
+                    .peek(p -> p.setOrganisation(organisation))
+                    .findFirst()
+                    .orElseThrow(() -> new PrincipalNotFoundException(schoolId));
+        }
+
         return principalRepository.getPrincipals()
                 .stream()
                 .filter(p -> StringUtils.equalsIgnoreCase(p.getDescription(), organisation.getName()))
