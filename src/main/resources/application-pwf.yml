@@ -1,5 +1,4 @@
 spring:
-  profiles: pwf
   mvc:
     dispatch-options-request: true
   data:
@@ -17,12 +16,6 @@ springfox:
 fint:
   oauth:
     enabled: false
-    username: pwfatut
-    password: pwfatut
-    client-id: 6e1cf7b4-b107-42b3-9435-8fda70726c6a
-    client-secret: 6y4FUuP9BfAXeVqguNKT0ofToIwN5RdB1PaUvx_nCMiQbH9NeGq3pp0jQB9zOQ0APOxEbodzJXp-8RVux6318A
-    access-token-uri: https://namidp01.rogfk.no/nidp/oauth/nam/token
-    request-url: https://beta.felleskomponent.no/utdanning/elev/person
 
   betaling:
     client-name: "FINT-Betaling"
@@ -35,18 +28,3 @@ fint:
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
       environment: "play-with-fint"
-#      order-line: "https://play-with-fint.felleskomponent.no/okonomi/faktura/fakturagrunnlag"
-#      mva-code: "https://play-with-fint.felleskomponent.no/okonomi/kodeverk/merverdiavgift"
-#      school: "https://play-with-fint.felleskomponent.no/utdanning/utdanningsprogram/skole"
-#      basis-group: "https://play-with-fint.felleskomponent.no/utdanning/elev/basisgruppe"
-#      teaching-group: "https://play-with-fint.felleskomponent.no/utdanning/timeplan/undervisningsgruppe"
-#      contact-teacher-group: "https://play-with-fint.felleskomponent.no/utdanning/elev/kontaktlarergruppe"
-#      person: "https://play-with-fint.felleskomponent.no/utdanning/elev/person"
-#      student-relation: "https://play-with-fint.felleskomponent.no/utdanning/elev/elevforhold"
-#      school-resource: "https://play-with-fint.felleskomponent.no/utdanning/elev/skoleressurs"
-#      employee: "https://play-with-fint.felleskomponent.no/administrasjon/personal/person"
-#      organisation: "https://play-with-fint.felleskomponent.no/administrasjon/organisasjon/organisasjonselement"
-#      principal: "https://play-with-fint.felleskomponent.no/okonomi/faktura/fakturautsteder"
-#      lineitem: "https://play-with-fint.felleskomponent.no/okonomi/kodeverk/vare"
-
-
