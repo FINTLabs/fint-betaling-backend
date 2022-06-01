@@ -17,8 +17,12 @@ fint:
   oauth:
     enabled: false
 
+  client:
+    enable: false
+
   betaling:
     client-name: "FINT-Betaling"
+    org-id: "pwf.no"
     default-org-id: "pwf.no"
     default-school-org-id: "970123459"
     date-range: "7, 14, 30"
@@ -28,3 +32,4 @@ fint:
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
       environment: "play-with-fint"
+
