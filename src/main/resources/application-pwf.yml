@@ -1,5 +1,4 @@
 spring:
-  profiles: pwf
   mvc:
     dispatch-options-request: true
   data:
@@ -28,12 +27,15 @@ springfox:
   version: '0.0.1-SNAPSHOT'
 
 fint:
+  oauth:
+    enabled: false
 
   client:
     base-url: https://play-with-fint.felleskomponent.no
 
   betaling:
     client-name: "FINT-Betaling"
+    org-id: "pwf.no"
     default-org-id: "pwf.no"
     default-school-org-id: "970123459"
     date-range: "7, 14, 30"
@@ -53,3 +55,4 @@ fint:
       kontaktlarergruppe: "/utdanning/elev/kontaktlarergruppe"
       person: "/utdanning/elev/person"
       elevforhold: "/utdanning/elev/elevforhold"
+
