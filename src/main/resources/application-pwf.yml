@@ -24,10 +24,10 @@ fint:
     client-name: "FINT-Betaling"
     org-id: "pwf.no"
     default-org-id: "pwf.no"
-    default-school-org-id: "970123459"
+    default-school-org-id: "970123458"
     date-range: "7, 14, 30"
     demo: "true"
-    demo-user-feide: "nora.lys@osloskole.no"
+    demo-user-feide: "dolly.duck@andeby.vgs.no"
     principal-matching-strategy: "byOrgnummer"
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
