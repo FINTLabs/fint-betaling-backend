@@ -9,10 +9,10 @@ import no.fint.betaling.service.ClaimService;
 import no.fint.betaling.service.ScheduleService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -43,7 +43,7 @@ public class ClaimController {
     }
 
     @GetMapping
-    public List<Claim> getAllClaims(@RequestParam(required = false) String periodSelection,
+    public Flux<Claim> getAllClaims(@RequestParam(required = false) String periodSelection,
                                     @RequestParam(required = false) String schoolSelection,
                                     @RequestParam(required = false) String[] status) throws ParseException {
 
@@ -57,17 +57,17 @@ public class ClaimController {
     }
 
     @GetMapping("/name/{name}")
-    public List<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
+    public Flux<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
         return claimService.getClaimsByCustomerName(name);
     }
 
     @GetMapping("/order-number/{order-number}")
-    public List<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
+    public Flux<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
         return claimService.getClaimsByOrderNumber(orderNumber);
     }
 
     @GetMapping("/status/{status}")
-    public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
+    public Flux<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 

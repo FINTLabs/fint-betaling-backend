@@ -5,11 +5,11 @@ import no.fint.betaling.model.CustomerGroup
 import no.fint.betaling.service.FileService
 import no.fint.betaling.service.GroupService
 import no.fint.betaling.util.CustomerFileGroup
-import no.fint.test.utils.MockMvcSpecification
 import org.apache.poi.ss.usermodel.Sheet
 import org.springframework.test.web.servlet.MockMvc
+import spock.lang.Specification
 
-class FileControllerSpec extends MockMvcSpecification {
+class FileControllerSpec extends Specification {
     private MockMvc mockMvc
     private FileController fileController
     private FileService fileService

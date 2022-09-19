@@ -27,29 +27,30 @@ public class PrincipalService {
         this.meRepository = meRepository;
     }
 
-    public Principal getPrincipalByOrganisationId(String schoolId, String feideUpn) {
-        Organisation organisation = organisationService.getOrganisationByOrganisationNumber(schoolId);
-        User user = meRepository.getUserByFeideUpn(feideUpn);
+    public Principal getPrincipalByOrganisationId(String organizationNumber, String employeeId) {
+        Organisation organisation = organisationService.getOrganisationByOrganisationNumber(organizationNumber);
 
         if (principalMatchingStrategy.equalsIgnoreCase("agder")) {
+            User user = meRepository.getUserByAzureAD(employeeId);
+
             return principalRepository.getPrincipals()
                     .stream()
-                    .filter(p -> p.getOrganisation().getOrganisationNumber().equals(schoolId))
+                    .filter(p -> p.getOrganisation().getOrganisationNumber().equals(organizationNumber))
                     .filter(p -> p.getCode().endsWith("-" + user.getEmployeeNumber()))
                     .map(CloneUtil::cloneObject)
                     .peek(p -> p.setOrganisation(organisation))
                     .findFirst()
-                    .orElseThrow(() -> new PrincipalNotFoundException(schoolId));
+                    .orElseThrow(() -> new PrincipalNotFoundException(organizationNumber));
         }
 
         if (principalMatchingStrategy.equalsIgnoreCase("byOrgnummer")) {
             return principalRepository.getPrincipals()
                     .stream()
-                    .filter(p -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), schoolId))
+                    .filter(p -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), organizationNumber))
                     .map(CloneUtil::cloneObject)
                     .peek(p -> p.setOrganisation(organisation))
                     .findFirst()
-                    .orElseThrow(() -> new PrincipalNotFoundException(schoolId));
+                    .orElseThrow(() -> new PrincipalNotFoundException(organizationNumber));
         }
 
         return principalRepository.getPrincipals()
@@ -58,6 +59,6 @@ public class PrincipalService {
                 .map(CloneUtil::cloneObject)
                 .peek(p -> p.setOrganisation(organisation))
                 .findFirst()
-                .orElseThrow(() -> new PrincipalNotFoundException(schoolId));
+                .orElseThrow(() -> new PrincipalNotFoundException(organizationNumber));
     }
 }

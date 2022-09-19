@@ -3,7 +3,7 @@ package no.fint.betaling.repository
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.util.BetalingObjectFactory
-import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
@@ -12,12 +12,12 @@ import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
 
-    private MongoTemplate mongoTemplate
+    private ReactiveMongoTemplate mongoTemplate
     private ClaimRepository claimRepository
     private BetalingObjectFactory betalingObjectFactory;
 
     void setup() {
-        mongoTemplate = Mock(MongoTemplate)
+        mongoTemplate = Mock(ReactiveMongoTemplate)
         claimRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
         betalingObjectFactory = new BetalingObjectFactory()
     }

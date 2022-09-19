@@ -1,8 +1,9 @@
 package no.fint.betaling.controller
 
-import no.fint.test.utils.MockMvcSpecification
 
-class DateRangeControllerSpec extends MockMvcSpecification {
+import spock.lang.Specification
+
+class DateRangeControllerSpec extends Specification {
     def "Get date ranges returns list"() {
         given:
         def controller = new DateRangeController(dateRanges: ['7', '14', '30'])

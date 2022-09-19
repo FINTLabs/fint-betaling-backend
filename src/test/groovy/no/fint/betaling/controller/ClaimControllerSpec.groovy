@@ -5,13 +5,13 @@ import no.fint.betaling.model.Claim
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.Order
 import no.fint.betaling.service.ClaimService
-import no.fint.test.utils.MockMvcSpecification
 import org.hamcrest.CoreMatchers
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import spock.lang.Ignore
+import spock.lang.Specification
 
-class ClaimControllerSpec extends MockMvcSpecification {
+class ClaimControllerSpec extends Specification {
     private MockMvc mockMvc
     private ClaimController claimController
     private ClaimService claimService

@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
-//@EnableWebFluxSecurity
+@EnableWebFluxSecurity
 public class SecurityConfiguration {
 
     @Value("${fint.betaling.authorized-org-id:vigo.no}")
@@ -16,15 +16,15 @@ public class SecurityConfiguration {
     @Value("${fint.betaling.authorized-role:https://role-catalog.vigoiks.no/vigo/elevfakturering/user}")
     private String authorizedRole;
 
-    // TODO: 06/05/2022 reenable this (Trond) 
-  //  @Bean
+    @Bean
     SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+        // TODO: fix this (this allows everyone in to the system)
         http
                 .authorizeExchange((authorize) -> authorize
-                        .pathMatchers("/**")
-                        .hasAuthority("ORGID_" + authorizedOrgId)
-                        .pathMatchers("/**")
-                        .hasAuthority("ROLE_" + authorizedRole)
+                        //.pathMatchers("/**")
+                        //.hasAuthority("ORGID_" + authorizedOrgId)
+                        //.pathMatchers("/**")
+                        //.hasAuthority("ROLE_" + authorizedRole)
                         //.hasAnyAuthority("ORGID_" + authorizedOrgId, "ROLE_" + authorizedRole)
 
                         .anyExchange()

@@ -1,31 +1,23 @@
 package no.fint.betaling.repository;
 
-import com.mchange.v1.identicator.IdList;
 import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.support.PageableExecutionUtils;
-import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class ClaimRepository {
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private ReactiveMongoTemplate mongoTemplate;
 
     private static final String ORG_ID = "orgId";
 
@@ -41,12 +33,12 @@ public class ClaimRepository {
         return claim;
     }
 
-    public List<Claim> getClaims(Query query) {
+    public Flux<Claim> getClaims(Query query) {
         return mongoTemplate.find(query, Claim.class);
     }
 
     public int countClaims(Query query) {
-        return Math.toIntExact(mongoTemplate.count(query, Claim.class));
+        return Math.toIntExact(mongoTemplate.count(query, Claim.class).block());
     }
 
     public void updateClaim(Query query, Update update) {
@@ -60,7 +52,8 @@ public class ClaimRepository {
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
 
-        StreamUtils.createStreamFromIterator(mongoTemplate.stream(query, Claim.class))
+        mongoTemplate.find(query, Claim.class)
+                .toStream()
                 .map(Claim::getOrderNumber)
                 .mapToLong(Long::parseLong)
                 .max()

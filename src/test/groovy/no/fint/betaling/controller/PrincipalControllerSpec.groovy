@@ -2,11 +2,11 @@ package no.fint.betaling.controller
 
 import no.fint.betaling.model.Principal
 import no.fint.betaling.service.PrincipalService
-import no.fint.test.utils.MockMvcSpecification
 import org.springframework.http.HttpHeaders
 import org.springframework.test.web.servlet.MockMvc
+import spock.lang.Specification
 
-class PrincipalControllerSpec extends MockMvcSpecification {
+class PrincipalControllerSpec extends Specification {
     private PrincipalController controller
     private MockMvc mockMvc
     private PrincipalService principalService

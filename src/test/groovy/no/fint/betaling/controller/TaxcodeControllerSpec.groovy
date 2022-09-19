@@ -2,10 +2,10 @@ package no.fint.betaling.controller
 
 import no.fint.betaling.model.Taxcode
 import no.fint.betaling.repository.TaxcodeRepository
-import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
+import spock.lang.Specification
 
-class TaxcodeControllerSpec extends MockMvcSpecification {
+class TaxcodeControllerSpec extends Specification {
     private MockMvc mockMvc
     private TaxcodeController controller
     private TaxcodeRepository repository

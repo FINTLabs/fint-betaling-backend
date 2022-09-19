@@ -3,10 +3,10 @@ package no.fint.betaling.controller
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.CustomerGroup
 import no.fint.betaling.service.GroupService
-import no.fint.test.utils.MockMvcSpecification
 import org.springframework.test.web.servlet.MockMvc
+import spock.lang.Specification
 
-class GroupControllerSpec extends MockMvcSpecification {
+class GroupControllerSpec extends Specification {
     private MockMvc mockMvc
     private GroupController groupController
     private GroupService groupService

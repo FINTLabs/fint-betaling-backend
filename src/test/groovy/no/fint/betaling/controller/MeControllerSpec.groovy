@@ -1,10 +1,10 @@
 package no.fint.betaling.controller
 
 import no.fint.betaling.repository.MeRepository
-import no.fint.test.utils.MockMvcSpecification
 import spock.lang.Ignore
+import spock.lang.Specification
 
-class MeControllerSpec extends MockMvcSpecification {
+class MeControllerSpec extends Specification {
 
     @Ignore
     def "Get me returns user"() {

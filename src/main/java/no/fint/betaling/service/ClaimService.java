@@ -22,11 +22,9 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.net.URI;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,7 +65,7 @@ public class ClaimService {
     }
 
     public List<Claim> sendClaims(List<String> orderNumbers) {
-        return getUnsentClaims().stream()
+        return getUnsentClaims().toStream()
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .peek(claim -> {
                     try {
@@ -90,7 +88,7 @@ public class ClaimService {
     }
 
     void updateClaims() {
-        getSentClaims().forEach(claim -> {
+        getSentClaims().toStream().forEach(claim -> {
             //.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.PAID) && claim.getCreatedDate() > 1 uke )
             // TODO: 29/11/2021 Trond: complete filter to reduce orders to check
             try {
@@ -130,7 +128,7 @@ public class ClaimService {
         });
 
         // TODO Accepted claims should be checked less often
-        getAcceptedClaims().forEach(claim -> {
+        getAcceptedClaims().toStream().forEach(claim -> {
             try {
                 FakturagrunnlagResource invoice = restUtil.getFromFullUri(FakturagrunnlagResource.class, claim.getInvoiceUri());
                 ClaimStatus newStatus = updateClaim(invoice);
@@ -224,11 +222,11 @@ public class ClaimService {
         claimRepository.updateClaim(query, update);
     }
 
-    public List<Claim> getClaims() {
+    public Flux<Claim> getClaims() {
         return claimRepository.getClaims(queryService.createQuery());
     }
 
-    private List<Claim> getAcceptedClaims() {
+    private Flux<Claim> getAcceptedClaims() {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.ACCEPTED,
                 ClaimStatus.ISSUED,
@@ -236,26 +234,26 @@ public class ClaimService {
                 ClaimStatus.UPDATE_ERROR));
     }
 
-    private List<Claim> getSentClaims() {
+    private Flux<Claim> getSentClaims() {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.SENT));
     }
 
-    private List<Claim> getUnsentClaims() {
+    private Flux<Claim> getUnsentClaims() {
         return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.STORED,
                 ClaimStatus.SEND_ERROR));
     }
 
-    public List<Claim> getClaimsByCustomerName(String name) {
+    public Flux<Claim> getClaimsByCustomerName(String name) {
         return claimRepository.getClaims(queryService.queryByCustomerNameRegex(name));
     }
 
-    public List<Claim> getClaimsByOrderNumber(String orderNumber) {
+    public Flux<Claim> getClaimsByOrderNumber(String orderNumber) {
         return claimRepository.getClaims(queryService.queryByOrderNumber(orderNumber));
     }
 
-    public List<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
+    public Flux<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
         return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
     }
 
@@ -264,15 +262,15 @@ public class ClaimService {
     }
 
     public void cancelClaim(String orderNumber) {
-        List<Claim> claimsByOrderNumber = getClaimsByOrderNumber(orderNumber);
+        Flux<Claim> claimsByOrderNumber = getClaimsByOrderNumber(orderNumber);
         claimsByOrderNumber
-                .stream()
+                .toStream()
                 .filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED))
                 .peek(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED))
                 .forEach(this::updateClaimStatus);
     }
 
-    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) throws ParseException {
+    public Flux<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) throws ParseException {
 
         return claimRepository.getClaims(
                 queryService.queryByDateAndSchoolAndStatus(
