@@ -41,15 +41,12 @@ public class MeController {
     @GetMapping
     public User getMe(@AuthenticationPrincipal Jwt jwt) {
 
-        FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
-        String employeeId = endUserPrincipal.getEmployeeId();
+        String employeeId = FintJwtEndUserPrincipal.from(jwt).getEmployeeId();
 
-        // todo set up demo user
         if (isDemo && StringUtils.isNotEmpty(demoUserEmployeeId)) {
             employeeId = demoUserEmployeeId;
         }
 
-        // User user = meRepository.getUserByAzureId(feideUpn);
         User user = meRepository.getUserByAzureAD(employeeId);
         user.setIdleTime(idleTime);
         log.debug("User: {}", user);

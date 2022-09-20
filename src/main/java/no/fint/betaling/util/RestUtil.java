@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Component
@@ -50,11 +51,18 @@ public class RestUtil {
     public <T> T getFromFullUri(Class<T> clazz, String endpoint) {
         // TODO: 06/05/2022 Dont string replace every time
 
-        return webClient.get()
-                .uri(endpoint.replace(baseUrl, ""))
-                .retrieve()
-                .bodyToMono(clazz)
-                .block();
+        try {
+            return webClient.get()
+                    .uri(endpoint.replace(baseUrl, ""))
+                    .retrieve()
+                    .bodyToMono(clazz)
+                    .toFuture()
+                    .get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 //    private String getFullUri(String uri) {

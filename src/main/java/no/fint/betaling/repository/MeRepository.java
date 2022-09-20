@@ -18,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -52,6 +53,7 @@ public class MeRepository {
         if (users.containsKey(employeeId)) {
             return users.get(employeeId);
         }
+
         User userFromSkoleressure = getUserFromSkoleressure(employeeId);
         users.put(employeeId, userFromSkoleressure);
 
@@ -79,11 +81,12 @@ public class MeRepository {
     private User getUserFromSkoleressure(String employeeId) {
         User user = new User();
 
-        PersonalressursResource personalressurs = restUtil.get(PersonalressursResource.class,
-                UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", employeeId).build().toUriString());
+        PersonalressursResource personalressurs = Objects.requireNonNull(restUtil.get(PersonalressursResource.class,
+                UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", employeeId).build().toUriString()));
 
-        // todo: check if personalressurs is null
-        // todo: check that personalressurs has relation to skoleressurs
+        if (personalressurs.getSkoleressurs().size() == 0)
+            throw new NullPointerException("Given Personalressurs have no relation to Skoleressurs");
+
         SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
 
         log.debug("Skoleressurs: {}", skoleressurs);
