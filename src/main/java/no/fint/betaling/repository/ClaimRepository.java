@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
@@ -38,7 +39,13 @@ public class ClaimRepository {
     }
 
     public int countClaims(Query query) {
-        return Math.toIntExact(mongoTemplate.count(query, Claim.class).block());
+        try {
+            return Math.toIntExact(mongoTemplate.count(query, Claim.class).toFuture().get());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void updateClaim(Query query, Update update) {

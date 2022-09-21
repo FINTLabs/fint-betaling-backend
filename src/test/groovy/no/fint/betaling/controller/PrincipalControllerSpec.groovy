@@ -13,7 +13,7 @@ class PrincipalControllerSpec extends Specification {
 
     void setup() {
         principalService = Mock()
-        controller = new PrincipalController(principalService)
+        controller = new PrincipalController(principalService, applicationProperties)
         mockMvc = standaloneSetup(controller)
     }
 

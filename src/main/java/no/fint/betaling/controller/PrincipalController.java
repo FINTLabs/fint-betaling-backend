@@ -1,8 +1,10 @@
 package no.fint.betaling.controller;
 
+import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.service.PrincipalService;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,8 +19,11 @@ public class PrincipalController {
 
     private final PrincipalService principalService;
 
-    public PrincipalController(PrincipalService principalService) {
+    private ApplicationProperties applicationProperties;
+
+    public PrincipalController(PrincipalService principalService, ApplicationProperties applicationProperties) {
         this.principalService = principalService;
+        this.applicationProperties = applicationProperties;
     }
 
     @GetMapping
@@ -27,6 +32,10 @@ public class PrincipalController {
     public Principal getPrincipalForSchoolId(@AuthenticationPrincipal Jwt jwt) {
 
         FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
+
+        if (applicationProperties.getDemo() && StringUtils.isNotEmpty(applicationProperties.getDemoUserEmployeeId())) {
+            endUserPrincipal.setOrganizationNumber(applicationProperties.getDemoUserOrgId());
+        }
 
         return principalService.getPrincipalByOrganisationId(endUserPrincipal.getOrganizationNumber(), endUserPrincipal.getEmployeeId());
     }

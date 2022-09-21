@@ -1,6 +1,7 @@
 package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.model.User;
 import no.fint.betaling.repository.MeRepository;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
@@ -26,16 +27,13 @@ public class MeController {
     @Value("${fint.idle-time:900000}")
     private long idleTime;
 
-    @Value("${fint.betaling.demo}")
-    private Boolean isDemo;
-
-    @Value("${fint.betaling.demo-user-employeeid}")
-    private String demoUserEmployeeId;
-
     private final MeRepository meRepository;
 
-    public MeController(MeRepository meRepository) {
+    private ApplicationProperties applicationProperties;
+
+    public MeController(MeRepository meRepository, ApplicationProperties applicationProperties) {
         this.meRepository = meRepository;
+        this.applicationProperties = applicationProperties;
     }
 
     @GetMapping
@@ -43,8 +41,8 @@ public class MeController {
 
         String employeeId = FintJwtEndUserPrincipal.from(jwt).getEmployeeId();
 
-        if (isDemo && StringUtils.isNotEmpty(demoUserEmployeeId)) {
-            employeeId = demoUserEmployeeId;
+        if (applicationProperties.getDemo() && StringUtils.isNotEmpty(applicationProperties.getDemoUserEmployeeId())) {
+            employeeId = applicationProperties.getDemoUserEmployeeId();
         }
 
         User user = meRepository.getUserByAzureAD(employeeId);
@@ -66,8 +64,8 @@ public class MeController {
         String employeeId = endUserPrincipal.getEmployeeId();
 
         // todo set up demo user
-        if (isDemo && StringUtils.isNotEmpty(demoUserEmployeeId)) {
-            employeeId = demoUserEmployeeId;
+        if (applicationProperties.getDemo() && StringUtils.isNotEmpty(applicationProperties.getDemoUserEmployeeId())) {
+            employeeId = applicationProperties.getDemoUserEmployeeId();
         }
 
         // User user = meRepository.getUserByAzureId(feideUpn);
