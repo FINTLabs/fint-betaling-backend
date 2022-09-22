@@ -113,7 +113,7 @@ public class MeRepository {
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
 
-        setOrganisationUnits(user, schools.stream());
+        setOrganisationUnits(user, schools);
 
         final Optional<Organisation> owner = schools
                 .stream()
@@ -130,9 +130,10 @@ public class MeRepository {
         return user;
     }
 
-    private void setOrganisationUnits(User user, Stream<SkoleResource> schools) {
+    private void setOrganisationUnits(User user, List<SkoleResource> schools) {
         user.setOrganisationUnits(
                 schools
+                        .stream()
                         .map(skole -> {
                             Organisation org = new Organisation();
                             org.setName(skole.getNavn());
