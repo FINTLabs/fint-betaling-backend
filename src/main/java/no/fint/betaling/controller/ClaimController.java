@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -43,12 +42,12 @@ public class ClaimController {
     }
 
     @GetMapping
-    public Flux<Claim> getAllClaims(@RequestParam(required = false) String periodSelection,
+    public List<Claim> getAllClaims(@RequestParam(required = false) String periodSelection,
                                     @RequestParam(required = false) String schoolSelection,
                                     @RequestParam(required = false) String[] status) throws ParseException {
 
         if (StringUtils.isBlank(periodSelection) && StringUtils.isBlank(schoolSelection)){
-                return claimService.getClaims();
+            return claimService.getClaims();
         } else {
             if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
             ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
@@ -57,23 +56,23 @@ public class ClaimController {
     }
 
     @GetMapping("/name/{name}")
-    public Flux<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
+    public List<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
         return claimService.getClaimsByCustomerName(name);
     }
 
     @GetMapping("/order-number/{order-number}")
-    public Flux<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
+    public List<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
         return claimService.getClaimsByOrderNumber(orderNumber);
     }
 
     @GetMapping("/status/{status}")
-    public Flux<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
+    public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 
     @GetMapping("/count/by-status/{status}")
     public int getCountByStatus(@PathVariable("status") String[] status) {
-         return claimService.countClaimsByStatus(toClaimStatus(status));
+        return claimService.countClaimsByStatus(toClaimStatus(status));
     }
 
     @DeleteMapping("/order-number/{order-number}")

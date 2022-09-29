@@ -4,7 +4,6 @@ import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.service.PrincipalService;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,12 +30,19 @@ public class PrincipalController {
 //                                             @RequestHeader(name = "x-feide-upn") String feideUpn) {
     public Principal getPrincipalForSchoolId(@AuthenticationPrincipal Jwt jwt) {
 
-        FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
+        String orgnizationNumber;
+        String employeeId;
 
-        if (applicationProperties.getDemo() && StringUtils.isNotEmpty(applicationProperties.getDemoUserEmployeeId())) {
-            endUserPrincipal.setOrganizationNumber(applicationProperties.getDemoUserOrgId());
+
+        if (applicationProperties.getDemo()) {
+            orgnizationNumber = applicationProperties.getDemoUserOrgId();
+            employeeId = applicationProperties.getDemoUserEmployeeId();
+        } else {
+            FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
+            orgnizationNumber = endUserPrincipal.getOrganizationNumber();
+            employeeId = endUserPrincipal.getEmployeeId();
         }
 
-        return principalService.getPrincipalByOrganisationId(endUserPrincipal.getOrganizationNumber(), endUserPrincipal.getEmployeeId());
+        return principalService.getPrincipalByOrganisationId(orgnizationNumber, employeeId);
     }
 }

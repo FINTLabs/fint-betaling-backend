@@ -86,22 +86,30 @@ public class RestUtil {
         }
     }
 
-    public <T> URI post(String uri, T content, Class<T> clazz) {
+    public <T> URI post(String uri, T content, Class<T> clazz, String orgId) {
+        // todo: what is x-client id ??
         try {
             log.info("POST {} {}", uri, content);
 
             return webClient
                     .post()
                     .uri(uri)
+                    .header("x-org-id", orgId)
+                    .header ("x-client", "pwf.no")
                     .body(Mono.just(content), clazz)
                     .retrieve()
                     .toBodilessEntity()
                     .filter(entity -> entity.getStatusCode().is2xxSuccessful())
                     .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()))
-                    .block()
+                    .toFuture()
+                    .get()
                     .getLocation();
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

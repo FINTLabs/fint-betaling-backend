@@ -3,22 +3,22 @@ package no.fint.betaling.repository;
 import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Flux;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class ClaimRepository {
 
     @Autowired
-    private ReactiveMongoTemplate mongoTemplate;
+    private MongoTemplate mongoTemplate;
 
     private static final String ORG_ID = "orgId";
 
@@ -34,18 +34,12 @@ public class ClaimRepository {
         return claim;
     }
 
-    public Flux<Claim> getClaims(Query query) {
+    public List<Claim> getClaims(Query query) {
         return mongoTemplate.find(query, Claim.class);
     }
 
     public int countClaims(Query query) {
-        try {
-            return Math.toIntExact(mongoTemplate.count(query, Claim.class).toFuture().get());
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        return Math.toIntExact(mongoTemplate.count(query, Claim.class));
     }
 
     public void updateClaim(Query query, Update update) {
@@ -59,8 +53,7 @@ public class ClaimRepository {
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
 
-        mongoTemplate.find(query, Claim.class)
-                .toStream()
+        StreamUtils.createStreamFromIterator(mongoTemplate.stream(query, Claim.class))
                 .map(Claim::getOrderNumber)
                 .mapToLong(Long::parseLong)
                 .max()

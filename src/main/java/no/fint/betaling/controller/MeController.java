@@ -5,7 +5,6 @@ import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.model.User;
 import no.fint.betaling.repository.MeRepository;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
@@ -39,10 +38,12 @@ public class MeController {
     @GetMapping
     public User getMe(@AuthenticationPrincipal Jwt jwt) {
 
-        String employeeId = FintJwtEndUserPrincipal.from(jwt).getEmployeeId();
+        String employeeId;
 
-        if (applicationProperties.getDemo() && StringUtils.isNotEmpty(applicationProperties.getDemoUserEmployeeId())) {
+        if (applicationProperties.getDemo()) {
             employeeId = applicationProperties.getDemoUserEmployeeId();
+        } else {
+            employeeId = FintJwtEndUserPrincipal.from(jwt).getEmployeeId();
         }
 
         User user = meRepository.getUserByAzureAD(employeeId);
@@ -63,8 +64,7 @@ public class MeController {
         FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
         String employeeId = endUserPrincipal.getEmployeeId();
 
-        // todo set up demo user
-        if (applicationProperties.getDemo() && StringUtils.isNotEmpty(applicationProperties.getDemoUserEmployeeId())) {
+        if (applicationProperties.getDemo()) {
             employeeId = applicationProperties.getDemoUserEmployeeId();
         }
 
@@ -73,9 +73,6 @@ public class MeController {
         user.setIdleTime(idleTime);
         log.debug("User: {}", user);
 
-        // return user;
-
-        // return ResponseEntity.ok("hello world!");
         return (ResponseEntity<User>) ResponseEntity
                 .ok()
                 .cacheControl(CacheControl.noStore())
