@@ -16,7 +16,7 @@ fint:
     default-org-id: "pwf.no"
     default-school-org-id: "970123458"
     date-range: "7, 14, 30"
-    demo: "false"
+    demo: "true"
     demo-user-employeeid: "100006"
     demo-user-org-id: "970123458"
     principal-matching-strategy: "byOrgnummer"
