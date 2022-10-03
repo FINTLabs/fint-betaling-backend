@@ -10,11 +10,10 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import spock.lang.Specification
 
 @WebFluxTest(controllers = TaxcodeController.class)
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TaxcodeControllerSpec extends Specification {
 
     @Autowired
-    ApplicationContext applicationContext
+    private ApplicationContext applicationContext
 
     private WebTestClient webTestClient
 

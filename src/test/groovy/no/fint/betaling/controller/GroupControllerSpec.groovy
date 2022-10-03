@@ -14,7 +14,7 @@ import spock.lang.Specification
 class GroupControllerSpec extends Specification {
 
     @Autowired
-    ApplicationContext applicationContext
+    private ApplicationContext applicationContext
 
     private WebTestClient webTestClient
 

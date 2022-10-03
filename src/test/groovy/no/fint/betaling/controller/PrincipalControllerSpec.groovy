@@ -15,7 +15,7 @@ import spock.lang.Specification
 class PrincipalControllerSpec extends Specification {
 
     @Autowired
-    ApplicationContext applicationContext
+    private ApplicationContext applicationContext
 
     private WebTestClient webTestClient
 

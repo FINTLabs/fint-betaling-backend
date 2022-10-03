@@ -6,20 +6,34 @@ import no.fint.betaling.service.FileService
 import no.fint.betaling.service.GroupService
 import no.fint.betaling.util.CustomerFileGroup
 import org.apache.poi.ss.usermodel.Sheet
-import org.springframework.test.web.servlet.MockMvc
+import org.spockframework.spring.SpringBean
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.context.ApplicationContext
+import org.springframework.http.MediaType
+import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.BodyInserters
 import spock.lang.Specification
 
+@WebFluxTest(controllers = FileController.class)
 class FileControllerSpec extends Specification {
-    private MockMvc mockMvc
+
+    @Autowired
+    private ApplicationContext applicationContext
+
+    private WebTestClient webTestClient
+
     private FileController fileController
-    private FileService fileService
-    private GroupService groupService
+
+    @SpringBean
+    private FileService fileService = Mock(FileService.class)
+
+    @SpringBean
+    private GroupService groupService = Mock(GroupService.class)
 
     void setup() {
-        fileService = Mock()
-        groupService = Mock()
-        fileController = new FileController(fileService: fileService, groupService: groupService)
-        mockMvc = standaloneSetup(fileController)
+        fileController = new FileController(fileService, groupService)
+        webTestClient = WebTestClient.bindToController(fileController).build()
     }
 
     def "Get customers with correct file structure returns HttpStatus 200 with correct body"() {
@@ -32,16 +46,26 @@ class FileControllerSpec extends Specification {
         )
 
         when:
-        def response = mockMvc.perform(post('/api/file').header('x-school-org-id', '').content(new byte[1]))
+        def response = webTestClient
+                .post()
+                .uri('/api/file')
+                .header('x-school-org-id', '')
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(new byte[1]))
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
 
         then:
         1 * fileService.getSheetFromBytes(_) >> Mock(Sheet)
         1 * fileService.extractCustomerFileGroupFromSheet(_, _) >> result
-        1 * groupService.getCustomersForSchoolWithVisIdKey(_) >> ['hei':new Customer()]
+        1 * groupService.getCustomersForSchoolWithVisIdKey(_) >> ['hei': new Customer()]
         response
-                .andExpect(status().isOk())
-                .andExpect(jsonPathSize('$.foundCustomers.customers', 1))
-                .andExpect(jsonPathSize('$.notFoundCustomers', 1))
+                .jsonPath('$.foundCustomers.customers.length()').isEqualTo(1)
+        //.jsonPath() andExpect(jsonPathSize('$.foundCustomers.customers', 1))
+                //.andExpect(jsonPathSize('$.notFoundCustomers', 1))
+                .jsonPath('$.notFoundCustomers.length()').isEqualTo(1)
     }
 
 }

@@ -20,11 +20,14 @@ import java.util.Collections;
 @RequestMapping(value = "/api/file")
 public class FileController {
 
-    @Autowired
     private FileService fileService;
 
-    @Autowired
     private GroupService groupService;
+
+    public FileController(FileService fileService, GroupService groupService) {
+        this.fileService = fileService;
+        this.groupService = groupService;
+    }
 
     @PostMapping
     public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException, InsufficientDataException, HttpMediaTypeNotAcceptableException {
