@@ -104,16 +104,18 @@ class ClaimControllerSpec extends Specification {
     }
 
     def "Send invoices given valid org id sends invoices"() {
-        given:
-        def objectMapper = new ObjectMapper()
-        def jsonOrderNumbers = objectMapper.writeValueAsString(["123", "123"])
-
         when:
-        def response = mockMvc.perform(post('/api/claim/send').content(jsonOrderNumbers).contentType(MediaType.APPLICATION_JSON))
+        def response = webTestClient
+                .post()
+                .uri('/api/claim/send')
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(["123", "654"]))
+                .exchange()
+                .expectStatus()
+                .isCreated()
 
         then:
-        1 * claimService.sendClaims(_ as List)
-        response.andExpect(status().is(201))
+        1 * claimService.sendClaims(["123", "654"] as List)
     }
 
     @Ignore
