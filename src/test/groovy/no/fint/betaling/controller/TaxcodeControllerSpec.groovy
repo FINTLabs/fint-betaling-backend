@@ -6,12 +6,11 @@ import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.ApplicationContext
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.reactive.server.WebTestClient
 import spock.lang.Specification
 
 @WebFluxTest(controllers = TaxcodeController.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class TaxcodeControllerSpec extends Specification {
 
     @Autowired
@@ -26,9 +25,7 @@ class TaxcodeControllerSpec extends Specification {
 
     void setup() {
         controller = new TaxcodeController(repository)
-        webTestClient = WebTestClient
-                .bindToController(controller)
-                .build()
+        webTestClient = WebTestClient.bindToController(controller).build()
     }
 
     def "Get mva codes given valid org id returns list -2"() {
@@ -45,7 +42,7 @@ class TaxcodeControllerSpec extends Specification {
                 .expectBody()
 
         then:
-        _ * repository.getTaxcodes() >> [taxcode]
+        1 * repository.getTaxcodes() >> [taxcode]
         response.jsonPath('$[0].code').isEqualTo("25%")
     }
 }

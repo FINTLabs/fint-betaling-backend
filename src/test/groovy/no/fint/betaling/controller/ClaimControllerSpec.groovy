@@ -5,32 +5,52 @@ import no.fint.betaling.model.Claim
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.Order
 import no.fint.betaling.service.ClaimService
+import no.fint.betaling.service.ScheduleService
 import org.hamcrest.CoreMatchers
+import org.spockframework.spring.SpringBean
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.context.ApplicationContext
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.reactive.server.WebTestClient
 import spock.lang.Ignore
 import spock.lang.Specification
 
+@WebFluxTest(controllers = ClaimController.class)
 class ClaimControllerSpec extends Specification {
-    private MockMvc mockMvc
-    private ClaimController claimController
-    private ClaimService claimService
+
+    @Autowired
+    ApplicationContext applicationContext
+
+    private WebTestClient webTestClient
+
+    private ClaimController controller
+
+    @SpringBean
+    private ClaimService claimService = Mock(ClaimService.class)
+
+    @SpringBean
+    private ScheduleService scheduleService = Mock(ScheduleService.class)
+
 
     void setup() {
-        claimService = Mock(ClaimService)
-        claimController = new ClaimController(claimService: claimService)
-        mockMvc = standaloneSetup(claimController)
+        controller = new ClaimController(claimService, scheduleService)
+        webTestClient = WebTestClient.bindToController(controller).build()
     }
 
     def "Get all payments"() {
         when:
-        def response = mockMvc.perform(get('/api/claim'))
+        def response = webTestClient
+                .get()
+                .uri('/api/claim')
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
 
         then:
         1 * claimService.getClaims() >> [createClaim('123', 'Testesen')]
-        response.andExpect(status().isOk())
-                .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].customer.name', 'Testesen'))
+        response.jsonPath('$[0].customer.name').isEqualTo("Testesen")
     }
 
     def "Set payment given valid payment returns status ok"() {
@@ -39,7 +59,13 @@ class ClaimControllerSpec extends Specification {
         def jsonOrder = objectMapper.writeValueAsString(new Order())
 
         when:
-        def response = mockMvc.perform(post('/api/claim').content(jsonOrder).contentType(MediaType.APPLICATION_JSON))
+        def response = webTestClient
+                .get()
+                .uri('/api/claim')
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
 
         then:
         1 * claimService.storeClaims(_ as Order)
@@ -48,13 +74,17 @@ class ClaimControllerSpec extends Specification {
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {
         when:
-        def response = mockMvc.perform(get('/api/claim/name/{name}', 'Testesen'))
+        def response = webTestClient
+                .get()
+                .uri('/api/claim/name/{name}', 'Testesen')
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
 
         then:
         1 * claimService.getClaimsByCustomerName('Testesen') >> [createClaim('123', 'Testesen')]
-        response.andExpect(status().isOk())
-                .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].customer.name', 'Testesen'))
+        response.jsonPath('$[0].customer.name').isEqualTo("Testesen")
     }
 
     def "Get payment by orderNumber given valid orderNumber returns list of payments with matching orderNumber"() {

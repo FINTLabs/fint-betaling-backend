@@ -8,7 +8,6 @@ import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
 import no.fint.betaling.service.ScheduleService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,11 +22,14 @@ import java.util.List;
 @RequestMapping(value = "/api/claim")
 public class ClaimController {
 
-    @Autowired
     private ClaimService claimService;
 
-    @Autowired
     private ScheduleService scheduleService;
+
+    public ClaimController(ClaimService claimService, ScheduleService scheduleService) {
+        this.claimService = claimService;
+        this.scheduleService = scheduleService;
+    }
 
     @PostMapping
     public ResponseEntity<?> storeClaim(@RequestBody Order order) {
