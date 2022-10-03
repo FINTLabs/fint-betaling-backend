@@ -98,7 +98,6 @@ class ClaimControllerSpec extends Specification {
         then:
         1 * claimService.getClaimsByOrderNumber('123') >> [createClaim('123', 'Testesen')]
         response
-                //. andExpect(jsonPathSize('$', 1))
                 .jsonPath('$.length()').isEqualTo(1)
                 .jsonPath('$[0].orderNumber', CoreMatchers.equalTo('123'))
     }
