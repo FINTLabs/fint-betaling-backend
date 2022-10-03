@@ -11,8 +11,10 @@ import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.ApplicationContext
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.BodyInserters
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -54,22 +56,18 @@ class ClaimControllerSpec extends Specification {
     }
 
     def "Set payment given valid payment returns status ok"() {
-        given:
-        def objectMapper = new ObjectMapper()
-        def jsonOrder = objectMapper.writeValueAsString(new Order())
-
         when:
         def response = webTestClient
-                .get()
+                .post()
                 .uri('/api/claim')
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(new Order()))
                 .exchange()
                 .expectStatus()
-                .isOk()
-                .expectBody()
 
         then:
         1 * claimService.storeClaims(_ as Order)
-        response.andExpect(status().is(201))
+        response.isEqualTo(HttpStatus.CREATED)
     }
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {
@@ -89,13 +87,20 @@ class ClaimControllerSpec extends Specification {
 
     def "Get payment by orderNumber given valid orderNumber returns list of payments with matching orderNumber"() {
         when:
-        def response = mockMvc.perform(get('/api/claim/order-number/{order-number}', '123'))
+        def response = webTestClient
+                .get()
+                .uri('/api/claim/order-number/{order-number}', '123')
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
 
         then:
         1 * claimService.getClaimsByOrderNumber('123') >> [createClaim('123', 'Testesen')]
-        response.andExpect(status().isOk())
-                .andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPath('$[0].orderNumber', CoreMatchers.equalTo('123')))
+        response
+                //. andExpect(jsonPathSize('$', 1))
+                .jsonPath('$.length()').isEqualTo(1)
+                .jsonPath('$[0].orderNumber', CoreMatchers.equalTo('123'))
     }
 
     def "Send invoices given valid org id sends invoices"() {
