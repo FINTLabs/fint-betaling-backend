@@ -6,7 +6,6 @@ import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.service.FileService;
 import no.fint.betaling.service.GroupService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -16,7 +15,6 @@ import java.util.Collections;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/file")
 public class FileController {
 
@@ -30,6 +28,7 @@ public class FileController {
     }
 
     @PostMapping
+    // TODO: Burde egentlig x-school-org-id vært en del av api url'en?
     public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException, InsufficientDataException, HttpMediaTypeNotAcceptableException {
         return ResponseEntity.ok(fileService.extractCustomerFileGroupFromSheet(
                 fileService.getSheetFromBytes(file),
