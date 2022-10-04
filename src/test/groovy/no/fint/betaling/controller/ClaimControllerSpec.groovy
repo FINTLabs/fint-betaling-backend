@@ -1,6 +1,6 @@
 package no.fint.betaling.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
+
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.Order
