@@ -56,7 +56,6 @@ class ClaimServiceSpec extends Specification {
         claims.every { it.customer.name == 'Ola Testesen' }
     }
 
-    @Ignore("todo Trond")
     def "Given valid claims, send invoices and update claims"() {
         given:
         def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
@@ -66,7 +65,7 @@ class ClaimServiceSpec extends Specification {
 
         then:
         1 * claimRepository.getClaims(_ as Query) >> [claim]
-        1 * restUtil.post(_, _ as FakturagrunnlagResource) >> new URI('link.to.Location')
+        1 * restUtil.post(*_) >> new URI('link.to.Location')
         1 * invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
         claims.size() == 1
         claims.get(0).claimStatus == ClaimStatus.SENT
