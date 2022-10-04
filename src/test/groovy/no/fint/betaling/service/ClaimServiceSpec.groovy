@@ -65,7 +65,7 @@ class ClaimServiceSpec extends Specification {
 
         then:
         1 * claimRepository.getClaims(_ as Query) >> [claim]
-        1 * restUtil.post(_, _ as FakturagrunnlagResource) >> new URI('link.to.Location')
+        1 * restUtil.post(*_) >> new URI('link.to.Location')
         1 * invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
         claims.size() == 1
         claims.get(0).claimStatus == ClaimStatus.SENT

@@ -1,24 +1,14 @@
 spring:
-  mvc:
-    dispatch-options-request: true
   data:
     mongodb:
       uri: "mongodb://localhost:27017/fintBetaling"
 
-security:
-  basic:
-    enabled: false
-
-springfox:
-  title: 'FINT-Betaling'
-  version: '0.0.1-SNAPSHOT'
-
 fint:
-  oauth:
-    enabled: false
-
+  betaling-backend:
+    client-authorization:
+      enable: true
   client:
-    enable: false
+    base-url: https://play-with-fint.felleskomponent.no
 
   betaling:
     client-name: "FINT-Betaling"
@@ -27,9 +17,20 @@ fint:
     default-school-org-id: "970123458"
     date-range: "7, 14, 30"
     demo: "true"
-    demo-user-feide: "dolly.duck@andeby.vgs.no"
+    demo-user-employeeid: "100006"
+    demo-user-org-id: "970123458"
     principal-matching-strategy: "byOrgnummer"
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
       environment: "play-with-fint"
+      invoice: "/okonomi/faktura/fakturagrunnlag"
+      order-line: "/okonomi/faktura/fakturalinje"
+      mva-code: "/okonomi/kodeverk/merverdiavgift"
+      employer: "/okonomi/faktura/fakturautsteder"
+      skole: "/utdanning/utdanningsprogram/skole"
+      basisgruppe: "/utdanning/elev/basisgruppe"
+      undervisningsgruppe: "/utdanning/timeplan/undervisningsgruppe"
+      kontaktlarergruppe: "/utdanning/elev/kontaktlarergruppe"
+      person: "/utdanning/elev/person"
+      elevforhold: "/utdanning/elev/elevforhold"
 

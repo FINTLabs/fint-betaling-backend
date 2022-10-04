@@ -69,7 +69,7 @@ public class ClaimService {
                 .peek(claim -> {
                     try {
                         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-                        URI location = restUtil.post(invoiceEndpoint, invoice);
+                        URI location = restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId());
                         if (location != null) {
                             claim.setInvoiceUri(location.toString());
                             claim.setClaimStatus(ClaimStatus.SENT);

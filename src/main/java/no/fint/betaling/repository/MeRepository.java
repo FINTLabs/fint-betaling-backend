@@ -18,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -31,7 +32,8 @@ public class MeRepository {
     @Value("${fint.betaling.endpoints.school-resource:/utdanning/elev/skoleressurs}")
     private String schoolResourceEndpoint;
 
-    @Value("${fint.betaling.endpoints.employee:/administrasjon/personal/person}")
+    //@Value("${fint.betaling.endpoints.employee:/administrasjon/personal/person}")
+    @Value("${fint.betaling.endpoints.employee:/administrasjon/personal/personalressurs}")
     private String employeeEndpoint;
 
     private final RestUtil restUtil;
@@ -47,14 +49,15 @@ public class MeRepository {
         this.organisationRepository = organisationRepository;
     }
 
-    public User getUserByFeideUpn(String feideUpn) {
-        if (users.containsKey(feideUpn)) {
-            return users.get(feideUpn);
+    public User getUserByAzureAD(String employeeId) {
+        if (users.containsKey(employeeId)) {
+            return users.get(employeeId);
         }
-        User userFromSkoleressursByFeidenavn = getUserFromSkoleressursByFeidenavn(feideUpn);
-        users.put(feideUpn, userFromSkoleressursByFeidenavn);
 
-        return userFromSkoleressursByFeidenavn;
+        User userFromSkoleressure = getUserFromSkoleressure(employeeId);
+        users.put(employeeId, userFromSkoleressure);
+
+        return userFromSkoleressure;
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
@@ -62,7 +65,7 @@ public class MeRepository {
         log.info("{} users needs to be updated ...", users.size());
 
         users.forEach((feideUpn, user) -> {
-            User userFromSkoleressursByFeidenavn = getUserFromSkoleressursByFeidenavn(feideUpn);
+            User userFromSkoleressursByFeidenavn = getUserFromSkoleressure(feideUpn);
             users.put(feideUpn, userFromSkoleressursByFeidenavn);
         });
 
@@ -75,11 +78,16 @@ public class MeRepository {
                 : String.format("%s %s %s", n.getFornavn(), n.getMellomnavn(), n.getEtternavn());
     }
 
-    private User getUserFromSkoleressursByFeidenavn(String feideUpn) {
+    private User getUserFromSkoleressure(String employeeId) {
         User user = new User();
 
-        SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class,
-                UriComponentsBuilder.fromUriString(schoolResourceEndpoint).pathSegment("feidenavn", feideUpn).build().toUriString());
+        PersonalressursResource personalressurs = Objects.requireNonNull(restUtil.get(PersonalressursResource.class,
+                UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", employeeId).build().toUriString()));
+
+        if (personalressurs.getSkoleressurs().size() == 0)
+            throw new NullPointerException("Given Personalressurs have no relation to Skoleressurs");
+
+        SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
 
         log.debug("Skoleressurs: {}", skoleressurs);
 
@@ -105,7 +113,7 @@ public class MeRepository {
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
 
-        setOrganisationUnits(user, schools.stream());
+        setOrganisationUnits(user, schools);
 
         final Optional<Organisation> owner = schools
                 .stream()
@@ -122,9 +130,10 @@ public class MeRepository {
         return user;
     }
 
-    private void setOrganisationUnits(User user, Stream<SkoleResource> schools) {
+    private void setOrganisationUnits(User user, List<SkoleResource> schools) {
         user.setOrganisationUnits(
                 schools
+                        .stream()
                         .map(skole -> {
                             Organisation org = new Organisation();
                             org.setName(skole.getNavn());

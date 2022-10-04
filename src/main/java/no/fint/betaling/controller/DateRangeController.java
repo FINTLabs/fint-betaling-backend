@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/date-range")
 public class DateRangeController {
 
-    @Value("${fint.betaling.date-range}")
+    @Value("${fint.betaling.date-range:7, 14, 30}")
     private String[] dateRanges;
 
     @GetMapping

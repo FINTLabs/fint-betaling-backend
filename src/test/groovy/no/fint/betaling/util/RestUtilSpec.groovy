@@ -8,8 +8,10 @@ import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.RestTemplate
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore
 class RestUtilSpec extends Specification {
     private RestTemplate restTemplate
     private RestUtil restUtil

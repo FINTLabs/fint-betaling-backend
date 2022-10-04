@@ -2,28 +2,46 @@ package no.fint.betaling.controller
 
 import no.fint.betaling.model.Taxcode
 import no.fint.betaling.repository.TaxcodeRepository
-import no.fint.test.utils.MockMvcSpecification
-import org.springframework.test.web.servlet.MockMvc
+import org.spockframework.spring.SpringBean
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.context.ApplicationContext
+import org.springframework.test.web.reactive.server.WebTestClient
+import spock.lang.Specification
 
-class TaxcodeControllerSpec extends MockMvcSpecification {
-    private MockMvc mockMvc
+@WebFluxTest(controllers = TaxcodeController.class)
+class TaxcodeControllerSpec extends Specification {
+
+    @Autowired
+    private ApplicationContext applicationContext
+
+    private WebTestClient webTestClient
+
     private TaxcodeController controller
-    private TaxcodeRepository repository
+
+    @SpringBean
+    private TaxcodeRepository repository = Mock(TaxcodeRepository.class)
 
     void setup() {
-        repository = Mock()
-        controller = new TaxcodeController(repository: repository)
-        mockMvc = standaloneSetup(controller)
+        controller = new TaxcodeController(repository)
+        webTestClient = WebTestClient.bindToController(controller).build()
     }
 
-    def "Get mva codes given valid org id returns list"() {
+    def "Get mva codes given valid org id returns list -2"() {
+        given:
+        Taxcode taxcode = new Taxcode(code: '25%', description: 'Høy rate', rate: 0.25)
+
         when:
-        def response = mockMvc.perform(get('/api/mva-code'))
+        def response = webTestClient
+                .get()
+                .uri('/api/mva-code')
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
 
         then:
-        1 * repository.getTaxcodes() >> [new Taxcode(code: '25%', description: 'Høy rate', rate: 0.25)]
-
-        response.andExpect(jsonPathSize('$', 1))
-                .andExpect(jsonPathEquals('$[0].code', '25%'))
+        1 * repository.getTaxcodes() >> [taxcode]
+        response.jsonPath('$[0].code').isEqualTo("25%")
     }
 }

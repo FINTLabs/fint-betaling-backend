@@ -8,8 +8,6 @@ import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
 import no.fint.betaling.service.ScheduleService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +22,14 @@ import java.util.List;
 @RequestMapping(value = "/api/claim")
 public class ClaimController {
 
-    @Autowired
     private ClaimService claimService;
 
-    @Autowired
     private ScheduleService scheduleService;
+
+    public ClaimController(ClaimService claimService, ScheduleService scheduleService) {
+        this.claimService = claimService;
+        this.scheduleService = scheduleService;
+    }
 
     @PostMapping
     public ResponseEntity<?> storeClaim(@RequestBody Order order) {
@@ -48,7 +49,7 @@ public class ClaimController {
                                     @RequestParam(required = false) String[] status) throws ParseException {
 
         if (StringUtils.isBlank(periodSelection) && StringUtils.isBlank(schoolSelection)){
-                return claimService.getClaims();
+            return claimService.getClaims();
         } else {
             if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
             ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
@@ -73,7 +74,7 @@ public class ClaimController {
 
     @GetMapping("/count/by-status/{status}")
     public int getCountByStatus(@PathVariable("status") String[] status) {
-         return claimService.countClaimsByStatus(toClaimStatus(status));
+        return claimService.countClaimsByStatus(toClaimStatus(status));
     }
 
     @DeleteMapping("/order-number/{order-number}")

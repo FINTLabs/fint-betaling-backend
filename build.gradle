@@ -1,12 +1,12 @@
 plugins {
-    id 'org.springframework.boot' version '2.5.5'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'org.springframework.boot' version '2.6.4'
+    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
     id 'java'
     id 'groovy'
 }
 
 group = 'no.fint'
-sourceCompatibility = '11'
+sourceCompatibility = '17'
 
 jar {
     enabled = false
@@ -30,35 +30,38 @@ repositories {
 
 
 dependencies {
-    implementation("no.fint:fint-okonomi-model-java:${apiVersion}")
-    implementation("no.fint:fint-okonomi-resource-model-java:${apiVersion}")
-    implementation('no.fint:fint-utdanning-resource-model-java:3.9.0')
-    implementation('no.fint:fint-oauth-token-service:1.6.1')
+    implementation "no.fint:fint-okonomi-model-java:${apiVersion}"
+    implementation "no.fint:fint-okonomi-resource-model-java:${apiVersion}"
+    implementation "no.fint:fint-utdanning-resource-model-java:${apiVersion}"
+    implementation 'no.fintlabs:fint-resource-server-security:1.1.0'
+    implementation 'no.fint:fint-model-resource:0.4.1'
+    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.77.Final:osx-aarch_64'
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
 
-    implementation('org.springframework.boot:spring-boot-starter')
-    implementation('org.springframework.boot:spring-boot-starter-cache')
-    implementation('org.springframework.boot:spring-boot-starter-web')
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb:")
+    // this one goes!
+    // implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.data:spring-data-commons:2.6.0'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
+    implementation 'org.springframework.data:spring-data-commons'
     implementation 'io.micrometer:micrometer-registry-prometheus'
-
-    implementation 'io.springfox:springfox-boot-starter:3.0.0'
-    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+    implementation 'org.projectlombok:lombok:1.18.22'
+    implementation 'org.projectlombok:lombok:1.18.22'
+    testImplementation 'junit:junit:4.13.1'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    implementation('org.apache.commons:commons-lang3:3.9')
-    implementation('org.jooq:jool-java-8:0.9.14')
-
-    implementation('com.fasterxml.jackson.core:jackson-databind')
-    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
-    implementation('org.apache.commons:commons-lang3:3.9')
-    implementation('commons-beanutils:commons-beanutils:1.9.4')
-    implementation('com.squareup.okhttp3:okhttp:4.4.0')
-    implementation('com.github.ben-manes.caffeine:caffeine')
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.jooq:jool-java-8:0.9.14'
+    implementation 'commons-beanutils:commons-beanutils:1.9.4'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
     // https://mvnrepository.com/artifact/org.apache.poi/poi
     implementation 'org.apache.poi:poi:4.0.0'
@@ -66,12 +69,16 @@ dependencies {
 
     implementation 'org.apache.tika:tika-parsers:1.24.1'
 
-    testImplementation 'no.fint:fint-test-utils:0.0.6'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // testImplementation 'no.fint:fint-test-utils:0.0.6'
     testImplementation 'cglib:cglib-nodep:3.3.0'
-    testImplementation 'org.spockframework:spock-spring:2.0-groovy-3.0'
-    testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
+    testImplementation 'org.spockframework:spock-spring:2.2-groovy-3.0'
+    testImplementation 'org.spockframework:spock-core:2.2-groovy-3.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.2.4'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.4.6'
+    testImplementation 'io.projectreactor:reactor-test:3.4.23'
 }
 
 test {

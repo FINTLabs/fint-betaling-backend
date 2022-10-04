@@ -2,7 +2,6 @@ package no.fint.betaling.controller;
 
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.repository.TaxcodeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,8 +14,11 @@ import java.util.Collection;
 @RequestMapping(value = "/api/mva-code")
 public class TaxcodeController {
 
-    @Autowired
     private TaxcodeRepository repository;
+
+    public TaxcodeController(TaxcodeRepository repository) {
+        this.repository = repository;
+    }
 
     @GetMapping
     public Collection<Taxcode> getMvaCodes() {
