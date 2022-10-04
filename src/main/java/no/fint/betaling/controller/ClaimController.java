@@ -18,7 +18,6 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping(value = "/api/claim")
 public class ClaimController {
 
