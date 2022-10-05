@@ -9,6 +9,7 @@ fint:
       enable: true
   client:
     base-url: https://play-with-fint.felleskomponent.no
+    enabled: false
 
   betaling:
     client-name: "FINT-Betaling"
