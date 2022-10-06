@@ -3,6 +3,7 @@ package no.fint.betaling;
 import io.netty.channel.ChannelOption;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,8 +31,10 @@ public class OAuthConfiguration {
     private String username;
     private String password;
     private String registrationId;
+    private String enabled;
 
     @Bean
+    @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "true", matchIfMissing = true)
     public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
             ReactiveClientRegistrationRepository clientRegistrationRepository,
             ReactiveOAuth2AuthorizedClientService authorizedClientService) {
@@ -70,7 +73,12 @@ public class OAuthConfiguration {
     }
 
     @Bean
-    public WebClient webClient(WebClient.Builder builder, ReactiveOAuth2AuthorizedClientManager authorizedClientManager, ClientHttpConnector clientHttpConnector) {
+    @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "true", matchIfMissing = true)
+    public WebClient webClient(
+            WebClient.Builder builder,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager,
+            ClientHttpConnector clientHttpConnector) {
+
         ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1))
                 .build();
@@ -86,5 +94,21 @@ public class OAuthConfiguration {
                 .build();
     }
 
+    @Bean
+    @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "false")
+    public WebClient webClientWithoutOauth(
+            WebClient.Builder builder,
+            ClientHttpConnector clientHttpConnector) {
+
+        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1))
+                .build();
+
+        return builder
+                .clientConnector(clientHttpConnector)
+                .exchangeStrategies(exchangeStrategies)
+                .baseUrl(baseUrl)
+                .build();
+    }
 }
 
