@@ -53,6 +53,7 @@ spec:
           env:
             - { name: fint.betaling.invoice-update-rate, value: '3600000' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byOrgnummer' }
+            - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'demo'}
             - { name: fint.oauth.enabled, value: 'false' }
             - { name: fint.client.enabled, value: 'false' }
             - { name: fint.client.base-url, value: "https://play-with-fint.felleskomponent.no" }
