@@ -40,7 +40,7 @@ spec:
               memory: "2Gi"
               cpu: "250m"
           readinessProbe:
-            initialDelaySeconds: 90
+            initialDelaySeconds: 300
             timeoutSeconds: 5
             httpGet:
               port: 8080
