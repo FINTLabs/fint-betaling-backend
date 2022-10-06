@@ -55,6 +55,7 @@ spec:
             - { name: fint.betaling.principal-matching-strategy, value: 'byOrgnummer' }
             - { name: fint.oauth.enabled, value: 'false' }
             - { name: fint.client.enabled, value: 'false' }
+            - { name: fint.client.base-url, value: "https://play-with-fint.felleskomponent.no" }
             - { name: fint.betaling.client-name, value: "FINT-Betaling" }
             - { name: fint.betaling.org-id, value: "pwf.no" }
             - { name: fint.betaling.default-org-id, value: "pwf.no" }
