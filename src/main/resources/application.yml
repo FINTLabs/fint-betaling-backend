@@ -22,7 +22,13 @@ spring:
             scope: fint-client
 
 management:
+  health:
+    readinessState:
+      enabled: true
   endpoints:
+    health:
+      probes:
+        enabled: true
     web:
       exposure:
         include: info, health, metrics, prometheus
