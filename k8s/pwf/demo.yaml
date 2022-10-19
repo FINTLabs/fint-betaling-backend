@@ -72,6 +72,7 @@ spec:
             - { name: fint.betaling.date-range, value: "7, 14, 30" }
             - { name: fint.betaling.demo, value: "true" }
             - { name: fint.betaling.demo-user-employeeid, value: "100006" }
+            - { name: fint.betaling.demo-user-org-id, value: "970123458" }
             - { name: fint.betaling.invoice-update-cron, value: "0 0 0 31 2 ?" }
             - { name: fint.betaling.endpoints.environment, value: "play-with-fint" }
             - { name: spring.data.mongodb.database, value: "betaling-demo" }
