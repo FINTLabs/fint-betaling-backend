@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     io.kompose.service: fint-betaling-backend-demo
-  name: betaling-backend-demo
+  name: fint-betaling-backend-demo
 
 spec:
   ports:
@@ -29,22 +29,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: betaling-backend-demo
+  name: fint-betaling-backend-demo
 spec:
   selector:
     matchLabels:
-      app: betaling-backend-demo
+      app: fint-betaling-backend-demo
   template:
     metadata:
       labels:
-        app: betaling-backend-demo
+        app: fint-betaling-backend-demo
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
         prometheus.io/path: "/actuator/prometheus"
     spec:
       containers:
-        - name: betaling-backend-demo
+        - name: fint-betaling-backend-demo
           image: fintlabsacr.azurecr.io/fint-betaling-backend:dummy
           resources:
             limits:
