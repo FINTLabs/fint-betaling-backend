@@ -73,7 +73,7 @@ jobs:
       - name: Set the target Api cluster.
         uses: azure/aks-set-context@v1
         with:
-          creds: '${{ secrets.AKSGå ti_API_FINT_GITHUB }}'
+          creds: '${{ secrets.AKS_API_FINT_GITHUB }}'
           cluster-name: ${{ env.API_CLUSTER_NAME }}
           resource-group: ${{ env.API_CLUSTER_RESOURCE_GROUP }}
 
