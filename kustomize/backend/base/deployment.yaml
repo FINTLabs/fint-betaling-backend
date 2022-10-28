@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: fint-betaling-backend
-          image: fintlabsacr.azurecr.io/fint-betaling-backend:sha-a529dde
+          image: ghcr.io/fintlabs/fint-betaling-backend:sha-a529dde
           resources:
             limits:
               memory: "6Gi"

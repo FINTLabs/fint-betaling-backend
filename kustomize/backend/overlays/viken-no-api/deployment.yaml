@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: fint-betaling-backend
-          image: fintlabsacr.azurecr.io/fint-betaling-backend:sha-a529dde
+          image: ghcr.io/fintlabs/fint-betaling-backend:sha-a529dde
           envFrom:
             - secretRef:
                 name: betaling-viken
