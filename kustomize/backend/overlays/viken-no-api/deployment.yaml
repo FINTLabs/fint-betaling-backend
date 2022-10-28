@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fint-betaling-backend
+spec:
+  template:
+    spec:
+      containers:
+        - name: fint-betaling-backend
+          image: fintlabsacr.azurecr.io/fint-betaling-backend:dummy
+          envFrom:
+            - secretRef:
+                name: betaling-viken
+          env:
+            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
+            - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'viken.no'}
+            - { name: fint.betaling.org-id, value: "viken.no" }
+            - { name: fint.betaling.default-org-id, value: "viken.no" }
+            - { name: spring.data.mongodb.database, value: "betaling" }

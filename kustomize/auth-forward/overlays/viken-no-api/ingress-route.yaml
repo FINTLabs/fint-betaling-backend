@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: betaling-auth-forward
+  labels:
+    app: betaling-auth-forward
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`betaling-viken2.fintlabs.no`) && PathPrefix(`/_oauth`)
+      kind: Rule
+      services:
+        - name: betaling-auth-forward
+          port: 8080

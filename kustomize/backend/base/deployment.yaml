@@ -1,50 +1,10 @@
-apiVersion: onepassword.com/v1
-kind: OnePasswordItem
-metadata:
-  name: betaling-viken
-spec:
-  itemPath: "vaults/aks-api-vault/items/betaling-viken"
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: fint-betaling-backend
-  name: fint-betaling-backend
-
-spec:
-  ports:
-    - port: 8080
-  type: ClusterIP
-  selector:
-    app: fint-betaling-backend
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: fint-betaling-backend
-spec:
-  entryPoints:
-    - web
-  routes:
-    - match: Host(`betaling-viken2.felleskomponent.no`) && PathPrefix(`/api`)
-      kind: Rule
-      services:
-        - name: fint-betaling-backend
-          port: 8080
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fint-betaling-backend
 spec:
-  selector:
-    matchLabels:
-      app: fint-betaling-backend
   template:
     metadata:
-      labels:
-        app: fint-betaling-backend
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
@@ -55,7 +15,7 @@ spec:
           image: fintlabsacr.azurecr.io/fint-betaling-backend:dummy
           resources:
             limits:
-              memory: "5Gi"
+              memory: "6Gi"
               cpu: "2"
             requests:
               memory: "2Gi"
@@ -65,20 +25,20 @@ spec:
           envFrom:
             - configMapRef:
                 name: fint-environment
-            - secretRef:
-                name: betaling-viken
+#            - secretRef:
+#                name: betaling-viken
           env:
+            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
             - { name: fint.betaling.invoice-update-rate, value: '3600000' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byOrgnummer' }
-            - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'viken.no'}
+#            - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'viken.no'}
             - { name: fint.oauth.enabled, value: 'true' }
             - { name: fint.client.enabled, value: 'true' }
             - { name: fint.client.base-url, value: "https://api.felleskomponent.no" }
             - { name: fint.betaling.client-name, value: "FINT-Betaling" }
-            - { name: fint.betaling.org-id, value: "viken.no" }
-            - { name: fint.betaling.default-org-id, value: "viken.no" }
+#            - { name: fint.betaling.org-id, value: "viken.no" }
+#            - { name: fint.betaling.default-org-id, value: "viken.no" }
             - { name: fint.betaling.date-range, value: "7, 14, 30" }
             - { name: fint.betaling.invoice-update-cron, value: "0 30 16 ? * MON-FRI" }
             - { name: fint.betaling.endpoints.environment, value: "api" }
-            - { name: spring.data.mongodb.database, value: "betaling" }
-            - { name: spring.data.mongodb.uri, valueFrom: { secretKeyRef: { name: fint-mongo, key: mongodb } } }
+#            - { name: spring.data.mongodb.database, value: "betaling" }

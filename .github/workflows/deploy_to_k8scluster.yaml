@@ -69,21 +69,21 @@ jobs:
       #          namespace: ${{ env.NAMESPACE }}
       #          action: deploy
 
-      ## Api cluster ##
-      - name: Set the target Api cluster.
-        uses: azure/aks-set-context@v1
-        with:
-          creds: '${{ secrets.AKS_API_FINT_GITHUB }}'
-          cluster-name: ${{ env.API_CLUSTER_NAME }}
-          resource-group: ${{ env.API_CLUSTER_RESOURCE_GROUP }}
-
-      - name: Deploy to Api
-        uses: azure/k8s-deploy@v3.1
-        with:
-          manifests: k8s/api/viken.yaml
-          images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{steps.get_repo.outputs.REPO}}:${{ github.sha }}
-          namespace: 'viken-no'
-          action: deploy
+#      ## Api cluster ##
+#      - name: Set the target Api cluster.
+#        uses: azure/aks-set-context@v1
+#        with:
+#          creds: '${{ secrets.AKS_API_FINT_GITHUB }}'
+#          cluster-name: ${{ env.API_CLUSTER_NAME }}
+#          resource-group: ${{ env.API_CLUSTER_RESOURCE_GROUP }}
+#
+#      - name: Deploy to Api
+#        uses: azure/k8s-deploy@v3.1
+#        with:
+#          manifests: k8s/api/viken.yaml
+#          images: ${{ env.REGISTRY_NAME }}.azurecr.io/${{steps.get_repo.outputs.REPO}}:${{ github.sha }}
+#          namespace: 'viken-no'
+#          action: deploy
 
       ## PWF cluster ##
       - name: Set the target PWF cluster.

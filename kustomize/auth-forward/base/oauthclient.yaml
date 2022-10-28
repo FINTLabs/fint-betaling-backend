@@ -1,0 +1,6 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: NamOAuthClientApplicationResource
+metadata:
+  name: betaling-auth-forward
+spec:
+
