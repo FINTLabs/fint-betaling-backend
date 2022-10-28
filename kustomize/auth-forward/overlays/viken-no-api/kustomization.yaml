@@ -12,4 +12,4 @@ commonLabels:
   app.kubernetes.io/managed-by: "ga"
   app.kubernetes.io/component: traefik-forward-auth-service
   app.kubernetes.io/part-of: fint-betaling
-  fintlabs.no/team: core
+  # fintlabs.no/team: core
