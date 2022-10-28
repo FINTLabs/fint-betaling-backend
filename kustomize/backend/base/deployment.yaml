@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: fint-betaling-backend
 spec:
+  selector:
+    matchLabels:
+      app: fint-betaling-backend
   template:
     metadata:
       annotations:
