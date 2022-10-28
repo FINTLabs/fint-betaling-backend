@@ -10,6 +10,9 @@ spec:
   strategy:
     type: Recreate
   template:
+    metadata:
+      labels:
+        app: betaling-auth-forward
     spec:
       terminationGracePeriodSeconds: 60
       containers:
