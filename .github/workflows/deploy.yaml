@@ -115,7 +115,7 @@ jobs:
           manifests: ${{ steps.bake-API-backend.outputs.manifestsBundle }}
           images: |
             ${{ steps.meta.outputs.tags }}
-          namespace: operators
+          namespace: viken-no
           action: deploy
 
 
@@ -138,5 +138,5 @@ jobs:
           manifests: ${{ steps.bake-API-auth-forward.outputs.manifestsBundle }}
           images: |
             ${{ steps.meta.outputs.tags }}
-          namespace: operators
+          namespace: viken-no
           action: deploy
