@@ -96,11 +96,11 @@ jobs:
 #          action: deploy
 #
 #      ## Api cluster ##
-      - name: Bake api manifests with Kustomize
+      - name: Bake api manifests with Kustomize - backend
         uses: azure/k8s-bake@v2.2
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: 'kustomize/overlays/viken-no-api'
+          kustomizationPath: 'kustomize/backend/overlays/viken-no-api'
         id: bake-api
       - name: Set the target Api cluster.
         uses: azure/aks-set-context@v1
@@ -109,7 +109,30 @@ jobs:
           cluster-name: ${{ env.API_CLUSTER_NAME }}
           resource-group: ${{ env.API_CLUSTER_RESOURCE_GROUP }}
 
-      - name: Deploy to API
+      - name: Deploy to API - backend
+        uses: azure/k8s-deploy@v4.4
+        with:
+          manifests: ${{ steps.bake-API.outputs.manifestsBundle }}
+          images: |
+            ${{ steps.meta.outputs.tags }}
+          namespace: operators
+          action: deploy
+
+
+      - name: Bake api manifests with Kustomize - auth-forward
+        uses: azure/k8s-bake@v2.2
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: 'kustomize/auth-forward/overlays/viken-no-api'
+        id: bake-api
+      - name: Set the target Api cluster.
+        uses: azure/aks-set-context@v1
+        with:
+          creds: '${{ secrets.AKS_API_FINT_GITHUB }}'
+          cluster-name: ${{ env.API_CLUSTER_NAME }}
+          resource-group: ${{ env.API_CLUSTER_RESOURCE_GROUP }}
+
+      - name: Deploy to API - auth-forward
         uses: azure/k8s-deploy@v4.4
         with:
           manifests: ${{ steps.bake-API.outputs.manifestsBundle }}
