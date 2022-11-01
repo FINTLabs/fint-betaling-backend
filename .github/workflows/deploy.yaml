@@ -112,7 +112,7 @@ jobs:
       - name: Deploy to API - backend
         uses: azure/k8s-deploy@v4.4
         with:
-          manifests: ${{ steps.bake-API-backend.outputs.manifestsBundle }}
+          manifests: ${{ steps.bake-api-backend.outputs.manifestsBundle }}
           images: |
             ${{ steps.meta.outputs.tags }}
           namespace: viken-no
