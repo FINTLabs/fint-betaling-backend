@@ -4,8 +4,8 @@ metadata:
   name: betaling-auth-forward
 spec:
   selector:
-#    matchLabels:
-#      app: betaling-auth-forward
+    matchLabels:
+      app: betaling-auth-forward
   replicas: 1
   strategy:
     type: Recreate
