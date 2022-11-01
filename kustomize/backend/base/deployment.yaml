@@ -8,8 +8,8 @@ spec:
 #      app: fint-betaling-backend
   template:
     metadata:
-      labels:
-        app: fint-betaling-backend
+#      labels:
+#        app: fint-betaling-backend
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
