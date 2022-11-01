@@ -3,9 +3,9 @@ kind: Deployment
 metadata:
   name: fint-betaling-backend
 spec:
-  selector:
-    matchLabels:
-      app: fint-betaling-backend
+#  selector:
+#    matchLabels:
+#      app: fint-betaling-backend
   template:
     metadata:
       labels:
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: fint-betaling-backend
-          image: ghcr.io/fintlabs/fint-betaling-backend:sha-a529dde
+          image: ghcr.io/fintlabs/fint-betaling-backend:sha-0000000
           resources:
             limits:
               memory: "6Gi"

@@ -16,7 +16,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-        - image: ghcr.io/fintlabs/flais-auth-forward-service:sha-65fbbb4
+        - image: ghcr.io/fintlabs/flais-auth-forward-service:sha-692c172
           name: auth-forward
           ports:
             - containerPort: 8080

@@ -7,11 +7,11 @@ patchesStrategicMerge:
 resources:
   - ../../base
 namespace: viken-no
-#commonLabels:
-#  app.kubernetes.io/name: fint-betaling-backend
-#  app.kubernetes.io/instance: fint-betaling-backend-viken-no
-#  app.kubernetes.io/version: "latest"
-#  app.kubernetes.io/managed-by: "ga"
-#  app.kubernetes.io/component: backend
-#  app.kubernetes.io/part-of: fint-betaling
-  #fintlabs.no/team: core
+commonLabels:
+  app.kubernetes.io/name: fint-betaling-backend
+  app.kubernetes.io/instance: fint-betaling-backend-viken-no
+  app.kubernetes.io/version: "latest"
+  app.kubernetes.io/managed-by: "ga"
+  app.kubernetes.io/component: backend
+  app.kubernetes.io/part-of: fint-betaling
+  fintlabs.no/team: core
