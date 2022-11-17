@@ -31,17 +31,24 @@ public class RestUtil {
     }
 
     public <T> T getUpdates(Class<T> clazz, String uri) {
-        return webClient.get()
-                .uri(uri.concat("/last-updated"))
-                .retrieve()
-                .bodyToMono(LastUpdated.class)
-                .flatMap(lastUpdated -> webClient.get()
-                        .uri(uri, uriBuilder -> uriBuilder.queryParam("sinceTimeStamp", sinceTimestamp.getOrDefault(uri, 0L)).build())
-                        .retrieve()
-                        .bodyToMono(clazz)
-                        .doOnNext(it -> sinceTimestamp.put(uri, lastUpdated.getLastUpdated()))
-                )
-                .block();
+        try {
+            return webClient.get()
+                    .uri(uri.concat("/last-updated"))
+                    .retrieve()
+                    .bodyToMono(LastUpdated.class)
+                    .flatMap(lastUpdated -> webClient.get()
+                            .uri(uri, uriBuilder -> uriBuilder.queryParam("sinceTimeStamp", sinceTimestamp.getOrDefault(uri, 0L)).build())
+                            .retrieve()
+                            .bodyToMono(clazz)
+                            .doOnNext(it -> sinceTimestamp.put(uri, lastUpdated.getLastUpdated()))
+                    )
+                    .toFuture()
+                    .get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public <T> T get(Class<T> clazz, String uri) {
@@ -58,9 +65,7 @@ public class RestUtil {
                     .bodyToMono(clazz)
                     .toFuture()
                     .get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -106,9 +111,7 @@ public class RestUtil {
                     .getLocation();
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
