@@ -13,7 +13,3 @@ spec:
                 name: betaling-viken
           env:
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
-            - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'viken.no'}
-            - { name: fint.betaling.org-id, value: "viken.no" }
-            - { name: fint.betaling.default-org-id, value: "viken.no" }
-            - { name: spring.data.mongodb.database, value: "betaling" }
