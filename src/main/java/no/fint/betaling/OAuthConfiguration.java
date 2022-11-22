@@ -3,6 +3,8 @@ package no.fint.betaling;
 import io.netty.channel.ChannelOption;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.cxf.common.util.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -20,7 +23,9 @@ import reactor.netty.resources.ConnectionProvider;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
 
+@Slf4j
 @Getter
 @Setter
 @Configuration
@@ -48,6 +53,9 @@ public class OAuthConfiguration {
                 clientRegistrationRepository,
                 authorizedClientService
         );
+
+        if (StringUtils.isEmpty(username)) throw new IllegalArgumentException("Username cannot be empty!");
+        if (StringUtils.isEmpty(password)) throw new IllegalArgumentException("Password cannot be empty!");
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
         authorizedClientManager.setContextAttributesMapper(oAuth2AuthorizeRequest -> Mono.just(Map.of(
