@@ -46,4 +46,5 @@ spec:
             - { name: fint.betaling.date-range, value: "7, 14, 30" }
             - { name: fint.betaling.invoice-update-cron, value: "0 30 16 ? * MON-FRI" }
             - { name: fint.betaling.endpoints.environment, value: "api" }
-#            - { name: spring.data.mongodb.database, value: "betaling" }
+            - { name: fint.betaling.demo, value: "false" }
+

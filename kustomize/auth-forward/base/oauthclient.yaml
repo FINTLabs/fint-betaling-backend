@@ -3,4 +3,5 @@ kind: NamOAuthClientApplicationResource
 metadata:
   name: betaling-auth-forward
 spec:
-
+  redirectUris:
+    - https://dummy.com

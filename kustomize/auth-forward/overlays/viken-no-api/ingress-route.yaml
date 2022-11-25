@@ -8,7 +8,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`betaling-viken2.fintlabs.no`) && PathPrefix(`/_oauth`)
+    - match: Host(`betaling-viken2.felleskomponent.no`) && PathPrefix(`/_oauth`)
       kind: Rule
       services:
         - name: betaling-auth-forward

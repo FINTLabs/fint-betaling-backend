@@ -4,7 +4,7 @@ metadata:
   name: betaling-auth-forward
 spec:
   forwardAuth:
-    #address: http://flais-auth-forward-simple-test.flais-auth-forward-simple-test:8080/_oauth
+    address: http://betaling-auth-forward.viken-no:8080/_oauth
     authResponseHeaders:
       - Authorization
     trustForwardHeader: true
