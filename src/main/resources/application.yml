@@ -39,3 +39,4 @@ fint:
     invoice-send-rate: "60000"
     invoice-update-rate: "150000"
     demo-user-employeeid: "100006"
+    demo: "false"
