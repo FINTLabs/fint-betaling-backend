@@ -1,6 +1,8 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.PersonalressursException;
+import no.fint.betaling.exception.SkoleressursException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.util.RestUtil;
@@ -12,18 +14,17 @@ import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Repository
@@ -81,11 +82,19 @@ public class MeRepository {
     private User getUserFromSkoleressure(String employeeId) {
         User user = new User();
 
-        PersonalressursResource personalressurs = Objects.requireNonNull(restUtil.get(PersonalressursResource.class,
-                UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", employeeId).build().toUriString()));
+        PersonalressursResource personalressurs =
+                restUtil.get(
+                        PersonalressursResource.class,
+                        UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", employeeId).build().toUriString()
+                );
+
+        if (personalressurs == null) {
+            log.error("Did not find any Personalressurs for empoloyeeId=" + employeeId);
+            throw new PersonalressursException(HttpStatus.BAD_REQUEST, "Fant ingen personalressurs for gitt ansatt.");
+        }
 
         if (personalressurs.getSkoleressurs().size() == 0)
-            throw new NullPointerException("Given Personalressurs have no relation to Skoleressurs");
+            throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
 
         SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
 
