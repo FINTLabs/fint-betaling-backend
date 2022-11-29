@@ -18,11 +18,11 @@ public class SecurityConfiguration {
     @Value("${fint.betaling.authorized-role:https://role-catalog.vigoiks.no/vigo/elevfakturering/user}")
     private String authorizedRole;
 
-    @Value("${fint.betaling.authorized-role:https://role-catalog.vigoiks.no/vigo/elevfakturering/admin}")
+    @Value("${fint.betaling.authorized-role-admin:https://role-catalog.vigoiks.no/vigo/elevfakturering/admin}")
     private String authorizedRoleAdmin;
 
     @Bean
-    @ConditionalOnProperty(value="fint.betaling.demo", havingValue="true")
+    @ConditionalOnProperty(value = "fint.betaling.demo", havingValue = "true")
     SecurityWebFilterChain springSecurityFilterChainDemo(ServerHttpSecurity http) {
 
         log.warn("Starting WITHOUT security. SecurityWebFilterChain disabled.");
@@ -36,7 +36,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value="fint.betaling.demo", havingValue="false", matchIfMissing=true)
+    @ConditionalOnProperty(value = "fint.betaling.demo", havingValue = "false", matchIfMissing = true)
     SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .authorizeExchange((authorize) -> authorize
