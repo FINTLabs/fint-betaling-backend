@@ -1,8 +1,6 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.exception.PersonalressursException;
-import no.fint.betaling.exception.SkoleressursException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.util.RestUtil;
@@ -14,10 +12,8 @@ import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Comparator;
 import java.util.List;
@@ -30,22 +26,13 @@ import java.util.stream.Collectors;
 @Repository
 public class MeRepository {
 
-    @Value("${fint.betaling.endpoints.school-resource:/utdanning/elev/skoleressurs}")
-    private String schoolResourceEndpoint;
-
-    private final RestUtil restUtil;
-
-    private final GroupRepository groupRepository;
-
     private final OrganisationRepository organisationRepository;
 
     private final FintRepository fintRepository;
 
     private final ConcurrentMap<String, User> users = new ConcurrentSkipListMap<>();
 
-    public MeRepository(RestUtil restUtil, GroupRepository groupRepository, OrganisationRepository organisationRepository, FintRepository fintRepository) {
-        this.restUtil = restUtil;
-        this.groupRepository = groupRepository;
+    public MeRepository(OrganisationRepository organisationRepository, FintRepository fintRepository) {
         this.organisationRepository = organisationRepository;
         this.fintRepository = fintRepository;
     }
@@ -69,7 +56,23 @@ public class MeRepository {
             User userFromSkoleressursByFeidenavn = getUserFromSkoleressure(feideUpn);
             users.put(feideUpn, userFromSkoleressursByFeidenavn);
         });
+    }
 
+    private User getUserFromSkoleressure(String employeeId) {
+        User user = new User();
+
+        PersonalressursResource personalressurs = fintRepository.getPersonalressurs(employeeId);
+        user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
+        user.setName(getName(fintRepository.getPerson(personalressurs)));
+
+        SkoleressursResource skoleressurs = fintRepository.getSkoleressurs(personalressurs);
+        List<SkoleResource> schools = fintRepository.getSkoler(skoleressurs);
+        user.setOrganisationUnits(mapToOrganisation(schools));
+
+        final Optional<Organisation> owner = getTopOrganisation(schools);
+        owner.ifPresent(user::setOrganisation);
+
+        return user;
     }
 
     private String getName(PersonResource person) {
@@ -79,41 +82,8 @@ public class MeRepository {
                 : String.format("%s %s %s", n.getFornavn(), n.getMellomnavn(), n.getEtternavn());
     }
 
-    private User getUserFromSkoleressure(String employeeId) {
-        User user = new User();
-
-        PersonalressursResource personalressurs =
-                restUtil.get(
-                        PersonalressursResource.class,
-                        UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", employeeId).build().toUriString()
-                );
-
-        if (personalressurs == null) {
-            log.error("Did not find any Personalressurs for empoloyeeId=" + employeeId);
-            throw new PersonalressursException(HttpStatus.BAD_REQUEST, "Fant ingen personalressurs for gitt ansatt.");
-        }
-
-        user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
-
-        PersonResource person = restUtil.getFromFullUri(PersonResource.class, personalressurs.getPerson().get(0).getHref());
-        user.setName(getName(person));
-
-        if (personalressurs.getSkoleressurs().size() == 0)
-            throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
-
-        SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
-        log.debug("Skoleressurs: {}", skoleressurs);
-
-        List<SkoleResource> schools = skoleressurs
-                .getSkole()
-                .stream()
-                .map(groupRepository.getSchools()::get)
-                .peek(it -> log.debug("Skole: {}", it))
-                .collect(Collectors.toList());
-
-        setOrganisationUnits(user, schools);
-
-        final Optional<Organisation> owner = schools
+    private Optional<Organisation> getTopOrganisation(List<SkoleResource> schools) {
+        return schools
                 .stream()
                 .map(SkoleResource::getOrganisasjon)
                 .flatMap(List::stream)
@@ -123,24 +93,20 @@ public class MeRepository {
                 .distinct()
                 .peek(it -> log.debug("Organisasjon: {}", it))
                 .findAny();
-
-        owner.ifPresent(user::setOrganisation);
-        return user;
     }
 
-    private void setOrganisationUnits(User user, List<SkoleResource> schools) {
-        user.setOrganisationUnits(
-                schools
-                        .stream()
-                        .map(skole -> {
-                            Organisation org = new Organisation();
-                            org.setName(skole.getNavn());
-                            if (skole.getOrganisasjonsnummer() != null) {
-                                org.setOrganisationNumber(skole.getOrganisasjonsnummer().getIdentifikatorverdi());
-                            }
-                            return org;
-                        })
-                        .sorted(Comparator.comparing(Organisation::getName))
-                        .collect(Collectors.toList()));
+    private List<Organisation> mapToOrganisation(List<SkoleResource> schools) {
+        return schools
+                .stream()
+                .map(skole -> {
+                    Organisation org = new Organisation();
+                    org.setName(skole.getNavn());
+                    if (skole.getOrganisasjonsnummer() != null) {
+                        org.setOrganisationNumber(skole.getOrganisasjonsnummer().getIdentifikatorverdi());
+                    }
+                    return org;
+                })
+                .sorted(Comparator.comparing(Organisation::getName))
+                .collect(Collectors.toList());
     }
 }
