@@ -1,5 +1,6 @@
 package no.fint.betaling.repository
 
+import no.fint.betaling.config.Endpoints
 import no.fint.betaling.model.Lineitem
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
@@ -8,17 +9,21 @@ import no.fint.model.resource.okonomi.faktura.FakturautstederResource
 import no.fint.model.resource.okonomi.faktura.FakturautstederResources
 import spock.lang.Specification
 
-class PrincipalRepositorySpec extends Specification {
+class InvoiceIssuerRepositorySpec extends Specification {
 
     def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/oppdragsgiver'
+    def endpoints = Mock(Endpoints) {
+        getInvoiceIssuer() >> endpoint
+    }
     def lineitemRepository = Mock(LineitemRepository)
     def organisationRepository = Mock(OrganisationRepository)
-    def repository = new PrincipalRepository(
-            restUtil: restUtil,
-            principalEndpoint: endpoint,
-            lineitemRepository: lineitemRepository,
-            organisationRepository: organisationRepository,
+
+    def repository = new InvoiceIssuerRepository(
+            restUtil,
+            lineitemRepository,
+            organisationRepository,
+            endpoints
     )
 
     def 'Fetching principals should update first'() {
@@ -34,7 +39,7 @@ class PrincipalRepositorySpec extends Specification {
         fakturautstederResources.addResource(fakturautstederResource)
 
         when:
-        def result = repository.getPrincipals()
+        def result = repository.getInvoiceIssuers()
 
         then:
         1 * restUtil.getUpdates(FakturautstederResources, endpoint) >> fakturautstederResources

@@ -1,42 +1,42 @@
-package no.fint.betaling.repository;
+package no.fint.betaling.util;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.exception.PersonalressursException;
 import no.fint.betaling.exception.SkoleressursException;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.repository.GroupRepository;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Repository
-public class FintRepository {
+@Component
+public class FintClient {
 
-    @Value("${fint.betaling.endpoints.employee:/administrasjon/personal/personalressurs}")
-    private String employeeEndpoint;
+    private final Endpoints endpoints;
 
     private final RestUtil restUtil;
 
     public final GroupRepository groupRepository;
 
-    public FintRepository(RestUtil restUtil, GroupRepository groupRepository) {
+    public FintClient(RestUtil restUtil, GroupRepository groupRepository, Endpoints endpoints) {
         this.restUtil = restUtil;
         this.groupRepository = groupRepository;
+        this.endpoints = endpoints;
     }
 
     public PersonalressursResource getPersonalressurs(String ansattnummer) {
 
         PersonalressursResource personalressurs = restUtil.get(
                 PersonalressursResource.class,
-                UriComponentsBuilder.fromUriString(employeeEndpoint).pathSegment("ansattnummer", ansattnummer).build().toUriString()
+                UriComponentsBuilder.fromUriString(endpoints.getEmployee()).pathSegment("ansattnummer", ansattnummer).build().toUriString()
         );
 
         if (personalressurs == null) {
@@ -54,7 +54,7 @@ public class FintRepository {
         );
     }
 
-    public SkoleressursResource getSkoleressurs(PersonalressursResource personalressurs){
+    public SkoleressursResource getSkoleressurs(PersonalressursResource personalressurs) {
         if (personalressurs.getSkoleressurs().size() == 0)
             throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
 

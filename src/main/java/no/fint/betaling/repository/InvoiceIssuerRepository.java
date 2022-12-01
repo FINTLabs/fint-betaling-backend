@@ -1,12 +1,12 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResource;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResources;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
@@ -18,41 +18,38 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @Repository
-public class PrincipalRepository {
+public class InvoiceIssuerRepository {
 
-    @Value("${fint.betaling.endpoints.principal:/okonomi/faktura/fakturautsteder}")
-    private String principalEndpoint;
+    private final Endpoints endpoints;
 
-    @Autowired
-    private RestUtil restUtil;
-    @Autowired
-    private LineitemRepository lineitemRepository;
-    @Autowired
-    private OrganisationRepository organisationRepository;
+    private final RestUtil restUtil;
 
-    private final ConcurrentMap<String, Principal> principals = new ConcurrentSkipListMap<>();
+    private final LineitemRepository lineitemRepository;
 
-    public Principal getPrincipalByUri(String uri) {
-        if (principals.isEmpty()) {
-            updatePrincipals();
-        }
-        return principals.get(uri);
+    private final OrganisationRepository organisationRepository;
+
+    private final ConcurrentMap<String, Principal> invoiceIssuers = new ConcurrentSkipListMap<>();
+
+    public InvoiceIssuerRepository(RestUtil restUtil, LineitemRepository lineitemRepository, OrganisationRepository organisationRepository, Endpoints endpoints) {
+        this.restUtil = restUtil;
+        this.lineitemRepository = lineitemRepository;
+        this.organisationRepository = organisationRepository;
+        this.endpoints = endpoints;
     }
 
-    public Collection<Principal> getPrincipals() {
-        if (principals.isEmpty()) {
-            updatePrincipals();
+    public Collection<Principal> getInvoiceIssuers() {
+        if (invoiceIssuers.isEmpty()) {
+            updateInvoiceIssuers();
         }
-        return Collections.unmodifiableCollection(principals.values());
+        return Collections.unmodifiableCollection(invoiceIssuers.values());
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
-    public void updatePrincipals() {
-        log.info("Updating principals from {} ...", principalEndpoint);
-        restUtil.getUpdates(FakturautstederResources.class, principalEndpoint)
+    public void updateInvoiceIssuers() {
+        log.info("Updating invoice issuer from {} ...", endpoints.getInvoiceIssuer());
+        restUtil.getUpdates(FakturautstederResources.class, endpoints.getInvoiceIssuer())
                 .getContent()
                 .forEach(fakturautsteder -> {
                     Principal principal = new Principal();
@@ -70,9 +67,9 @@ public class PrincipalRepository {
                             .stream()
                             .map(Link::getHref)
                             .forEach(principal::setUri);
-                    principals.put(principal.getUri(), principal);
+                    invoiceIssuers.put(principal.getUri(), principal);
                 });
-        log.info("Update completed, {} principals.", principals.size());
+        log.info("Update completed, {} invoice issuers.", invoiceIssuers.size());
     }
 
     private boolean isOrganisasjonselementMissing(FakturautstederResource fakturautsteder) {

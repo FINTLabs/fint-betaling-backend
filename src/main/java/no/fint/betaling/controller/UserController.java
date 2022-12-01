@@ -3,9 +3,8 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.exception.EmployeeIdException;
-import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.model.User;
-import no.fint.betaling.repository.MeRepository;
+import no.fint.betaling.service.UserCacheService;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,23 +19,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URISyntaxException;
-import java.util.Collections;
 
 @RestController
 @RequestMapping(value = "/api/me")
 @Slf4j
-public class MeController {
+public class UserController {
 
     @Value("${fint.idle-time:900000}")
     private long idleTime;
 
-    private final MeRepository meRepository;
+    private final UserCacheService userCacheService;
 
     private ApplicationProperties applicationProperties;
 
-    public MeController(MeRepository meRepository, ApplicationProperties applicationProperties) {
-        this.meRepository = meRepository;
+    public UserController(ApplicationProperties applicationProperties, UserCacheService userCacheService) {
         this.applicationProperties = applicationProperties;
+        this.userCacheService = userCacheService;
     }
 
     @GetMapping
@@ -53,7 +51,7 @@ public class MeController {
         if (StringUtils.isEmpty(employeeId))
             throw new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!");
 
-        User user = meRepository.getUserByAzureAD(employeeId);
+        User user = userCacheService.getUser(employeeId);
         user.setIdleTime(idleTime);
         log.debug("User: {}", user);
 
@@ -63,28 +61,6 @@ public class MeController {
     @GetMapping("ping")
     public ResponseEntity<String> ping() throws URISyntaxException {
         return ResponseEntity.ok("Greetings from FINTLabs :)");
-    }
-
-    @GetMapping("test")
-    public ResponseEntity<User> test(@AuthenticationPrincipal Jwt jwt) throws URISyntaxException {
-
-        FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
-        String employeeId = endUserPrincipal.getEmployeeId();
-
-        if (applicationProperties.getDemo()) {
-            employeeId = applicationProperties.getDemoUserEmployeeId();
-        }
-
-        // User user = meRepository.getUserByAzureId(feideUpn);
-        User user = meRepository.getUserByAzureAD(employeeId);
-        user.setIdleTime(idleTime);
-        log.debug("User: {}", user);
-
-        return (ResponseEntity<User>) ResponseEntity
-                .ok()
-                .cacheControl(CacheControl.noStore())
-                .body(user);
-
     }
 
     @ExceptionHandler({EmployeeIdException.class})

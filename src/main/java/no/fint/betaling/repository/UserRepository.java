@@ -3,7 +3,7 @@ package no.fint.betaling.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
-import no.fint.betaling.util.RestUtil;
+import no.fint.betaling.util.FintClient;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
@@ -11,7 +11,6 @@ import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -24,49 +23,26 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
-public class MeRepository {
+public class UserRepository {
 
     private final OrganisationRepository organisationRepository;
 
-    private final FintRepository fintRepository;
+    private final FintClient fintClient;
 
-    private final ConcurrentMap<String, User> users = new ConcurrentSkipListMap<>();
-
-    public MeRepository(OrganisationRepository organisationRepository, FintRepository fintRepository) {
+    public UserRepository(OrganisationRepository organisationRepository, FintClient fintClient) {
         this.organisationRepository = organisationRepository;
-        this.fintRepository = fintRepository;
+        this.fintClient = fintClient;
     }
 
-    public User getUserByAzureAD(String employeeId) {
-        if (users.containsKey(employeeId)) {
-            return users.get(employeeId);
-        }
-
-        User userFromSkoleressure = getUserFromSkoleressure(employeeId);
-        users.put(employeeId, userFromSkoleressure);
-
-        return userFromSkoleressure;
-    }
-
-    @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
-    public void updateUsers() {
-        log.info("{} users needs to be updated ...", users.size());
-
-        users.forEach((feideUpn, user) -> {
-            User userFromSkoleressursByFeidenavn = getUserFromSkoleressure(feideUpn);
-            users.put(feideUpn, userFromSkoleressursByFeidenavn);
-        });
-    }
-
-    private User getUserFromSkoleressure(String employeeId) {
+    public User mapUserFromResources(String employeeId) {
         User user = new User();
 
-        PersonalressursResource personalressurs = fintRepository.getPersonalressurs(employeeId);
+        PersonalressursResource personalressurs = fintClient.getPersonalressurs(employeeId);
         user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
-        user.setName(getName(fintRepository.getPerson(personalressurs)));
+        user.setName(getName(fintClient.getPerson(personalressurs)));
 
-        SkoleressursResource skoleressurs = fintRepository.getSkoleressurs(personalressurs);
-        List<SkoleResource> schools = fintRepository.getSkoler(skoleressurs);
+        SkoleressursResource skoleressurs = fintClient.getSkoleressurs(personalressurs);
+        List<SkoleResource> schools = fintClient.getSkoler(skoleressurs);
         user.setOrganisationUnits(mapToOrganisation(schools));
 
         final Optional<Organisation> owner = getTopOrganisation(schools);
