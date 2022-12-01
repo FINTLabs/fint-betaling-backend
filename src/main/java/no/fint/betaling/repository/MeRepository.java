@@ -33,21 +33,21 @@ public class MeRepository {
     @Value("${fint.betaling.endpoints.school-resource:/utdanning/elev/skoleressurs}")
     private String schoolResourceEndpoint;
 
-    //@Value("${fint.betaling.endpoints.employee:/administrasjon/personal/person}")
-    @Value("${fint.betaling.endpoints.employee:/administrasjon/personal/personalressurs}")
-    private String employeeEndpoint;
-
     private final RestUtil restUtil;
+
     private final GroupRepository groupRepository;
+
     private final OrganisationRepository organisationRepository;
+
+    private final FintRepository fintRepository;
 
     private final ConcurrentMap<String, User> users = new ConcurrentSkipListMap<>();
 
-
-    public MeRepository(RestUtil restUtil, GroupRepository groupRepository, OrganisationRepository organisationRepository) {
+    public MeRepository(RestUtil restUtil, GroupRepository groupRepository, OrganisationRepository organisationRepository, FintRepository fintRepository) {
         this.restUtil = restUtil;
         this.groupRepository = groupRepository;
         this.organisationRepository = organisationRepository;
+        this.fintRepository = fintRepository;
     }
 
     public User getUserByAzureAD(String employeeId) {
@@ -93,27 +93,16 @@ public class MeRepository {
             throw new PersonalressursException(HttpStatus.BAD_REQUEST, "Fant ingen personalressurs for gitt ansatt.");
         }
 
+        user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
+
+        PersonResource person = restUtil.getFromFullUri(PersonResource.class, personalressurs.getPerson().get(0).getHref());
+        user.setName(getName(person));
+
         if (personalressurs.getSkoleressurs().size() == 0)
             throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
 
         SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
-
         log.debug("Skoleressurs: {}", skoleressurs);
-
-        skoleressurs
-                .getPersonalressurs()
-                .stream()
-                .map(Link::getHref)
-                .map(it -> restUtil.getFromFullUri(PersonalressursResource.class, it))
-                .peek(it -> log.debug("Personalressurs: {}", it))
-                .peek(it -> user.setEmployeeNumber(it.getAnsattnummer().getIdentifikatorverdi()))
-                .flatMap(it -> it.getPerson().stream())
-                .map(Link::getHref)
-                .map(it -> restUtil.getFromFullUri(PersonResource.class, it))
-                .peek(it -> log.debug("Person: {}", it))
-                .map(this::getName)
-                .findFirst()
-                .ifPresent(user::setName);
 
         List<SkoleResource> schools = skoleressurs
                 .getSkole()
