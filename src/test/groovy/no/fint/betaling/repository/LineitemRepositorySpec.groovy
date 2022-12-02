@@ -15,7 +15,7 @@ class LineitemRepositorySpec extends Specification {
     def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/varelinje'
     def endpoints = Mock(Endpoints){
-        getLineitem() >> endpoint
+        getVare() >> endpoint
     }
     def repository = new LineitemRepository(endpoints, restUtil, taxcodeRepository)
 

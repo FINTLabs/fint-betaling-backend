@@ -36,7 +36,7 @@ public class Endpoints {
     private String organisationselement;
 
     @Value("${fint.betaling.endpoints.lineitem:/okonomi/kodeverk/vare}")
-    private String lineitem;
+    private String vare;
 
     @Value("${fint.betaling.endpoints.mva-code:/okonomi/kodeverk/merverdiavgift}")
     private String taxcode;

@@ -50,8 +50,8 @@ public class LineitemRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateLineitems() {
-        log.info("Updating line items from {} ...", endpoints.getLineitem());
-        restUtil.getUpdates(VareResources.class, endpoints.getLineitem())
+        log.info("Updating vare from {} ...", endpoints.getVare());
+        restUtil.getUpdates(VareResources.class, endpoints.getVare())
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();
@@ -73,7 +73,7 @@ public class LineitemRepository {
                             .forEach(lineitem::setUri);
                     lineitems.put(lineitem.getUri(), lineitem);
                 });
-        log.info("Update completed, {} line items.", lineitems.size());
+        log.info("Update completed, {} varer.", lineitems.size());
     }
 
 }
