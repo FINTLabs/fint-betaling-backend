@@ -7,8 +7,6 @@ import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResources;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -63,8 +61,8 @@ public class OrganisationRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateOrganisations() {
-        log.info("Updating organisations from {} ...", endpoints.getOrganisation());
-        restUtil.getUpdates(OrganisasjonselementResources.class, endpoints.getOrganisation())
+        log.info("Updating organisations from {} ...", endpoints.getOrganisationselement());
+        restUtil.getUpdates(OrganisasjonselementResources.class, endpoints.getOrganisationselement())
                 .getContent()
                 .forEach(o -> {
                     Organisation organisation = new Organisation();

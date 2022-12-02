@@ -33,7 +33,7 @@ public class Endpoints {
     private String person;
 
     @Value("${fint.betaling.endpoints.organisation:/administrasjon/organisasjon/organisasjonselement}")
-    private String organisation;
+    private String organisationselement;
 
     @Value("${fint.betaling.endpoints.lineitem:/okonomi/kodeverk/vare}")
     private String lineitem;
