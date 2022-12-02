@@ -21,12 +21,14 @@ public class UserCacheService {
         this.userRepository = userRepository;
     }
 
-    public User getUser(String employeeId) {
+    public User getUser(String employeeId, boolean isAdminUser) {
         if (users.containsKey(employeeId)) {
-            return users.get(employeeId);
+            User user = users.get(employeeId);
+            user.setAdmin(isAdminUser);
+            return user;
         }
 
-        User userFromSkoleressure = userRepository.mapUserFromResources(employeeId);
+        User userFromSkoleressure = userRepository.mapUserFromResources(employeeId, isAdminUser);
         users.put(employeeId, userFromSkoleressure);
 
         return userFromSkoleressure;
@@ -37,7 +39,7 @@ public class UserCacheService {
         log.info("{} users needs to be updated ...", users.size());
 
         users.forEach((feideUpn, user) -> {
-            User userFromSkoleressursByFeidenavn = userRepository.mapUserFromResources(feideUpn);
+            User userFromSkoleressursByFeidenavn = userRepository.mapUserFromResources(feideUpn, user.isAdmin());
             users.put(feideUpn, userFromSkoleressursByFeidenavn);
         });
     }

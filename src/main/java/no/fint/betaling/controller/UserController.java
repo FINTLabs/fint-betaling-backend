@@ -8,7 +8,6 @@ import no.fint.betaling.service.UserCacheService;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,6 +27,9 @@ public class UserController {
     @Value("${fint.idle-time:900000}")
     private long idleTime;
 
+    @Value("${fint.betaling.authorized-role-admin:https://role-catalog.vigoiks.no/vigo/elevfakturering/admin}")
+    private String authorizedRoleAdmin;
+
     private final UserCacheService userCacheService;
 
     private ApplicationProperties applicationProperties;
@@ -41,17 +43,21 @@ public class UserController {
     public User getMe(@AuthenticationPrincipal Jwt jwt) {
 
         String employeeId;
+        boolean isAdminUser = false;
 
         if (applicationProperties.getDemo()) {
             employeeId = applicationProperties.getDemoUserEmployeeId();
         } else {
-            employeeId = FintJwtEndUserPrincipal.from(jwt).getEmployeeId();
+            FintJwtEndUserPrincipal userPrincipal = FintJwtEndUserPrincipal.from(jwt);
+            employeeId = userPrincipal.getEmployeeId();
+            isAdminUser = userPrincipal.getRoles().stream().anyMatch(role -> role.equalsIgnoreCase(authorizedRoleAdmin));
+            log.debug("User " + employeeId + " is admin: " + isAdminUser);
         }
 
         if (StringUtils.isEmpty(employeeId))
             throw new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!");
 
-        User user = userCacheService.getUser(employeeId);
+        User user = userCacheService.getUser(employeeId, isAdminUser);
         user.setIdleTime(idleTime);
         log.debug("User: {}", user);
 

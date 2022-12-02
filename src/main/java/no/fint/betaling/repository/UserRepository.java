@@ -11,14 +11,11 @@ import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,28 +24,41 @@ public class UserRepository {
 
     private final OrganisationRepository organisationRepository;
 
+    private final GroupRepository groupRepository;
+
     private final FintClient fintClient;
 
-    public UserRepository(OrganisationRepository organisationRepository, FintClient fintClient) {
+    public UserRepository(OrganisationRepository organisationRepository, GroupRepository groupRepository, FintClient fintClient) {
         this.organisationRepository = organisationRepository;
+        this.groupRepository = groupRepository;
         this.fintClient = fintClient;
     }
 
-    public User mapUserFromResources(String employeeId) {
+    public User mapUserFromResources(String employeeId, boolean isAdminUser) {
         User user = new User();
 
         PersonalressursResource personalressurs = fintClient.getPersonalressurs(employeeId);
         user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
         user.setName(getName(fintClient.getPerson(personalressurs)));
 
-        SkoleressursResource skoleressurs = fintClient.getSkoleressurs(personalressurs);
-        List<SkoleResource> schools = fintClient.getSkoler(skoleressurs);
+        List<SkoleResource> schools = isAdminUser ? getAllSchools() : getSchoolsBySkoleressurs(personalressurs);
         user.setOrganisationUnits(mapToOrganisation(schools));
 
         final Optional<Organisation> owner = getTopOrganisation(schools);
         owner.ifPresent(user::setOrganisation);
 
         return user;
+    }
+
+    private List<SkoleResource> getSchoolsBySkoleressurs(PersonalressursResource personalressurs) {
+        log.debug("Fetching schools from skoleressurs");
+        SkoleressursResource skoleressurs = fintClient.getSkoleressurs(personalressurs);
+        return fintClient.getSkoler(skoleressurs);
+    }
+
+    private List<SkoleResource> getAllSchools() {
+        log.debug("Fetching all schools");
+        return groupRepository.getSchools().values().stream().toList();
     }
 
     private String getName(PersonResource person) {

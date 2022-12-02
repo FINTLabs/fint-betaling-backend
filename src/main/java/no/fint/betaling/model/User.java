@@ -12,4 +12,5 @@ public class User {
     private Organisation organisation;
     private List<Organisation> organisationUnits;
     private long idleTime;
+    private boolean isAdmin;
 }
