@@ -3,6 +3,7 @@ package no.fint.betaling;
 import io.netty.channel.ChannelOption;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -48,6 +49,9 @@ public class OAuthConfiguration {
                 clientRegistrationRepository,
                 authorizedClientService
         );
+
+        if (StringUtils.isEmpty(username)) throw new IllegalArgumentException("Username cannot be empty!");
+        if (StringUtils.isEmpty(password)) throw new IllegalArgumentException("Password cannot be empty!");
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
         authorizedClientManager.setContextAttributesMapper(oAuth2AuthorizeRequest -> Mono.just(Map.of(
