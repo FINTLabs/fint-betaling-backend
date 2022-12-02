@@ -58,16 +58,10 @@ public class RestUtil {
                     .bodyToMono(clazz)
                     .toFuture()
                     .get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
-
-//    private String getFullUri(String uri) {
-//        return String.format(urlTemplate, environment, uri);
-//    }
 
     public HttpHeaders head(String uri) {
         try {
@@ -106,9 +100,7 @@ public class RestUtil {
                     .getLocation();
         } catch (HttpStatusCodeException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
