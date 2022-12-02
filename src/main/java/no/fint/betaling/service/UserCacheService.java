@@ -38,9 +38,10 @@ public class UserCacheService {
     public void updateUsers() {
         log.info("{} users needs to be updated ...", users.size());
 
-        users.forEach((feideUpn, user) -> {
-            User userFromSkoleressursByFeidenavn = userRepository.mapUserFromResources(feideUpn, user.isAdmin());
-            users.put(feideUpn, userFromSkoleressursByFeidenavn);
+        users.forEach((employeeId, user) -> {
+            User updatedUser = userRepository.mapUserFromResources(employeeId, user.isAdmin());
+            updatedUser.setAdmin(user.isAdmin());
+            users.put(employeeId, updatedUser);
         });
     }
 }
