@@ -1,13 +1,12 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.kodeverk.VareResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -21,16 +20,19 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Slf4j
 public class LineitemRepository {
 
-    @Value("${fint.betaling.endpoints.lineitem:/okonomi/kodeverk/vare}")
-    private String lineitemEndpoint;
+    private final Endpoints endpoints;
 
-    @Autowired
-    private RestUtil restUtil;
+    private final RestUtil restUtil;
 
-    @Autowired
-    private TaxcodeRepository taxcodeRepository;
+    private final TaxcodeRepository taxcodeRepository;
 
     private final ConcurrentMap<String, Lineitem> lineitems = new ConcurrentSkipListMap<>();
+
+    public LineitemRepository(Endpoints endpoints, RestUtil restUtil, TaxcodeRepository taxcodeRepository) {
+        this.endpoints = endpoints;
+        this.restUtil = restUtil;
+        this.taxcodeRepository = taxcodeRepository;
+    }
 
     public Lineitem getLineitemByUri(String uri) {
         if (lineitems.isEmpty()) {
@@ -48,8 +50,8 @@ public class LineitemRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateLineitems() {
-        log.info("Updating line items from {} ...", lineitemEndpoint);
-        restUtil.getUpdates(VareResources.class, lineitemEndpoint)
+        log.info("Updating line items from {} ...", endpoints.getLineitem());
+        restUtil.getUpdates(VareResources.class, endpoints.getLineitem())
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();

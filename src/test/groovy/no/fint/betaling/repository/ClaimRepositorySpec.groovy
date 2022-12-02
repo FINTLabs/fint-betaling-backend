@@ -1,5 +1,6 @@
 package no.fint.betaling.repository
 
+import no.fint.betaling.config.Endpoints
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.util.BetalingObjectFactory
@@ -12,13 +13,15 @@ import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
 
+    private Endpoints endpoints
     private MongoTemplate mongoTemplate
     private ClaimRepository claimRepository
     private BetalingObjectFactory betalingObjectFactory;
 
     void setup() {
+        endpoints = Mock(Endpoints)
         mongoTemplate = Mock(MongoTemplate)
-        claimRepository = new ClaimRepository(mongoTemplate: mongoTemplate)
+        claimRepository = new ClaimRepository(endpoints, mongoTemplate)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 

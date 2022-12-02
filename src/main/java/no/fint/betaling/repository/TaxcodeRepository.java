@@ -1,12 +1,11 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Taxcode;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -19,13 +18,16 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Repository
 public class TaxcodeRepository {
 
-    @Value("${fint.betaling.endpoints.mva-code:/okonomi/kodeverk/merverdiavgift}")
-    private String taxcodeEndpoint;
+    private final Endpoints endpoints;
 
-    @Autowired
-    private RestUtil restUtil;
+    private final RestUtil restUtil;
 
     private final ConcurrentMap<String, Taxcode> taxcodes = new ConcurrentSkipListMap<>();
+
+    public TaxcodeRepository(Endpoints endpoints, RestUtil restUtil) {
+        this.endpoints = endpoints;
+        this.restUtil = restUtil;
+    }
 
     public Taxcode getTaxcodeByUri(String uri) {
         if (taxcodes.isEmpty()) {
@@ -51,8 +53,8 @@ public class TaxcodeRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateTaxcodes() {
-        log.info("Updating tax codes from {} ...", taxcodeEndpoint);
-        restUtil.getUpdates(MerverdiavgiftResources.class, taxcodeEndpoint)
+        log.info("Updating tax codes from {} ...", endpoints.getTaxcode());
+        restUtil.getUpdates(MerverdiavgiftResources.class, endpoints.getTaxcode())
                 .getContent()
                 .forEach(m -> {
                     Taxcode taxcode = new Taxcode();

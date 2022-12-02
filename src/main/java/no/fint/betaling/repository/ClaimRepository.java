@@ -1,5 +1,6 @@
 package no.fint.betaling.repository;
 
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +18,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @Repository
 public class ClaimRepository {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final Endpoints endpoints;
+
+    private final MongoTemplate mongoTemplate;
 
     private static final String ORG_ID = "orgId";
 
@@ -26,6 +28,11 @@ public class ClaimRepository {
     private String orgId;
 
     private final AtomicLong orderNumberCounter = new AtomicLong(100000L);
+
+    public ClaimRepository(Endpoints endpoints, MongoTemplate mongoTemplate) {
+        this.endpoints = endpoints;
+        this.mongoTemplate = mongoTemplate;
+    }
 
     public Claim storeClaim(Claim claim) {
         claim.setOrderNumber(String.valueOf(orderNumberCounter.incrementAndGet()));

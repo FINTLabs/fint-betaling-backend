@@ -15,7 +15,7 @@ class GroupRepositorySpec extends Specification {
     void setup() {
         restUtil = Mock()
         fintObjectFactory = new FintObjectFactory()
-        groupRepository = new GroupRepository(restUtil)
+        groupRepository = new GroupRepository(restUtil, endpoints)
     }
 
     @Ignore

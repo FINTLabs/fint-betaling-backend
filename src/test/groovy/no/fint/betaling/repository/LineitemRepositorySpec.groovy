@@ -1,5 +1,6 @@
 package no.fint.betaling.repository
 
+import no.fint.betaling.config.Endpoints
 import no.fint.betaling.model.Taxcode
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
@@ -13,7 +14,10 @@ class LineitemRepositorySpec extends Specification {
     def taxcodeRepository = Mock(TaxcodeRepository)
     def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/varelinje'
-    def repository = new LineitemRepository(restUtil: restUtil, lineitemEndpoint: endpoint, taxcodeRepository: taxcodeRepository)
+    def endpoints = Mock(Endpoints){
+        getLineitem() >> endpoint
+    }
+    def repository = new LineitemRepository(endpoints, restUtil, taxcodeRepository)
 
     def 'Update line items'() {
         given:

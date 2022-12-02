@@ -1,5 +1,6 @@
 package no.fint.betaling.repository
 
+import no.fint.betaling.config.Endpoints
 import no.fint.betaling.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
@@ -11,7 +12,10 @@ class TaxcodeRepositorySpec extends Specification {
 
     def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/mvakode'
-    def repository = new TaxcodeRepository(restUtil: restUtil, taxcodeEndpoint: endpoint)
+    def endpoints = Mock(Endpoints){
+        getTaxcode() >> endpoint
+    }
+    def repository = new TaxcodeRepository(endpoints, restUtil)
 
     def 'Fetching tax codes should update first'() {
         given:
