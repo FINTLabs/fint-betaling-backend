@@ -29,14 +29,18 @@ public class InvoiceIssuerController {
     public Principal getPrincipalForSchoolId(@AuthenticationPrincipal Jwt jwt) {
 
         String orgnizationNumber;
+        String employeeId;
+
 
         if (applicationProperties.getDemo()) {
             orgnizationNumber = applicationProperties.getDemoUserOrgId();
+            employeeId = applicationProperties.getDemoUserEmployeeId();
         } else {
             FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
             orgnizationNumber = endUserPrincipal.getOrganizationNumber();
+            employeeId = endUserPrincipal.getEmployeeId();
         }
 
-        return invoiceIssuerService.getInvoiceIssuer(orgnizationNumber);
+        return invoiceIssuerService.getPrincipalByOrganisationId(orgnizationNumber, employeeId);
     }
 }
