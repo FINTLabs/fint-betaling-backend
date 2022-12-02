@@ -2,7 +2,7 @@ package no.fint.betaling.controller;
 
 import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.model.Principal;
-import no.fint.betaling.service.PrincipalService;
+import no.fint.betaling.service.InvoiceIssuerService;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/principal")
-public class PrincipalController {
+public class InvoiceIssuerController {
 
-    private final PrincipalService principalService;
+    private final InvoiceIssuerService invoiceIssuerService;
 
     private ApplicationProperties applicationProperties;
 
-    public PrincipalController(PrincipalService principalService, ApplicationProperties applicationProperties) {
-        this.principalService = principalService;
+    public InvoiceIssuerController(InvoiceIssuerService invoiceIssuerService, ApplicationProperties applicationProperties) {
+        this.invoiceIssuerService = invoiceIssuerService;
         this.applicationProperties = applicationProperties;
     }
 
@@ -29,18 +29,14 @@ public class PrincipalController {
     public Principal getPrincipalForSchoolId(@AuthenticationPrincipal Jwt jwt) {
 
         String orgnizationNumber;
-        String employeeId;
-
 
         if (applicationProperties.getDemo()) {
             orgnizationNumber = applicationProperties.getDemoUserOrgId();
-            employeeId = applicationProperties.getDemoUserEmployeeId();
         } else {
             FintJwtEndUserPrincipal endUserPrincipal = FintJwtEndUserPrincipal.from(jwt);
             orgnizationNumber = endUserPrincipal.getOrganizationNumber();
-            employeeId = endUserPrincipal.getEmployeeId();
         }
 
-        return principalService.getPrincipalByOrganisationId(orgnizationNumber, employeeId);
+        return invoiceIssuerService.getInvoiceIssuer(orgnizationNumber);
     }
 }

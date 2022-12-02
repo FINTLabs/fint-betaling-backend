@@ -1,6 +1,7 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
@@ -11,7 +12,6 @@ import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +26,8 @@ public class GroupRepository {
 
     private final RestUtil restUtil;
 
+    private final Endpoints endpoints;
+
     private final Map<Link, SkoleResource> schools = new HashMap<>();
     private final Map<Link, BasisgruppeResource> basisGroups = new HashMap<>();
     private final Map<Link, UndervisningsgruppeResource> teachingGroups = new HashMap<>();
@@ -33,26 +35,9 @@ public class GroupRepository {
     private final Map<Link, ElevforholdResource> studentRelations = new HashMap<>();
     private final Map<Link, PersonResource> students = new HashMap<>();
 
-    @Value("${fint.betaling.endpoints.school:/utdanning/utdanningsprogram/skole}")
-    private String schoolEndpoint;
-
-    @Value("${fint.betaling.endpoints.basis-group:/utdanning/elev/basisgruppe}")
-    private String basisGroupEndpoint;
-
-    @Value("${fint.betaling.endpoints.teaching-group:/utdanning/timeplan/undervisningsgruppe}")
-    private String teachingGroupEndpoint;
-
-    @Value("${fint.betaling.endpoints.contact-teacher-group:/utdanning/elev/kontaktlarergruppe}")
-    private String contactTeacherGroupEndpoint;
-
-    @Value("${fint.betaling.endpoints.student-relation:/utdanning/elev/elevforhold}")
-    private String studentRelationEndpoint;
-
-    @Value("${fint.betaling.endpoints.person:/utdanning/elev/person}")
-    private String personEndpoint;
-
-    public GroupRepository(RestUtil restUtil) {
+    public GroupRepository(RestUtil restUtil, Endpoints endpoints) {
         this.restUtil = restUtil;
+        this.endpoints = endpoints;
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
@@ -67,12 +52,12 @@ public class GroupRepository {
 
     @CachePut(value = "schools", unless = "#result == null")
     public Map<Link, SkoleResource> updateSchools() {
-        log.info("Updating schools from {} ...", schoolEndpoint);
+        log.info("Updating schools from {} ...", endpoints.getSchool());
 
         SkoleResources resources;
 
         try {
-            resources = restUtil.get(SkoleResources.class, schoolEndpoint);
+            resources = restUtil.get(SkoleResources.class, endpoints.getSchool());
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -97,12 +82,12 @@ public class GroupRepository {
 
     @CachePut(value = "basisGroups", unless = "#result == null")
     public Map<Link, BasisgruppeResource> updateBasisGroups() {
-        log.info("Updating basis groups from {} ...", basisGroupEndpoint);
+        log.info("Updating basis groups from {} ...", endpoints.getBasisGroup());
 
         BasisgruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(BasisgruppeResources.class, basisGroupEndpoint);
+            resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup());
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -127,12 +112,12 @@ public class GroupRepository {
 
     @CachePut(value = "teachingGroups", unless = "#result == null")
     public Map<Link, UndervisningsgruppeResource> updateTeachingGroups() {
-        log.info("Updating teaching groups from {} ...", teachingGroupEndpoint);
+        log.info("Updating teaching groups from {} ...", endpoints.getTeachingGroup());
 
         UndervisningsgruppeResources resources;
 
         try {
-            resources = restUtil.get(UndervisningsgruppeResources.class, teachingGroupEndpoint);
+            resources = restUtil.get(UndervisningsgruppeResources.class, endpoints.getTeachingGroup());
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -157,12 +142,12 @@ public class GroupRepository {
 
     @CachePut(value = "contactTeacherGroups", unless = "#result == null")
     public Map<Link, KontaktlarergruppeResource> updateContactTeacherGroups() {
-        log.info("Updating contact teacher groups from {} ...", contactTeacherGroupEndpoint);
+        log.info("Updating contact teacher groups from {} ...", endpoints.getContactTeacherGroup());
 
         KontaktlarergruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, contactTeacherGroupEndpoint);
+            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup());
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -187,12 +172,12 @@ public class GroupRepository {
 
     @CachePut(value = "studentRelations", unless = "#result == null")
     public Map<Link, ElevforholdResource> updateStudentRelations() {
-        log.info("Updating student relations from {} ...", studentRelationEndpoint);
+        log.info("Updating student relations from {} ...", endpoints.getStudentRelation());
 
         ElevforholdResources resources;
 
         try {
-            resources = restUtil.get(ElevforholdResources.class, studentRelationEndpoint);
+            resources = restUtil.get(ElevforholdResources.class, endpoints.getStudentRelation());
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -217,12 +202,12 @@ public class GroupRepository {
 
     @CachePut(value = "students", unless = "#result == null")
     public Map<Link, PersonResource> updateStudents() {
-        log.info("Updating students from {} ...", personEndpoint);
+        log.info("Updating students from {} ...", endpoints.getPerson());
 
         PersonResources resources;
 
         try {
-            resources = restUtil.get(PersonResources.class, personEndpoint);
+            resources = restUtil.get(PersonResources.class, endpoints.getPerson());
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;

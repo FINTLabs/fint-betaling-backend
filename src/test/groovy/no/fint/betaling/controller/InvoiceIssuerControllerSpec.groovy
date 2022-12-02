@@ -2,7 +2,7 @@ package no.fint.betaling.controller
 
 import no.fint.betaling.config.ApplicationProperties
 import no.fint.betaling.model.Principal
-import no.fint.betaling.service.PrincipalService
+import no.fint.betaling.service.InvoiceIssuerService
 import spock.lang.Ignore
 import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,26 +11,26 @@ import org.springframework.context.ApplicationContext
 import org.springframework.test.web.reactive.server.WebTestClient
 import spock.lang.Specification
 
-@WebFluxTest(controllers = PrincipalController.class)
+@WebFluxTest(controllers = InvoiceIssuerController.class)
 
-class PrincipalControllerSpec extends Specification {
+class InvoiceIssuerControllerSpec extends Specification {
 
     @Autowired
     private ApplicationContext applicationContext
 
     private WebTestClient webTestClient
 
-    private PrincipalController controller
+    private InvoiceIssuerController controller
 
     @SpringBean
-    private PrincipalService principalService = Mock(PrincipalService.class)
+    private InvoiceIssuerService principalService = Mock(InvoiceIssuerService.class)
 
     @SpringBean
     private ApplicationProperties applicationProperties = new ApplicationProperties()
 
     void setup() {
         applicationProperties.demo = true
-        controller = new PrincipalController(principalService, applicationProperties)
+        controller = new InvoiceIssuerController(principalService, applicationProperties)
         webTestClient = WebTestClient.bindToController(controller).build()
     }
 
@@ -52,7 +52,7 @@ class PrincipalControllerSpec extends Specification {
                 .expectBody()
 
         then:
-        1 * principalService.getPrincipalByOrganisationId('12345', 'user@feide.no') >> new Principal(description: 'test')
+        1 * principalService.getInvoiceIssuer('12345', 'user@feide.no') >> new Principal(description: 'test')
         response.jsonPath('$.description').isEqualTo("test")
     }
 }

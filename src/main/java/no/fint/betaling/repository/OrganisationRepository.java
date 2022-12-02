@@ -1,13 +1,12 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResources;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -20,14 +19,18 @@ import java.util.concurrent.ConcurrentSkipListMap;
 @Repository
 public class OrganisationRepository {
 
-    @Value("${fint.betaling.endpoints.organisation:/administrasjon/organisasjon/organisasjonselement}")
-    private String organisationEndpoint;
+    private final Endpoints endpoints;
 
-    @Autowired
-    private RestUtil restUtil;
+    private final RestUtil restUtil;
 
     private final ConcurrentMap<String, Organisation> organisations = new ConcurrentSkipListMap<>();
+
     private final ConcurrentMap<String, String> superiors = new ConcurrentSkipListMap<>();
+
+    public OrganisationRepository(Endpoints endpoints, RestUtil restUtil) {
+        this.endpoints = endpoints;
+        this.restUtil = restUtil;
+    }
 
     public Organisation getOrganisationByHref(String href) {
         if (organisations.isEmpty()) {
@@ -58,8 +61,8 @@ public class OrganisationRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateOrganisations() {
-        log.info("Updating organisations from {} ...", organisationEndpoint);
-        restUtil.getUpdates(OrganisasjonselementResources.class, organisationEndpoint)
+        log.info("Updating organisations from {} ...", endpoints.getOrganisationselement());
+        restUtil.getUpdates(OrganisasjonselementResources.class, endpoints.getOrganisationselement())
                 .getContent()
                 .forEach(o -> {
                     Organisation organisation = new Organisation();
