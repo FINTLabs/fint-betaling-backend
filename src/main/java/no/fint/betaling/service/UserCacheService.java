@@ -39,6 +39,7 @@ public class UserCacheService {
         log.info("{} users needs to be updated ...", users.size());
 
         users.forEach((employeeId, user) -> {
+            log.debug("Updating user: " + employeeId + " with isAdmin: " + user.isAdmin());
             User updatedUser = userRepository.mapUserFromResources(employeeId, user.isAdmin());
             updatedUser.setAdmin(user.isAdmin());
             users.put(employeeId, updatedUser);
