@@ -57,8 +57,8 @@ public class UserRepository {
     }
 
     private List<SkoleResource> getAllSchools() {
-        log.debug("Fetching all schools");
-        return groupRepository.getSchools().values().stream().toList();
+        log.debug("Fetching all distinct schools");
+        return groupRepository.getDistinctSchools();
     }
 
     private String getName(PersonResource person) {

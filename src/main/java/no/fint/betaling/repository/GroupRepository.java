@@ -18,7 +18,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -78,6 +80,10 @@ public class GroupRepository {
             updateSchools();
         }
         return schools;
+    }
+
+    public List<SkoleResource> getDistinctSchools() {
+        return getSchools().values().stream().distinct().collect(Collectors.toList());
     }
 
     @CachePut(value = "basisGroups", unless = "#result == null")
