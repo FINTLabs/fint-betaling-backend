@@ -29,6 +29,7 @@ public class UserCacheService {
         }
 
         User userFromSkoleressure = userRepository.mapUserFromResources(employeeId, isAdminUser);
+        userFromSkoleressure.setAdmin(isAdminUser);
         users.put(employeeId, userFromSkoleressure);
 
         return userFromSkoleressure;
