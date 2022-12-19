@@ -14,6 +14,7 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
+import org.apache.commons.lang3.StringUtils;
 import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -256,7 +257,11 @@ public class ClaimService {
         return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
     }
 
-    public int countClaimsByStatus(ClaimStatus[] statuses) {
+    public int countClaimsByStatus(ClaimStatus[] statuses, String maximumDaysOld) {
+        if (StringUtils.isNotBlank(maximumDaysOld)) {
+            return claimRepository.countClaims(queryService
+                    .queryByClaimStatusByMaximumDaysOld(Long.parseLong(maximumDaysOld), statuses));
+        }
         return claimRepository.countClaims(queryService.queryByClaimStatus(statuses));
     }
 
