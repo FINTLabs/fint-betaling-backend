@@ -71,9 +71,9 @@ public class ClaimController {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 
-    @GetMapping("/count/by-status/{status}")
+    @GetMapping(value = {"/count/by-status/{status}", "/count/by-status/{status}/{maximumDaysOld}"})
     public int getCountByStatus(@PathVariable("status") String[] status,
-                                @RequestParam(name = "daysold", required = false) String maximumDaysOld) {
+                                @PathVariable(required = false) String maximumDaysOld) {
         return claimService.countClaimsByStatus(toClaimStatus(status), maximumDaysOld);
     }
 
