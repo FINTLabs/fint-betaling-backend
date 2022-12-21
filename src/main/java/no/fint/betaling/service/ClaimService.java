@@ -257,12 +257,12 @@ public class ClaimService {
         return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
     }
 
-    public int countClaimsByStatus(ClaimStatus[] statuses, String maximumDaysOld) {
-        if (StringUtils.isNotBlank(maximumDaysOld)) {
-            return claimRepository.countClaims(queryService
-                    .queryByClaimStatusByMaximumDaysOld(Long.parseLong(maximumDaysOld), statuses));
-        }
+    public int countClaimsByStatus(ClaimStatus[] statuses) {
         return claimRepository.countClaims(queryService.queryByClaimStatus(statuses));
+    }
+
+    public int countClaimsByStatusAndMaximumDaysOld(ClaimStatus[] statuses, String maximumDaysOld) {
+        return claimRepository.countClaims(queryService.queryByClaimStatusByMaximumDaysOld(Long.parseLong(maximumDaysOld), statuses));
     }
 
     public void cancelClaim(String orderNumber) {

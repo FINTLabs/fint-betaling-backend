@@ -71,10 +71,15 @@ public class ClaimController {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 
-    @GetMapping(value = {"/count/by-status/{status}", "/count/by-status/{status}/{maximumDaysOld}"})
-    public int getCountByStatus(@PathVariable("status") String[] status,
-                                @PathVariable(required = false) String maximumDaysOld) {
-        return claimService.countClaimsByStatus(toClaimStatus(status), maximumDaysOld);
+    @GetMapping("/count/by-status/{status}")
+    public int getCountByStatus(@PathVariable("status") String[] status) {
+        return claimService.countClaimsByStatus(toClaimStatus(status));
+    }
+
+    @GetMapping("/count/by-status/{status}/{maximumDaysOld}")
+    public int getCountByStatusAndMaximumDaysOld(@PathVariable("status") String[] status,
+                                                 @PathVariable("maximumDaysOld") String maximumDaysOld) {
+        return claimService.countClaimsByStatusAndMaximumDaysOld(toClaimStatus(status), maximumDaysOld);
     }
 
     @DeleteMapping("/order-number/{order-number}")
