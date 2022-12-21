@@ -34,8 +34,8 @@ public class QueryService {
         return createQuery().addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)));
     }
 
-    public Query queryByClaimStatusByMaximumDaysOld(long maximumDaysOld, ClaimStatus... statuses) {
-        LocalDateTime date = LocalDateTime.now().plusDays(-1 * maximumDaysOld);
+    public Query queryByClaimStatusByDays(long days, ClaimStatus... statuses) {
+        LocalDateTime date = LocalDateTime.now().plusDays(-1 * days);
 
         return createQuery()
                 .addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)))
