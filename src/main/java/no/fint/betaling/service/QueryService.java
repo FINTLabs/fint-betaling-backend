@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.time.*;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -31,6 +32,14 @@ public class QueryService {
 
     public Query queryByClaimStatus(ClaimStatus... statuses) {
         return createQuery().addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)));
+    }
+
+    public Query queryByClaimStatusByDays(long days, ClaimStatus... statuses) {
+        LocalDateTime date = LocalDateTime.now().plusDays(-1 * days);
+
+        return createQuery()
+                .addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)))
+                .addCriteria(Criteria.where("lastModifiedDate").gte(date));
     }
 
     public Query queryByCustomerNameRegex(String name) {

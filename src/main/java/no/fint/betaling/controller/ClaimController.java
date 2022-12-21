@@ -71,9 +71,21 @@ public class ClaimController {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 
+    @GetMapping("/count/status/{status}")
+    public int getCountByStatus(@PathVariable("status") String[] status,
+                                @RequestParam(value = "days", required = false) String days) {
+        return claimService.countClaimsByStatus(toClaimStatus(status), days);
+    }
+
+    /**
+     * @deprecated
+     * <p>This endpoint is being replaced by /count/status/{status}</p>
+     */
+    @Deprecated
     @GetMapping("/count/by-status/{status}")
-    public int getCountByStatus(@PathVariable("status") String[] status) {
-        return claimService.countClaimsByStatus(toClaimStatus(status));
+    public int getCountByStatusOld(@PathVariable("status") String[] status,
+                                   @RequestParam(value = "days", required = false) String days) {
+        return claimService.countClaimsByStatus(toClaimStatus(status), days);
     }
 
     @DeleteMapping("/order-number/{order-number}")
