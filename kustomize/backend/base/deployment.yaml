@@ -20,7 +20,7 @@ spec:
           image: ghcr.io/fintlabs/fint-betaling-backend:sha-0000000
           resources:
             limits:
-              memory: "6Gi"
+              memory: "8Gi"
               cpu: "2"
             requests:
               memory: "2Gi"
