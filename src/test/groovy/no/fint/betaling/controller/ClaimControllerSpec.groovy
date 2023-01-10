@@ -2,6 +2,7 @@ package no.fint.betaling.controller
 
 
 import no.fint.betaling.model.Claim
+import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.Order
 import no.fint.betaling.service.ClaimService
@@ -115,6 +116,21 @@ class ClaimControllerSpec extends Specification {
 
         then:
         1 * claimService.sendClaims(["123", "654"] as List)
+    }
+
+    def "Get a total count of invoices based on status and on number of days since created"() {
+        when:
+        def response = webTestClient
+                .get()
+                .uri('/api/claim/count/status/{status}?days={days}', 'ERROR', '14')
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+
+        then:
+        1 * claimService.countClaimsByStatus([ClaimStatus.ERROR] as ClaimStatus[], '14') >> 78
+        response.jsonPath('$').isEqualTo(78)
     }
 
     @Ignore
