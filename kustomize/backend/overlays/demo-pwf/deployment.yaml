@@ -13,13 +13,13 @@ spec:
               memory: "5Gi"
               cpu: "2"
             requests:
-              memory: "1Gi"
+              memory: "512Mi"
               cpu: "250m"
           envFrom:
             - secretRef:
                 name: fint-mongo
           env:
-            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx4G'}
+            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M' }
             - { name: fint.betaling.invoice-update-rate, value: '3600000' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byOrgnummer' }
             - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'demo' }
