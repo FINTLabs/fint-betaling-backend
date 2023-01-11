@@ -9,5 +9,5 @@ spec:
     - match: Host(`betaling-demo.felleskomponent.no`) && PathPrefix(`/api`)
       kind: Rule
       services:
-        - name: fint-betaling-backend-demo
+        - name: fint-betaling-backend
           port: 8080
