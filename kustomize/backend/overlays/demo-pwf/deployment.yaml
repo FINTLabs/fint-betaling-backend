@@ -17,7 +17,7 @@ spec:
               cpu: "250m"
           envFrom:
             - secretRef:
-                name: betaling-demo
+                name: fint-mongo
           env:
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx4G'}
             - { name: fint.betaling.invoice-update-rate, value: '3600000' }
