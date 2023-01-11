@@ -3,6 +3,7 @@ kind: Kustomization
 patchesStrategicMerge:
   - deployment.yaml
   - ingress-route.yaml
+  - onepassword.yaml
 resources:
   - ../../base
 namespace: default
