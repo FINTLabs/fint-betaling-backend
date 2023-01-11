@@ -174,4 +174,40 @@ class ClaimServiceSpec extends Specification {
         )
     }
 
+    def "Get count of claims by status"() {
+        given:
+        queryService = Mock()
+        claimService = new ClaimService(
+                restUtil: restUtil,
+                claimRepository: claimRepository,
+                claimFactory: claimFactory,
+                invoiceFactory: invoiceFactory,
+                queryService: queryService)
+        when:
+        def claims = claimService.countClaimsByStatus([ClaimStatus.ERROR] as ClaimStatus[], '')
+
+        then:
+        1 * queryService.queryByClaimStatus(ClaimStatus.ERROR)
+        1 * claimRepository.countClaims(_) >> 8
+        claims == 8
+    }
+
+    def "Get count of claims by status and days"() {
+        given:
+        queryService = Mock()
+        claimService = new ClaimService(
+                restUtil: restUtil,
+                claimRepository: claimRepository,
+                claimFactory: claimFactory,
+                invoiceFactory: invoiceFactory,
+                queryService: queryService)
+        when:
+        def claims = claimService.countClaimsByStatus([ClaimStatus.SENT] as ClaimStatus[], '14')
+
+        then:
+        1 * queryService.queryByClaimStatusByDays(14, ClaimStatus.SENT)
+        1 * claimRepository.countClaims(_) >> 143
+        claims == 143
+    }
+
 }
