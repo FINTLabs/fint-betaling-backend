@@ -47,13 +47,10 @@ public class ClaimController {
                                     @RequestParam(required = false) String schoolSelection,
                                     @RequestParam(required = false) String[] status) throws ParseException {
 
-        if (StringUtils.isBlank(periodSelection) && StringUtils.isBlank(schoolSelection)){
-            return claimService.getClaims();
-        } else {
-            if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
-            ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-            return claimService.getClaims(period, schoolSelection, toClaimStatus(status));
-        }
+        if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
+        ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
+        return claimService.getClaims(period, schoolSelection, toClaimStatus(status));
+
     }
 
     @GetMapping("/name/{name}")
