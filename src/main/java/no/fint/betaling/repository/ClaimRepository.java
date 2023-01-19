@@ -2,7 +2,6 @@ package no.fint.betaling.repository;
 
 import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Claim;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -66,4 +65,16 @@ public class ClaimRepository {
                 .max()
                 .ifPresent(orderNumberCounter::set);
     }
+
+/*    public void setHighestOrderNumberB() {
+        MatchOperation match = Aggregation.match(Criteria.where("_class").is(Claim.class.getName()).and(ORG_ID).is(orgId));
+        GroupOperation group = Aggregation.group().max("orderNumber").as("maxOrderNumber");
+        Aggregation aggregation = Aggregation.newAggregation(match, group);
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, Claim.class, Document.class);
+        Document maxOrderNumberDoc = results.getUniqueMappedResult();
+        if (maxOrderNumberDoc != null) {
+            long maxOrderNumber = maxOrderNumberDoc.getLong("maxOrderNumber");
+            orderNumberCounter.set(maxOrderNumber);
+        }
+    }*/
 }

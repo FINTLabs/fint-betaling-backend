@@ -12,6 +12,7 @@ import no.fint.betaling.util.RestUtil
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import org.springframework.http.HttpHeaders
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -72,45 +73,34 @@ class ClaimServiceSpec extends Specification {
         claims.get(0).invoiceUri == 'link.to.Location'
     }
 
-    @Ignore
-    def "Send claim as inovice returns link to location"() {
-        given:
-        def invoice = betalingObjectFactory.newFakturagrunnlag()
 
+    def "Send claim returns a list of claims to be sent"() {
         when:
-        def response = claimService.sendClaim(invoice)
+        def response = claimService.sendClaims(["123", "456", "789"])
 
         then:
-        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _) >> new URI('link.to.Location')
-        response == 'link.to.Location'.toURI()
+        1 * restUtil.post(_,_,_,_) >> new URI('link.to.Location')
+        1 * claimRepository.getClaims(_) >> [createClaim('456')]
+        response.size() == 1
+        response.get(0).getInvoiceUri() == 'link.to.Location'
+        response.get(0).getClaimStatus() == ClaimStatus.SENT
     }
 
-    @Ignore
+    @Ignore('Difficult to test until code is refactored - code is overly complex')
     def "Update claims fetches invoices and updates claims"() {
         given:
         def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
+        claim.setInvoiceUri("any.url")
         def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
         claimService.updateClaims()
 
         then:
-        1 * claimRepository.getClaims(_ as Query) >> [claim]
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> invoice
-        1 * claimRepository.updateClaim(_ as Query, _ as Update)
-    }
-
-    @Ignore
-    def "Get status given payment with valid location uri returns invoice"() {
-        given:
-        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
-
-        when:
-        def invoice = claimService.getStatus(claim)
-
-        then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> betalingObjectFactory.newFakturagrunnlag()
-        invoice.ordrenummer.identifikatorverdi == '12345'
+        2 * claimRepository.getClaims(_ as Query) >> [claim]
+        1 * restUtil.get(_,_) >> invoice
+        1 * restUtil.head('any.url') >> new HttpHeaders()
+        2 * claimRepository.updateClaim(_ as Query, _ as Update)
     }
 
     def "Update claim given valid invoice updates claim"() {
@@ -208,6 +198,12 @@ class ClaimServiceSpec extends Specification {
         1 * queryService.queryByClaimStatusByDays(14, ClaimStatus.SENT)
         1 * claimRepository.countClaims(_) >> 143
         claims == 143
+    }
+
+    private Claim createClaim(String orderNumber) {
+        Claim claim = new Claim()
+        claim.setOrderNumber(orderNumber)
+        return claim
     }
 
 }

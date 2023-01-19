@@ -52,7 +52,7 @@ class ClaimControllerSpec extends Specification {
                 .expectBody()
 
         then:
-        1 * claimService.getClaims() >> [createClaim('123', 'Testesen')]
+        1 * claimService.getClaims(_,_,_) >> [createClaim('123', 'Testesen')]
         response.jsonPath('$[0].customer.name').isEqualTo("Testesen")
     }
 
