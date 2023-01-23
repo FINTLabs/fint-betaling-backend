@@ -6,10 +6,10 @@ patchesStrategicMerge:
   - ingress-route.yaml
 resources:
   - ../../base
-namespace: vestlandet-no
+namespace: vlfk-no
 commonLabels:
   app.kubernetes.io/name: fint-betaling-backend
-  app.kubernetes.io/instance: fint-betaling-backend-vestlandet-no
+  app.kubernetes.io/instance: fint-betaling-backend-vlfk-no
   app.kubernetes.io/version: "latest"
   app.kubernetes.io/managed-by: "ga"
   app.kubernetes.io/component: backend

@@ -10,6 +10,6 @@ spec:
           image: ghcr.io/fintlabs/fint-betaling-backend:sha-0000000
           envFrom:
             - secretRef:
-                name: betaling-vestlandet
+                name: betaling-vlfk
           env:
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
