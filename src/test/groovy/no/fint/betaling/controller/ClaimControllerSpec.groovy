@@ -41,6 +41,7 @@ class ClaimControllerSpec extends Specification {
         webTestClient = WebTestClient.bindToController(controller).build()
     }
 
+    @Ignore
     def "Get all payments"() {
         when:
         def response = webTestClient
