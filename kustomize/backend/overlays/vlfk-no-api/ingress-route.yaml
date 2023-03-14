@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: fint-betaling-backend
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`betaling-vlfk.felleskomponent.no`) && PathPrefix(`/api`)
+      kind: Rule
+      services:
+        - name: fint-betaling-backend
+          port: 8080
+      middlewares:
+        - name: betaling-auth-forward

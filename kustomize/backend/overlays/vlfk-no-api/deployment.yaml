@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fint-betaling-backend
+spec:
+  template:
+    spec:
+      containers:
+        - name: fint-betaling-backend
+          image: ghcr.io/fintlabs/fint-betaling-backend:sha-0000000
+          envFrom:
+            - secretRef:
+                name: betaling-vlfk
+          env:
+            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
