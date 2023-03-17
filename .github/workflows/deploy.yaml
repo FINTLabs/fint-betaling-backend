@@ -2,7 +2,7 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: ['deploy_to_vlfk_fix']
+    branches: ['main']
 
 env:
   REGISTRY: ghcr.io
@@ -151,6 +151,7 @@ jobs:
           renderEngine: 'kustomize'
           kustomizationPath: 'kustomize/auth-forward/overlays/vlfk-no-api'
         id: bake-api-auth-forward-vlfk
+
       - name: Set the target Api cluster.
         uses: azure/aks-set-context@v1
         with:
