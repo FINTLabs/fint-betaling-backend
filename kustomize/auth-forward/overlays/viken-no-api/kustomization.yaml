@@ -10,7 +10,7 @@ patches:
       - op: replace
         path: "/spec/redirectUris"
         value: 
-          - https://betaling-viken2.felleskomponent.no/_oauth/callback
+          - https://betaling-viken.felleskomponent.no/_oauth/callback
     target:
       kind: NamOAuthClientApplicationResource
       name: betaling-auth-forward

@@ -6,7 +6,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`betaling-viken2.felleskomponent.no`) && PathPrefix(`/api`)
+    - match: Host(`betaling-viken.felleskomponent.no`) && PathPrefix(`/api`)
       kind: Rule
       services:
         - name: fint-betaling-backend
