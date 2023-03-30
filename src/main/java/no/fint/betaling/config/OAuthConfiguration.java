@@ -1,4 +1,4 @@
-package no.fint.betaling;
+package no.fint.betaling.config;
 
 import io.netty.channel.ChannelOption;
 import lombok.Getter;

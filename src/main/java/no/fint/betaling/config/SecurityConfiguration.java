@@ -1,12 +1,17 @@
-package no.fint.betaling;
+package no.fint.betaling.config;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.CustomUserConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @EnableWebFluxSecurity
@@ -41,14 +46,24 @@ public class SecurityConfiguration {
         http
                 .authorizeExchange((authorize) -> authorize
                         .pathMatchers("/**")
-                        .hasAuthority("ORGID_" + orgId)
-                        .pathMatchers("/**")
-                        .hasAnyAuthority("ROLE_" + authorizedRoleAdmin, "ROLE_" + authorizedRole)
+                        .access(this::hasRequiredOrgIdAndRole)
                         .anyExchange()
                         .authenticated())
                 .oauth2ResourceServer((resourceServer) -> resourceServer
                         .jwt()
                         .jwtAuthenticationConverter(new CustomUserConverter()));
         return http.build();
+    }
+
+    private Mono<AuthorizationDecision> hasRequiredOrgIdAndRole(Mono<Authentication> authentication, AuthorizationContext context) {
+        return authentication.map(auth -> {
+            boolean hasOrgId = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ORGID_" + orgId));
+            boolean hasRole = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_" + authorizedRole));
+            boolean hasAdminRole = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_" + authorizedRoleAdmin));
+            return new AuthorizationDecision(hasOrgId && (hasRole || hasAdminRole));
+        });
     }
 }
