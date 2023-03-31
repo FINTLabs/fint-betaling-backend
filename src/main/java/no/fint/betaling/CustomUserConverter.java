@@ -7,5 +7,6 @@ public class CustomUserConverter extends FintJwtDefaultConverter {
         this.addMapping("organizationid", "ORGID_");
         this.addMapping("organizationnumber", "ORGNR_");
         this.addMapping("employeeId", "EMPLOYEE_");
+        this.addMapping("roles", "ROLE_");
     }
 }

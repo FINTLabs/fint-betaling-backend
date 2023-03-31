@@ -63,7 +63,10 @@ public class SecurityConfiguration {
                     .anyMatch(a -> a.getAuthority().equals("ROLE_" + authorizedRole));
             boolean hasAdminRole = auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_" + authorizedRoleAdmin));
-            return new AuthorizationDecision(hasOrgId && (hasRole || hasAdminRole));
+
+            AuthorizationDecision authorizationDecision = new AuthorizationDecision(hasOrgId && (hasRole || hasAdminRole));
+            log.info("Authorize: {} is granted: {} ({} {} {})", auth.getName(), authorizationDecision.isGranted(), hasOrgId, hasRole, hasAdminRole);
+            return authorizationDecision;
         });
     }
 }
