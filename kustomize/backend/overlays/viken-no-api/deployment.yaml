@@ -13,3 +13,4 @@ spec:
                 name: betaling-viken
           env:
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
+            - { name: fint.betaling.principal-matching-strategy, value: 'byName' }
