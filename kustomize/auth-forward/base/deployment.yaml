@@ -16,7 +16,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-        - image: ghcr.io/fintlabs/flais-auth-forward-service:sha-692c172
+        - image: ghcr.io/fintlabs/flais-auth-forward-service:sha-5d41ac0
           name: betaling-auth-forward
           ports:
             - containerPort: 8080
