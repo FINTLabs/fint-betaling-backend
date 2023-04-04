@@ -12,4 +12,5 @@ spec:
             - secretRef:
                 name: fint-betaling
           env:
-            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
+            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G' }
+            - { name: fint.betaling.principal-matching-strategy, value: 'byName' }

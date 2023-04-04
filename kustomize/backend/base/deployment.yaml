@@ -30,19 +30,13 @@ spec:
           envFrom:
             - configMapRef:
                 name: fint-environment
-#            - secretRef:
-#                name: betaling-viken
           env:
             - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
-            - { name: fint.betaling.invoice-update-rate, value: '3600000' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byOrgnummer' }
-#            - { name: spring.security.oauth2.client.registration.fint.client-id, value: 'viken.no'}
             - { name: fint.oauth.enabled, value: 'true' }
             - { name: fint.client.enabled, value: 'true' }
             - { name: fint.client.base-url, value: "https://api.felleskomponent.no" }
             - { name: fint.betaling.client-name, value: "FINT-Betaling" }
-#            - { name: fint.betaling.org-id, value: "viken.no" }
-#            - { name: fint.betaling.default-org-id, value: "viken.no" }
             - { name: fint.betaling.date-range, value: "7, 14, 30" }
             - { name: fint.betaling.invoice-update-cron, value: "0 30 16 ? * MON-FRI" }
             - { name: fint.betaling.endpoints.environment, value: "api" }
