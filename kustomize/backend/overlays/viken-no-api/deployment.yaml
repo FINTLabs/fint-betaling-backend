@@ -12,5 +12,7 @@ spec:
             - secretRef:
                 name: betaling-viken
           env:
-            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
+            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx7G' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byName' }
+            - { name: logging.level.no.fint.betaling, value: 'INFO' }
+            - { name: logging.level.org.springframework.security, value: 'INFO' }

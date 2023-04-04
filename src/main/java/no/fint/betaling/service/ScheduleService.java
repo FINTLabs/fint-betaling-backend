@@ -26,11 +26,21 @@ public class ScheduleService {
     }
     */
 
-    @Scheduled(cron = "${fint.betaling.invoice-update-cron}")
-    public void updateClaims() {
-        log.info("Updating claims...");
+    @Scheduled(initialDelay = 60000, fixedRateString = "${fint.betaling.invoice-update-rate}")
+    public void updateRecentlySentClaims() {
+        log.debug("Updating sent claims...");
         try {
-            claimService.updateClaims();
+            claimService.updateSentClaims();
+        } catch (Exception e) {
+            log.error("Error caught when updating sent claims!", e);
+        }
+    }
+
+    @Scheduled(cron = "${fint.betaling.invoice-update-cron}")
+    public void updateAcceptedClaims() {
+        log.debug("Updating accepted claims...");
+        try {
+            claimService.updateAcceptedClaims();
         } catch (Exception e) {
             log.error("Error caught when updating claims!", e);
         }
