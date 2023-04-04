@@ -93,7 +93,8 @@ public class ClaimController {
 
     @GetMapping("/update/all")
     public void updateAll() {
-        scheduleService.updateClaims();
+        scheduleService.updateRecentlySentClaims();
+        scheduleService.updateAcceptedClaims();
     }
 
     private ClaimStatus[] toClaimStatus(String[] status) {

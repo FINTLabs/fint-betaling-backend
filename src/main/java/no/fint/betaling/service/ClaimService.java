@@ -87,10 +87,8 @@ public class ClaimService {
                 .collect(Collectors.toList());
     }
 
-    void updateClaims() {
+    public void updateSentClaims() {
         getSentClaims().forEach(claim -> {
-            //.stream().filter(claim -> claim.getClaimStatus().equals(ClaimStatus.PAID) && claim.getCreatedDate() > 1 uke )
-            // TODO: 29/11/2021 Trond: complete filter to reduce orders to check
             try {
                 HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
                 if (headers.getLocation() != null) {
@@ -126,7 +124,9 @@ public class ClaimService {
             }
             updateClaimStatus(claim);
         });
+    }
 
+    public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
         getAcceptedClaims().forEach(claim -> {
             try {
