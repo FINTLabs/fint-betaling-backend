@@ -1,11 +1,12 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.6'
-    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'org.springframework.boot' version '2.7.9'
+    id 'io.spring.dependency-management' version '1.1.0'
     id 'java'
     id 'groovy'
+    id 'com.github.ben-manes.versions' version '0.44.0'
 }
 
-group = 'no.fint'
+group = 'no.fintlabs'
 sourceCompatibility = '17'
 
 jar {
@@ -35,7 +36,7 @@ dependencies {
     implementation "no.fint:fint-utdanning-resource-model-java:${apiVersion}"
     implementation 'no.fintlabs:fint-resource-server-security:1.1.0'
     implementation 'no.fint:fint-model-resource:0.4.1'
-    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.77.Final:osx-aarch_64'
+    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.91.Final:osx-aarch_64'
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
 
     // this one goes!
@@ -59,7 +60,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'org.apache.commons:commons-lang3:3.12.0'
-    implementation 'org.jooq:jool-java-8:0.9.14'
+    implementation 'org.jooq:jool-java-8:0.9.15'
     implementation 'commons-beanutils:commons-beanutils:1.9.4'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
