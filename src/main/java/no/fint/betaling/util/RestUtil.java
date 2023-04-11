@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -43,9 +44,9 @@ public class RestUtil {
                             .doOnNext(it -> sinceTimestamp.put(uri, lastUpdated.getLastUpdated()))
                     )
                     .toFuture().get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (WebClientResponseException e) {
+            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -64,6 +65,8 @@ public class RestUtil {
                     .bodyToMono(clazz)
                     .toFuture()
                     .get();
+        } catch (WebClientResponseException e) {
+            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
@@ -81,11 +84,9 @@ public class RestUtil {
                     .filter(entity -> entity.getStatusCode().is2xxSuccessful())
                     .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()))
                     .toFuture().get();
-        } catch (HttpStatusCodeException e) {
+        } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -99,7 +100,7 @@ public class RestUtil {
                     .post()
                     .uri(uri)
                     .header("x-org-id", orgId)
-                    .header ("x-client", "pwf.no")
+                    .header("x-client", "pwf.no")
                     .body(Mono.just(content), clazz)
                     .retrieve()
                     .toBodilessEntity()
@@ -108,7 +109,7 @@ public class RestUtil {
                     .toFuture()
                     .get()
                     .getLocation();
-        } catch (HttpStatusCodeException e) {
+        } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
