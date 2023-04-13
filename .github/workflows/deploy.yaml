@@ -50,31 +50,29 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-# TODO https://fintlabs.atlassian.net/browse/CT-582
+      ## PWF cluster ##
+      - name: Bake api manifests with Kustomize - backend
+        uses: azure/k8s-bake@v2.2
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: 'kustomize/backend/overlays/demo-pwf'
+        id: bake-pwf-backend
 
-#      ## PWF cluster ##
-#      - name: Bake api manifests with Kustomize - backend
-#        uses: azure/k8s-bake@v2.2
-#        with:
-#          renderEngine: 'kustomize'
-#          kustomizationPath: 'kustomize/backend/overlays/demo-pwf'
-#        id: bake-pwf-backend
-#
-#      - name: Set the target PWF cluster.
-#        uses: azure/aks-set-context@v1
-#        with:
-#          creds: '${{ secrets.AKS_PWF_FINT_GITHUB }}'
-#          cluster-name: ${{ env.PWF_CLUSTER_NAME }}
-#          resource-group: ${{ env.PWF_CLUSTER_RESOURCE_GROUP }}
-#
-#      - name: Deploy to PWF
-#        uses: azure/k8s-deploy@v4.4
-#        with:
-#          manifests: ${{ steps.bake-pwf-backend.outputs.manifestsBundle }}
-#          images: |
-#            ${{ steps.meta.outputs.tags }}
-#          namespace: default
-#          action: deploy
+      - name: Set the target PWF cluster.
+        uses: azure/aks-set-context@v1
+        with:
+          creds: '${{ secrets.AKS_PWF_FINT_GITHUB }}'
+          cluster-name: ${{ env.PWF_CLUSTER_NAME }}
+          resource-group: ${{ env.PWF_CLUSTER_RESOURCE_GROUP }}
+
+      - name: Deploy to PWF
+        uses: azure/k8s-deploy@v4.4
+        with:
+          manifests: ${{ steps.bake-pwf-backend.outputs.manifestsBundle }}
+          images: |
+            ${{ steps.meta.outputs.tags }}
+          namespace: default
+          action: deploy
 
       ## Api cluster - viken ##
 
