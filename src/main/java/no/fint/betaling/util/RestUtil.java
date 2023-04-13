@@ -1,6 +1,7 @@
 package no.fint.betaling.util;
 
 import lombok.Data;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class RestUtil {
 
+    @Setter
     @Value("${fint.client.base-url}")
     private String baseUrl;
 
@@ -43,11 +45,9 @@ public class RestUtil {
                             .bodyToMono(clazz)
                             .doOnNext(it -> sinceTimestamp.put(uri, lastUpdated.getLastUpdated()))
                     )
-                    .toFuture().get();
+                    .block();
         } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -63,12 +63,9 @@ public class RestUtil {
                     .uri(endpoint.replace(baseUrl, ""))
                     .retrieve()
                     .bodyToMono(clazz)
-                    .toFuture()
-                    .get();
+                    .block();
         } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -83,11 +80,9 @@ public class RestUtil {
                     .toBodilessEntity()
                     .filter(entity -> entity.getStatusCode().is2xxSuccessful())
                     .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()))
-                    .toFuture().get();
+                    .block();
         } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -106,13 +101,10 @@ public class RestUtil {
                     .toBodilessEntity()
                     .filter(entity -> entity.getStatusCode().is2xxSuccessful())
                     .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()))
-                    .toFuture()
-                    .get()
+                    .block()
                     .getLocation();
         } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
