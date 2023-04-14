@@ -41,7 +41,6 @@ class InvoiceIssuerServiceSpec extends Specification {
         "default"         | "Test Organisation"
     }
 
-    @Unroll
     def "getInvoiceIssuer byOrgnummer throws PrincipalNotFoundException"() {
         given:
         def organizationNumber = "123456789"
@@ -58,7 +57,6 @@ class InvoiceIssuerServiceSpec extends Specification {
         thrown(PrincipalNotFoundException)
     }
 
-    @Unroll
     def "getInvoiceIssuer byName throws PrincipalNotFoundException"() {
         given:
         def organizationNumber = "123456789"
