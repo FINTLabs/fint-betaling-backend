@@ -52,15 +52,9 @@ public class RestUtil {
     }
 
     public <T> T get(Class<T> clazz, String uri) {
-        return getFromFullUri(clazz, uri);
-    }
-
-    public <T> T getFromFullUri(Class<T> clazz, String endpoint) {
-        // TODO: 06/05/2022 Dont string replace every time
-
         try {
             return webClient.get()
-                    .uri(endpoint.replace(baseUrl, ""))
+                    .uri(uri.replace(baseUrl, ""))
                     .retrieve()
                     .bodyToMono(clazz)
                     .block();

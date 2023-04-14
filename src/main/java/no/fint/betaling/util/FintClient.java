@@ -48,7 +48,7 @@ public class FintClient {
     }
 
     public PersonResource getPerson(PersonalressursResource personalressurs) {
-        return restUtil.getFromFullUri(
+        return restUtil.get(
                 PersonResource.class,
                 personalressurs.getPerson().get(0).getHref()
         );
