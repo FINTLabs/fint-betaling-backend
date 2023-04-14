@@ -1,15 +1,17 @@
 package no.fint.betaling.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.PrincipalNotFoundException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.Principal;
-import no.fint.betaling.repository.UserRepository;
 import no.fint.betaling.repository.InvoiceIssuerRepository;
+import no.fint.betaling.repository.UserRepository;
 import no.fint.betaling.util.CloneUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class InvoiceIssuerService {
 
@@ -38,7 +40,10 @@ public class InvoiceIssuerService {
                     .map(CloneUtil::cloneObject)
                     .peek(p -> p.setOrganisation(organisation))
                     .findFirst()
-                    .orElseThrow(() -> new PrincipalNotFoundException(organizationNumber));
+                    .orElseThrow(() -> {
+                        log.error("Fakturautsteder with organizationNumer {} not found!", organizationNumber);
+                        return new PrincipalNotFoundException(organizationNumber);
+                    });
         }
 
         return invoiceIssuerRepository.getInvoiceIssuers()
@@ -47,6 +52,9 @@ public class InvoiceIssuerService {
                 .map(CloneUtil::cloneObject)
                 .peek(p -> p.setOrganisation(organisation))
                 .findFirst()
-                .orElseThrow(() -> new PrincipalNotFoundException(organizationNumber));
+                .orElseThrow(() -> {
+                    log.error("Fakturautsteder with name {} not found!", organisation.getName());
+                    return new PrincipalNotFoundException(organizationNumber);
+                });
     }
 }
