@@ -3,6 +3,7 @@ package no.fint.betaling.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.ApplicationProperties;
 import no.fint.betaling.exception.EmployeeIdException;
+import no.fint.betaling.exception.PersonalressursException;
 import no.fint.betaling.model.User;
 import no.fint.betaling.service.UserCacheService;
 import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.net.URISyntaxException;
 
@@ -40,7 +42,7 @@ public class UserController {
     }
 
     @GetMapping
-    public User getMe(@AuthenticationPrincipal Jwt jwt) {
+    public Mono<ResponseEntity<User>> getMe(@AuthenticationPrincipal Jwt jwt) {
 
         String employeeId;
         boolean isAdminUser = false;
@@ -57,11 +59,16 @@ public class UserController {
         if (StringUtils.isEmpty(employeeId))
             throw new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!");
 
-        User user = userCacheService.getUser(employeeId, isAdminUser);
-        user.setIdleTime(idleTime);
-        log.debug("User: {}", user);
-
-        return user;
+        return userCacheService.getUser(employeeId, isAdminUser)
+                .doOnNext(user -> {
+                    user.setIdleTime(idleTime);
+                    log.debug("User: {}", user);
+                })
+                .map(ResponseEntity::ok)
+                .onErrorResume(PersonalressursException.class, ex -> {
+                    log.error(ex.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(null));
+                });
     }
 
     @GetMapping("ping")

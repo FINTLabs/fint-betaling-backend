@@ -168,7 +168,7 @@ class ClaimServiceSpec extends Specification {
         claimService.updateClaim(fakturagrunnlag)
 
         then:
-        2 * restUtil.getFromFullUri(_, _) >>> [betalingObjectFactory.newFaktura(), betalingObjectFactory.newFaktura()]
+        2 * restUtil.get(_, _) >>> [betalingObjectFactory.newFaktura(), betalingObjectFactory.newFaktura()]
         1 * claimRepository.updateClaim(_ as Query,
                 _/*{it.modifierOps['$set'].every { it.key ['invoiceUri', 'invoiceNumbers', 'invoiceDate', 'paymentDueDate', 'amountDue'] }}*/
         )

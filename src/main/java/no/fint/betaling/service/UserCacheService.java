@@ -5,6 +5,7 @@ import no.fint.betaling.model.User;
 import no.fint.betaling.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -21,18 +22,19 @@ public class UserCacheService {
         this.userRepository = userRepository;
     }
 
-    public User getUser(String employeeId, boolean isAdminUser) {
+    public Mono<User> getUser(String employeeId, boolean isAdminUser) {
         if (users.containsKey(employeeId)) {
             User user = users.get(employeeId);
             user.setAdmin(isAdminUser);
-            return user;
+            return Mono.just(user);
         }
 
-        User userFromSkoleressure = userRepository.mapUserFromResources(employeeId, isAdminUser);
-        userFromSkoleressure.setAdmin(isAdminUser);
-        users.put(employeeId, userFromSkoleressure);
-
-        return userFromSkoleressure;
+        return userRepository.mapUserFromResources(employeeId, isAdminUser)
+                .map(user -> {
+                    user.setAdmin(isAdminUser);
+                    users.put(employeeId, user);
+                    return user;
+                });
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
@@ -41,9 +43,11 @@ public class UserCacheService {
 
         users.forEach((employeeId, user) -> {
             log.debug("Updating user: " + employeeId + " with isAdmin: " + user.isAdmin());
-            User updatedUser = userRepository.mapUserFromResources(employeeId, user.isAdmin());
-            updatedUser.setAdmin(user.isAdmin());
-            users.put(employeeId, updatedUser);
+            userRepository.mapUserFromResources(employeeId, user.isAdmin()).
+                    doOnNext(updatedUser -> {
+                        updatedUser.setAdmin(user.isAdmin());
+                        users.put(employeeId, updatedUser);
+                    });
         });
     }
 }

@@ -12,6 +12,7 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,36 +33,26 @@ public class FintClient {
         this.endpoints = endpoints;
     }
 
-    public PersonalressursResource getPersonalressurs(String ansattnummer) {
+    public Mono<PersonalressursResource> getPersonalressurs(String ansattnummer) {
 
-        PersonalressursResource personalressurs = restUtil.get(
+        return restUtil.getMono(
                 PersonalressursResource.class,
                 UriComponentsBuilder.fromUriString(endpoints.getEmployee()).pathSegment("ansattnummer", ansattnummer).build().toUriString()
         );
-
-        if (personalressurs == null) {
-            log.error("Did not find any Personalressurs for empoloyeeId=" + ansattnummer);
-            throw new PersonalressursException(HttpStatus.BAD_REQUEST, "Fant ingen personalressurs for gitt ansatt.");
-        }
-
-        return personalressurs;
     }
 
-    public PersonResource getPerson(PersonalressursResource personalressurs) {
-        return restUtil.getFromFullUri(
+    public Mono<PersonResource> getPerson(PersonalressursResource personalressurs) {
+        return restUtil.getMono(
                 PersonResource.class,
                 personalressurs.getPerson().get(0).getHref()
         );
     }
 
-    public SkoleressursResource getSkoleressurs(PersonalressursResource personalressurs) {
+    public Mono<SkoleressursResource> getSkoleressurs(PersonalressursResource personalressurs) {
         if (personalressurs.getSkoleressurs().size() == 0)
             throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
 
-        SkoleressursResource skoleressurs = restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
-        log.debug("Skoleressurs: {}", skoleressurs);
-
-        return skoleressurs;
+        return restUtil.getMono(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
     }
 
     public List<SkoleResource> getSkoler(SkoleressursResource skoleressurs) {
