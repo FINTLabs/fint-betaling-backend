@@ -7,7 +7,6 @@ import no.fint.betaling.exception.InvalidResponseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -15,7 +14,6 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Component
@@ -61,6 +59,13 @@ public class RestUtil {
         } catch (WebClientResponseException e) {
             throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
         }
+    }
+
+    public <T> Mono<T> getMono(Class<T> clazz, String uri) {
+        return webClient.get()
+                .uri(uri.replace(baseUrl, ""))
+                .retrieve()
+                .bodyToMono(clazz);
     }
 
     public HttpHeaders head(String uri) {

@@ -1,6 +1,7 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.PersonalressursException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.util.FintClient;
@@ -8,11 +9,13 @@ import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
 import no.fint.model.resource.felles.PersonResource;
-import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -34,26 +37,46 @@ public class UserRepository {
         this.fintClient = fintClient;
     }
 
-    public User mapUserFromResources(String employeeId, boolean isAdminUser) {
-        User user = new User();
+    public Mono<User> mapUserFromResources(String employeeId, boolean isAdminUser) {
 
-        PersonalressursResource personalressurs = fintClient.getPersonalressurs(employeeId);
-        user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
-        user.setName(getName(fintClient.getPerson(personalressurs)));
+        return fintClient.getPersonalressurs(employeeId)
+                .switchIfEmpty(Mono.error(new PersonalressursException(HttpStatus.BAD_REQUEST, "Fant ingen personalressurs for gitt ansatt.")))
+                .flatMap(personalressurs -> {
+                    User user = new User();
+                    user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
+                    fintClient.getPerson(personalressurs).doOnNext(personResource -> user.setName(getName(personResource)));
 
-        List<SkoleResource> schools = isAdminUser ? getAllSchools() : getSchoolsBySkoleressurs(personalressurs);
+                    return isAdminUser ? handleAdminUser(user) : handleNonAdminUser(user, personalressurs);
+                });
+    }
+
+    private Mono<User> handleAdminUser(User user) {
+        List<SkoleResource> schools = getAllSchools();
         user.setOrganisationUnits(mapToOrganisation(schools));
 
         final Optional<Organisation> owner = getTopOrganisation(schools);
         owner.ifPresent(user::setOrganisation);
 
-        return user;
+        return Mono.just(user);
     }
 
-    private List<SkoleResource> getSchoolsBySkoleressurs(PersonalressursResource personalressurs) {
-        log.debug("Fetching schools from skoleressurs");
-        SkoleressursResource skoleressurs = fintClient.getSkoleressurs(personalressurs);
-        return fintClient.getSkoler(skoleressurs);
+    private Mono<User> handleNonAdminUser(User user, PersonalressursResource personalressurs) {
+        return getSchoolsBySkoleressurs(personalressurs)
+                .switchIfEmpty(Mono.just(new ArrayList<SkoleResource>()))
+                .flatMap(schools -> {
+                    user.setOrganisationUnits(mapToOrganisation(schools));
+
+                    final Optional<Organisation> owner = getTopOrganisation(schools);
+                    owner.ifPresent(user::setOrganisation);
+
+                    return Mono.just(user);
+                });
+    }
+
+    private Mono<List<SkoleResource>> getSchoolsBySkoleressurs(PersonalressursResource personalressurs) {
+        return fintClient
+                .getSkoleressurs(personalressurs)
+                .map(skoleressurs -> fintClient.getSkoler(skoleressurs));
     }
 
     private List<SkoleResource> getAllSchools() {
