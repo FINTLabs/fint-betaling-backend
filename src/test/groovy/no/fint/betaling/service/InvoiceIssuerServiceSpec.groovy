@@ -5,6 +5,7 @@ import no.fint.betaling.model.Organisation
 import no.fint.betaling.model.Principal
 import no.fint.betaling.repository.InvoiceIssuerRepository
 import no.fint.betaling.repository.UserRepository
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -26,11 +27,11 @@ class InvoiceIssuerServiceSpec extends Specification {
         def organisation = new Organisation(organisationNumber: organizationNumber, name: "Test Organisation")
         def principal = new Principal(description: principalDescription, organisation: organisation)
         invoiceIssuerService.principalMatchingStrategy = strategy
-        organisationService.getOrganisationByOrganisationNumber(organizationNumber) >> organisation
+        organisationService.getOrganisationByOrganisationNumber(organizationNumber) >> Mono.just(organisation)
         invoiceIssuerRepository.getInvoiceIssuers() >> [principal]
 
         when:
-        def result = invoiceIssuerService.getInvoiceIssuer(organizationNumber)
+        def result = invoiceIssuerService.getInvoiceIssuer(organizationNumber).block()
 
         then:
         result == principal
@@ -47,11 +48,11 @@ class InvoiceIssuerServiceSpec extends Specification {
         def organisation = new Organisation(organisationNumber: organizationNumber, name: "Test Organisation")
         def principal = new Principal(description: "Another Organisation", organisation: organisation)
         invoiceIssuerService.principalMatchingStrategy = "byOrgnummer"
-        organisationService.getOrganisationByOrganisationNumber(organizationNumber) >> organisation
+        organisationService.getOrganisationByOrganisationNumber(_) >> Mono.empty()
         invoiceIssuerRepository.getInvoiceIssuers() >> [principal]
 
         when:
-        invoiceIssuerService.getInvoiceIssuer("987654321")
+        invoiceIssuerService.getInvoiceIssuer("987654321").block()
 
         then:
         thrown(PrincipalNotFoundException)
@@ -63,11 +64,11 @@ class InvoiceIssuerServiceSpec extends Specification {
         def organisation = new Organisation(organisationNumber: organizationNumber, name: "Test Organisation")
         def principal = new Principal(description: "Another Organisation", organisation: organisation)
         invoiceIssuerService.principalMatchingStrategy = "default"
-        organisationService.getOrganisationByOrganisationNumber(organizationNumber) >> organisation
+        organisationService.getOrganisationByOrganisationNumber(organizationNumber) >> Mono.just(organisation)
         invoiceIssuerRepository.getInvoiceIssuers() >> [principal]
 
         when:
-        invoiceIssuerService.getInvoiceIssuer(organizationNumber)
+        invoiceIssuerService.getInvoiceIssuer(organizationNumber).block()
 
         then:
         thrown(PrincipalNotFoundException)

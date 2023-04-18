@@ -10,6 +10,9 @@ import no.fint.betaling.util.CloneUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+
+import java.util.function.BiPredicate;
 
 @Slf4j
 @Service
@@ -22,38 +25,40 @@ public class InvoiceIssuerService {
 
     private final InvoiceIssuerRepository invoiceIssuerRepository;
 
-    private final UserRepository userRepository;
-
     public InvoiceIssuerService(OrganisationService organisationService, InvoiceIssuerRepository invoiceIssuerRepository, UserRepository userRepository) {
         this.organisationService = organisationService;
         this.invoiceIssuerRepository = invoiceIssuerRepository;
-        this.userRepository = userRepository;
     }
 
-    public Principal getInvoiceIssuer(String organizationNumber) {
-        Organisation organisation = organisationService.getOrganisationByOrganisationNumber(organizationNumber);
+    public Mono<Principal> getInvoiceIssuer(String organizationNumber) {
+        return organisationService.getOrganisationByOrganisationNumber(organizationNumber)
+                .switchIfEmpty(Mono.error(new PrincipalNotFoundException(organizationNumber)))
+                .map(organisation -> getPrincipal(organizationNumber, organisation));
+    }
 
-        if (principalMatchingStrategy.equalsIgnoreCase("byOrgnummer")) {
-            return invoiceIssuerRepository.getInvoiceIssuers()
-                    .stream()
-                    .filter(p -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), organizationNumber))
-                    .map(CloneUtil::cloneObject)
-                    .peek(p -> p.setOrganisation(organisation))
-                    .findFirst()
-                    .orElseThrow(() -> {
-                        log.error("Fakturautsteder with organizationNumer {} not found!", organizationNumber);
-                        return new PrincipalNotFoundException(organizationNumber);
-                    });
-        }
+    private Principal getPrincipal(String organizationNumber, Organisation organisation) {
+        return principalMatchingStrategy.equalsIgnoreCase("byOrgnummer")
+                ? getPrincipalFromOrgnummer(organizationNumber, organisation)
+                : getPrincipalByName(organizationNumber, organisation);
+    }
 
+    private Principal getPrincipalByName(String organizationNumber, Organisation organisation) {
+        return getInvoiceIssuer(organizationNumber, organisation, (p, orgNum) -> StringUtils.equalsIgnoreCase(p.getDescription(), organisation.getName()));
+    }
+
+    private Principal getPrincipalFromOrgnummer(String organizationNumber, Organisation organisation) {
+        return getInvoiceIssuer(organizationNumber, organisation, (p, orgNum) -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), orgNum));
+    }
+
+    private Principal getInvoiceIssuer(String organizationNumber, Organisation organisation, BiPredicate<Principal, String> filterCondition) {
         return invoiceIssuerRepository.getInvoiceIssuers()
                 .stream()
-                .filter(p -> StringUtils.equalsIgnoreCase(p.getDescription(), organisation.getName()))
+                .filter(p -> filterCondition.test(p, organizationNumber))
                 .map(CloneUtil::cloneObject)
                 .peek(p -> p.setOrganisation(organisation))
                 .findFirst()
                 .orElseThrow(() -> {
-                    log.error("Fakturautsteder with name {} not found!", organisation.getName());
+                    log.error("Fakturautsteder with {} not found!", organizationNumber);
                     return new PrincipalNotFoundException(organizationNumber);
                 });
     }

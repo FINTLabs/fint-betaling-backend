@@ -1,7 +1,6 @@
 package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
@@ -10,8 +9,11 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 
@@ -40,23 +42,23 @@ public class OrganisationService {
     }
 
     @Cacheable("organisations")
-    public Organisation getOrganisationByOrganisationNumber(String id) {
-        try {
-            SkoleResource skoleResource = restUtil.get(SkoleResource.class,
-                    UriComponentsBuilder.fromUriString(schoolEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString());
-            return createOrganisation(skoleResource.getOrganisasjonsnummer(),
-                    skoleResource.getJuridiskNavn(),
-                    skoleResource.getNavn(),
-                    skoleResource.getOrganisasjonsnavn());
-        } catch (InvalidResponseException e) {
-            log.info("School {} not found: {} {}", id, e.getStatus(), e.getMessage());
-            OrganisasjonselementResource organisasjonselementResource = restUtil.get(OrganisasjonselementResource.class,
-                    UriComponentsBuilder.fromUriString(organisationEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString());
-            return createOrganisation(organisasjonselementResource.getOrganisasjonsnummer(),
-                    organisasjonselementResource.getNavn(),
-                    organisasjonselementResource.getOrganisasjonsnavn(),
-                    organisasjonselementResource.getKortnavn());
-        }
+    public Mono<Organisation> getOrganisationByOrganisationNumber(String id) {
+        String uri = UriComponentsBuilder.fromUriString(schoolEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString();
+
+        return restUtil.getMono(SkoleResource.class, uri)
+                .flatMap(skoleResource -> Mono.just(createOrganisation(skoleResource.getOrganisasjonsnummer(), skoleResource.getJuridiskNavn(), skoleResource.getNavn(), skoleResource.getOrganisasjonsnavn())))
+                .onErrorResume(WebClientResponseException.class, e -> {
+                    log.info("School {} not found: {} {}", id, e.getStatusCode(), e.getMessage());
+                    return e.getStatusCode() == HttpStatus.NOT_FOUND ? getOrganisationFromOrganisasjonselement(id) : Mono.error(e);
+                });
     }
 
+    private Mono<Organisation> getOrganisationFromOrganisasjonselement(String id) {
+        String orgUri = UriComponentsBuilder.fromUriString(organisationEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString();
+        return restUtil.getMono(OrganisasjonselementResource.class, orgUri)
+                .map(organisasjonselementResource -> createOrganisation(organisasjonselementResource.getOrganisasjonsnummer(),
+                        organisasjonselementResource.getNavn(),
+                        organisasjonselementResource.getOrganisasjonsnavn(),
+                        organisasjonselementResource.getKortnavn()));
+    }
 }
