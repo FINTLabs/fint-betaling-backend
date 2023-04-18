@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping(value = "/api/principal")
@@ -18,7 +19,7 @@ public class InvoiceIssuerController {
     }
 
     @GetMapping
-    public Principal getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
+    public Mono<Principal> getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return invoiceIssuerService.getInvoiceIssuer(schoolId);
     }
 }
