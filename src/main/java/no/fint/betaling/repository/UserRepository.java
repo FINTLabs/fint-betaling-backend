@@ -1,6 +1,7 @@
 package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.exception.PersonNotFoundException;
 import no.fint.betaling.exception.PersonalressursException;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
@@ -44,9 +45,14 @@ public class UserRepository {
                 .flatMap(personalressurs -> {
                     User user = new User();
                     user.setEmployeeNumber(personalressurs.getAnsattnummer().getIdentifikatorverdi());
-                    fintClient.getPerson(personalressurs).doOnNext(personResource -> user.setName(getName(personResource)));
 
-                    return isAdminUser ? handleAdminUser(user) : handleNonAdminUser(user, personalressurs);
+                    return fintClient.getPerson(personalressurs)
+                            .map(personResource -> {
+                                user.setName(getName(personResource));
+                                return user;
+                            })
+                            .switchIfEmpty(Mono.error(new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt.")))
+                            .flatMap(isAdminUser ? adminUser -> handleAdminUser(adminUser) : nonAdminUser -> handleNonAdminUser(nonAdminUser, personalressurs));
                 });
     }
 
