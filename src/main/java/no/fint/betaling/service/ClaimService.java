@@ -1,7 +1,6 @@
 package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.factory.ClaimFactory;
 import no.fint.betaling.factory.InvoiceFactory;
 import no.fint.betaling.model.Claim;
@@ -24,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -127,38 +127,48 @@ public class ClaimService {
     }
 
     private void setClaimStatusFromFint(Claim claim) {
-        try {
-            String result = restUtil.get(String.class, claim.getInvoiceUri());
-            log.error("Unexpected result! {}", result);
-        } catch (InvalidResponseException e2) {
-            if (e2.getStatus().is4xxClientError()) {
-                claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
-            } else if (e2.getStatus().is5xxServerError()) {
-                claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-            }
-            claim.setStatusMessage(e2.getMessage());
-            log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatus(), e2.getMessage());
-        }
+
+        restUtil.get(String.class, claim.getInvoiceUri())
+                .flatMap(result -> {
+                    log.error("Unexpected result! {}", result);
+                    return Mono.empty(); // Brukes når det ikke er behov for å returnere en verdi fra flatMap
+                })
+                .doOnError(WebClientResponseException.class, e2 -> {
+                    if (e2.getStatusCode().is4xxClientError()) {
+                        claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+                    } else if (e2.getStatusCode().is5xxServerError()) {
+                        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                    }
+                    claim.setStatusMessage(e2.getMessage());
+                    updateClaimStatus(claim);
+                    log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatusCode(), e2.getMessage());
+                })
+                .onErrorResume(e -> Mono.empty()) // Håndterer andre feil og fortsetter
+                .subscribe();
     }
 
     public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
         getAcceptedClaims().forEach(claim -> {
-            try {
-                FakturagrunnlagResource invoice = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri());
-                ClaimStatus newStatus = updateClaim(invoice);
-                claim.setClaimStatus(newStatus);
-                claim.setStatusMessage(null);
-                log.info("Claim {} updated", claim.getOrderNumber());
-            } catch (InvalidResponseException e) {
-                claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
-                claim.setStatusMessage(e.getMessage());
-                log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatus(), e.getMessage());
-            } catch (Exception e) {
-                log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-                log.error("Exception: " + e.getMessage(), e);
-            }
-            updateClaimStatus(claim);
+
+            restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+                    .doOnNext(fakturagrunnlagResource -> {
+                        ClaimStatus newStatus = updateClaim(fakturagrunnlagResource);
+                        claim.setClaimStatus(newStatus);
+                        claim.setStatusMessage(null);
+                        log.info("Claim {} updated", claim.getOrderNumber());
+                        updateClaimStatus(claim);
+                    })
+                    .doOnError(WebClientResponseException.class, e -> {
+                        claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
+                        claim.setStatusMessage(e.getMessage());
+                        log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
+                        updateClaimStatus(claim);
+                    })
+                    .doOnError(e -> {
+                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+                        log.error("Exception: " + e.getMessage(), e);
+                    });
         });
     }
 
@@ -185,7 +195,7 @@ public class ClaimService {
         List<FakturaResource> fakturaList = invoice.getFaktura()
                 .stream()
                 .map(Link::getHref)
-                .map(uri -> restUtil.get(FakturaResource.class, uri))
+                .map(uri -> restUtil.get(FakturaResource.class, uri).block())
                 .toList();
 
         updater.accept("invoiceNumbers", fakturaList.stream()

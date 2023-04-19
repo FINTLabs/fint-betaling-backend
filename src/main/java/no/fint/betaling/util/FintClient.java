@@ -2,7 +2,6 @@ package no.fint.betaling.util;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.Endpoints;
-import no.fint.betaling.exception.PersonalressursException;
 import no.fint.betaling.exception.SkoleressursException;
 import no.fint.betaling.repository.GroupRepository;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
@@ -35,14 +34,14 @@ public class FintClient {
 
     public Mono<PersonalressursResource> getPersonalressurs(String ansattnummer) {
 
-        return restUtil.getMono(
+        return restUtil.get(
                 PersonalressursResource.class,
                 UriComponentsBuilder.fromUriString(endpoints.getEmployee()).pathSegment("ansattnummer", ansattnummer).build().toUriString()
         );
     }
 
     public Mono<PersonResource> getPerson(PersonalressursResource personalressurs) {
-        return restUtil.getMono(
+        return restUtil.get(
                 PersonResource.class,
                 personalressurs.getPerson().get(0).getHref()
         );
@@ -52,7 +51,7 @@ public class FintClient {
         if (personalressurs.getSkoleressurs().size() == 0)
             throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
 
-        return restUtil.getMono(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
+        return restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
     }
 
     public List<SkoleResource> getSkoler(SkoleressursResource skoleressurs) {

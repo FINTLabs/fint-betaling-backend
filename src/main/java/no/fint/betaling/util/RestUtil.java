@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,19 +48,7 @@ public class RestUtil {
         }
     }
 
-    public <T> T get(Class<T> clazz, String uri) {
-        try {
-            return webClient.get()
-                    .uri(uri.replace(baseUrl, ""))
-                    .retrieve()
-                    .bodyToMono(clazz)
-                    .block();
-        } catch (WebClientResponseException e) {
-            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        }
-    }
-
-    public <T> Mono<T> getMono(Class<T> clazz, String uri) {
+    public <T> Mono<T> get(Class<T> clazz, String uri) {
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
                 .retrieve()

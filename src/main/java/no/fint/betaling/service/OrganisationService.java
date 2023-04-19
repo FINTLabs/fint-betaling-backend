@@ -45,7 +45,7 @@ public class OrganisationService {
     public Mono<Organisation> getOrganisationByOrganisationNumber(String id) {
         String uri = UriComponentsBuilder.fromUriString(schoolEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString();
 
-        return restUtil.getMono(SkoleResource.class, uri)
+        return restUtil.get(SkoleResource.class, uri)
                 .flatMap(skoleResource -> Mono.just(createOrganisation(skoleResource.getOrganisasjonsnummer(), skoleResource.getJuridiskNavn(), skoleResource.getNavn(), skoleResource.getOrganisasjonsnavn())))
                 .onErrorResume(WebClientResponseException.class, e -> {
                     log.info("School {} not found: {} {}", id, e.getStatusCode(), e.getMessage());
@@ -55,7 +55,7 @@ public class OrganisationService {
 
     private Mono<Organisation> getOrganisationFromOrganisasjonselement(String id) {
         String orgUri = UriComponentsBuilder.fromUriString(organisationEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString();
-        return restUtil.getMono(OrganisasjonselementResource.class, orgUri)
+        return restUtil.get(OrganisasjonselementResource.class, orgUri)
                 .map(organisasjonselementResource -> createOrganisation(organisasjonselementResource.getOrganisasjonsnummer(),
                         organisasjonselementResource.getNavn(),
                         organisasjonselementResource.getOrganisasjonsnavn(),

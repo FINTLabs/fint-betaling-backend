@@ -33,16 +33,20 @@ class RestUtilSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "Get resource given invalid response throws InvalidResponseException"() {
+    def "Get resource given invalid response throws WebClientResponseException"() {
         given:
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))
 
         when:
-        restUtil.get(String, '/test')
+        def response = restUtil.get(String, '/test')
 
         then:
-        def e = thrown(InvalidResponseException)
-        e.getStatus() == HttpStatus.BAD_REQUEST
+        StepVerifier.create(response)
+                .expectErrorSatisfies { e ->
+                    assert e instanceof WebClientResponseException
+                    assert e.getStatusCode() == HttpStatus.BAD_REQUEST
+                }
+                .verify()
     }
 
     def "Set resource given invalid response throws InvalidResponseException"() {
@@ -66,10 +70,14 @@ class RestUtilSpec extends Specification {
                 .setResponseCode(200))
 
         when:
-        def resource = restUtil.get(ElevResource.class, '/test')
+        def result = restUtil.get(ElevResource.class, '/test')
 
         then:
-        resource.elevnummer.identifikatorverdi == '87651234'
+        StepVerifier.create(result)
+                .assertNext { resource ->
+                    assert resource.elevnummer.identifikatorverdi == '87651234'
+                }
+                .verifyComplete()
     }
 
     def "Post ElevResource given valid url returns valid response entity"() {
