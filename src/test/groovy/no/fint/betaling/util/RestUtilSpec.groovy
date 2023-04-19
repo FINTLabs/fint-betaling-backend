@@ -83,7 +83,7 @@ class RestUtilSpec extends Specification {
         def response = restUtil.post('/test', elev, ElevResource.class, "test.no")
 
         then:
-        response.toString() == "http://test.no/1234"
+        response.block().getLocation().toString() == "http://test.no/1234"
     }
 
 //    def 'Get updates for a resource'() {
