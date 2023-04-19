@@ -85,9 +85,8 @@ public class RestUtil {
         }
     }
 
-    public <T> URI post(String uri, T content, Class<T> clazz, String orgId) {
+    public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz, String orgId) {
         // todo: what is x-client id ??
-        try {
             log.info("POST {} {}", uri, content);
 
             return webClient
@@ -99,12 +98,7 @@ public class RestUtil {
                     .retrieve()
                     .toBodilessEntity()
                     .filter(entity -> entity.getStatusCode().is2xxSuccessful())
-                    .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()))
-                    .block()
-                    .getLocation();
-        } catch (WebClientResponseException e) {
-            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        }
+                    .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()));
     }
 
     @Data

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -37,7 +38,7 @@ public class ClaimController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<?> sendClaims(@RequestBody List<String> orderNumbers) {
+    public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<String> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
         return ResponseEntity.status(HttpStatus.CREATED).body(claimService.sendClaims(orderNumbers));
     }

@@ -23,11 +23,12 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 
-import java.net.URI;
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -64,27 +65,42 @@ public class ClaimService {
                 .collect(Collectors.toList());
     }
 
-    public List<Claim> sendClaims(List<String> orderNumbers) {
-        return getUnsentClaims().stream()
+    public Flux<Claim> sendClaims(List<String> orderNumbers) {
+
+        List<Claim> claims = getUnsentClaims()
+                .stream()
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
-                .peek(claim -> {
-                    try {
-                        FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-                        URI location = restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId());
-                        if (location != null) {
-                            claim.setInvoiceUri(location.toString());
-                            claim.setClaimStatus(ClaimStatus.SENT);
-                            claim.setStatusMessage(null);
-                            log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                        }
-                    } catch (InvalidResponseException e) {
-                        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                        claim.setStatusMessage(e.getMessage());
-                        log.error("Error sending claim {}: {}", claim.getOrderNumber(), e.getStatus());
-                    }
-                    updateClaimStatus(claim);
-                })
                 .collect(Collectors.toList());
+
+        log.info("Trinn1");
+
+        return Flux.fromIterable(claims)
+                .flatMap(claim -> {
+                    log.info("Trinn2");
+                    FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
+
+                    return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId())
+                            .doOnNext(resp -> log.info("Response from restUtil.post(): {}", resp))
+                            .doOnError(e -> log.error("Error from restUtil.post(): {}", e.getMessage()))
+
+                            .doOnNext(httpHeaders -> {
+                                log.info("Trinn3");
+                                if (httpHeaders.getLocation() != null) {
+                                    claim.setInvoiceUri(httpHeaders.getLocation().toString());
+                                    claim.setClaimStatus(ClaimStatus.SENT);
+                                    claim.setStatusMessage(null);
+                                    log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                                    updateClaimStatus(claim);
+                                }
+                            })
+                            .doOnError(WebClientResponseException.class, ex -> {
+                                claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                                claim.setStatusMessage(ex.getMessage());
+                                log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
+                                updateClaimStatus(claim);
+                            })
+                            .thenReturn(claim);
+                });
     }
 
     public void updateSentClaims() {
@@ -171,7 +187,7 @@ public class ClaimService {
                 .stream()
                 .map(Link::getHref)
                 .map(uri -> restUtil.get(FakturaResource.class, uri))
-                .collect(Collectors.toList());
+                .toList();
 
         updater.accept("invoiceNumbers", fakturaList.stream()
                 .map(FakturaResource::getFakturanummer)
@@ -273,7 +289,7 @@ public class ClaimService {
                 .forEach(this::updateClaimStatus);
     }
 
-    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) throws ParseException {
+    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
 
         return claimRepository.getClaims(
                 queryService.queryByDateAndSchoolAndStatus(
