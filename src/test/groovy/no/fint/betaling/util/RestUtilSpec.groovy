@@ -49,7 +49,7 @@ class RestUtilSpec extends Specification {
                 .verify()
     }
 
-    def "Set resource given invalid response throws InvalidResponseException"() {
+    def "Set resource given invalid response throws WebClientResponseException"() {
         given:
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))
 

@@ -2,7 +2,6 @@ package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.Endpoints;
-import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
@@ -95,7 +94,7 @@ public class GroupRepository {
 
         try {
             resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup()).block();
-        } catch (InvalidResponseException ex) {
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
@@ -155,7 +154,7 @@ public class GroupRepository {
 
         try {
             resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup()).block();
-        } catch (InvalidResponseException ex) {
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
