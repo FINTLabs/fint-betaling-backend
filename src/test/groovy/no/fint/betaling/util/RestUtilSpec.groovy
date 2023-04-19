@@ -6,8 +6,12 @@ import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 import spock.lang.Specification
 
 class RestUtilSpec extends Specification {
@@ -46,11 +50,12 @@ class RestUtilSpec extends Specification {
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))
 
         when:
-        restUtil.post('/test', 'ping', String.class, 'test.no')
+        Mono<HttpHeaders> response = restUtil.post('/test', 'ping', String.class, 'test.no')
 
         then:
-        def e = thrown(InvalidResponseException)
-        e.getStatus() == HttpStatus.BAD_REQUEST
+        StepVerifier.create(response)
+                .expectErrorMatches { e -> e instanceof WebClientResponseException && e.statusCode == HttpStatus.BAD_REQUEST }
+                .verify()
     }
 
     def "Get ElevResource given valid url returns ElevResource"() {
