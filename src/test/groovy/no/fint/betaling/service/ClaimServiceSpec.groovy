@@ -12,8 +12,11 @@ import no.fint.betaling.util.RestUtil
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import org.springframework.http.HttpHeaders
+import reactor.core.publisher.Mono
 import spock.lang.Ignore
 import spock.lang.Specification
+import reactor.test.StepVerifier;
 
 class ClaimServiceSpec extends Specification {
     private ClaimService claimService
@@ -59,17 +62,25 @@ class ClaimServiceSpec extends Specification {
     def "Given valid claims, send invoices and update claims"() {
         given:
         def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
+        def header = new HttpHeaders();
+        header.setLocation(new URI("link.to.Location"))
+
+        claimRepository.getClaims(_ as Query) >> [claim]
+        restUtil.post(*_) >> Mono.just(header)
+        invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
 
         when:
         def claims = claimService.sendClaims(['12345'])
 
         then:
-        1 * claimRepository.getClaims(_ as Query) >> [claim]
-        1 * restUtil.post(*_) >> new URI('link.to.Location')
-        1 * invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
-        claims.size() == 1
-        claims.get(0).claimStatus == ClaimStatus.SENT
-        claims.get(0).invoiceUri == 'link.to.Location'
+        StepVerifier
+                .create(claims)
+                .assertNext({ c ->
+                    assert c.claimStatus == ClaimStatus.SENT
+                    assert c.invoiceUri == 'link.to.Location'
+                })
+                .expectComplete()
+                .verify()
     }
 
     @Ignore
@@ -168,7 +179,7 @@ class ClaimServiceSpec extends Specification {
         claimService.updateClaim(fakturagrunnlag)
 
         then:
-        2 * restUtil.get(_, _) >>> [betalingObjectFactory.newFaktura(), betalingObjectFactory.newFaktura()]
+        2 * restUtil.get(*_) >>> [Mono.just(betalingObjectFactory.newFaktura()), Mono.just(betalingObjectFactory.newFaktura())]
         1 * claimRepository.updateClaim(_ as Query,
                 _/*{it.modifierOps['$set'].every { it.key ['invoiceUri', 'invoiceNumbers', 'invoiceDate', 'paymentDueDate', 'amountDue'] }}*/
         )

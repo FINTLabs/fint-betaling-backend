@@ -2,7 +2,6 @@ package no.fint.betaling.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.Endpoints;
-import no.fint.betaling.exception.InvalidResponseException;
 import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
@@ -16,6 +15,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,8 +59,8 @@ public class GroupRepository {
         SkoleResources resources;
 
         try {
-            resources = restUtil.get(SkoleResources.class, endpoints.getSchool());
-        } catch (InvalidResponseException ex) {
+            resources = restUtil.get(SkoleResources.class, endpoints.getSchool()).block();
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
@@ -93,8 +93,8 @@ public class GroupRepository {
         BasisgruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup());
-        } catch (InvalidResponseException ex) {
+            resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup()).block();
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
@@ -123,8 +123,8 @@ public class GroupRepository {
         UndervisningsgruppeResources resources;
 
         try {
-            resources = restUtil.get(UndervisningsgruppeResources.class, endpoints.getTeachingGroup());
-        } catch (InvalidResponseException ex) {
+            resources = restUtil.get(UndervisningsgruppeResources.class, endpoints.getTeachingGroup()).block();
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
@@ -153,8 +153,8 @@ public class GroupRepository {
         KontaktlarergruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup());
-        } catch (InvalidResponseException ex) {
+            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup()).block();
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
@@ -183,8 +183,8 @@ public class GroupRepository {
         ElevforholdResources resources;
 
         try {
-            resources = restUtil.get(ElevforholdResources.class, endpoints.getStudentRelation());
-        } catch (InvalidResponseException ex) {
+            resources = restUtil.get(ElevforholdResources.class, endpoints.getStudentRelation()).block();
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }
@@ -213,8 +213,8 @@ public class GroupRepository {
         PersonResources resources;
 
         try {
-            resources = restUtil.get(PersonResources.class, endpoints.getPerson());
-        } catch (InvalidResponseException ex) {
+            resources = restUtil.get(PersonResources.class, endpoints.getPerson()).block();
+        } catch (WebClientResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
         }

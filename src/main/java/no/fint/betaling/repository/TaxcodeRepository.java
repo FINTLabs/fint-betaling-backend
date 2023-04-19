@@ -55,6 +55,7 @@ public class TaxcodeRepository {
     public void updateTaxcodes() {
         log.info("Updating tax codes from {} ...", endpoints.getTaxcode());
         restUtil.getUpdates(MerverdiavgiftResources.class, endpoints.getTaxcode())
+                .block()
                 .getContent()
                 .forEach(m -> {
                     Taxcode taxcode = new Taxcode();

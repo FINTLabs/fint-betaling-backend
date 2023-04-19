@@ -6,6 +6,7 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 class TaxcodeRepositorySpec extends Specification {
@@ -29,6 +30,6 @@ class TaxcodeRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(MerverdiavgiftResources, endpoint) >> mvaCodes
+        1 * restUtil.getUpdates(MerverdiavgiftResources, endpoint) >> Mono.just(mvaCodes)
     }
 }

@@ -63,6 +63,7 @@ public class OrganisationRepository {
     public void updateOrganisations() {
         log.info("Updating organisations from {} ...", endpoints.getOrganisationselement());
         restUtil.getUpdates(OrganisasjonselementResources.class, endpoints.getOrganisationselement())
+                .block()
                 .getContent()
                 .forEach(o -> {
                     Organisation organisation = new Organisation();

@@ -1,13 +1,17 @@
 package no.fint.betaling.util
 
-import no.fint.betaling.exception.InvalidResponseException
+
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientResponseException
+import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 import spock.lang.Specification
 
 class RestUtilSpec extends Specification {
@@ -29,28 +33,33 @@ class RestUtilSpec extends Specification {
         mockWebServer.shutdown()
     }
 
-    def "Get resource given invalid response throws InvalidResponseException"() {
+    def "Get resource given invalid response throws WebClientResponseException"() {
         given:
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))
 
         when:
-        restUtil.get(String, '/test')
+        def response = restUtil.get(String, '/test')
 
         then:
-        def e = thrown(InvalidResponseException)
-        e.getStatus() == HttpStatus.BAD_REQUEST
+        StepVerifier.create(response)
+                .expectErrorSatisfies { e ->
+                    assert e instanceof WebClientResponseException
+                    assert e.getStatusCode() == HttpStatus.BAD_REQUEST
+                }
+                .verify()
     }
 
-    def "Set resource given invalid response throws InvalidResponseException"() {
+    def "Set resource given invalid response throws WebClientResponseException"() {
         given:
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))
 
         when:
-        restUtil.post('/test', 'ping', String.class, 'test.no')
+        Mono<HttpHeaders> response = restUtil.post('/test', 'ping', String.class, 'test.no')
 
         then:
-        def e = thrown(InvalidResponseException)
-        e.getStatus() == HttpStatus.BAD_REQUEST
+        StepVerifier.create(response)
+                .expectErrorMatches { e -> e instanceof WebClientResponseException && e.statusCode == HttpStatus.BAD_REQUEST }
+                .verify()
     }
 
     def "Get ElevResource given valid url returns ElevResource"() {
@@ -61,10 +70,14 @@ class RestUtilSpec extends Specification {
                 .setResponseCode(200))
 
         when:
-        def resource = restUtil.get(ElevResource.class, '/test')
+        def result = restUtil.get(ElevResource.class, '/test')
 
         then:
-        resource.elevnummer.identifikatorverdi == '87651234'
+        StepVerifier.create(result)
+                .assertNext { resource ->
+                    assert resource.elevnummer.identifikatorverdi == '87651234'
+                }
+                .verifyComplete()
     }
 
     def "Post ElevResource given valid url returns valid response entity"() {
@@ -78,7 +91,7 @@ class RestUtilSpec extends Specification {
         def response = restUtil.post('/test', elev, ElevResource.class, "test.no")
 
         then:
-        response.toString() == "http://test.no/1234"
+        response.block().getLocation().toString() == "http://test.no/1234"
     }
 
 //    def 'Get updates for a resource'() {
@@ -159,13 +172,17 @@ class RestUtilSpec extends Specification {
         def result = restUtil.getUpdates(PersonalressursResources.class, uri)
 
         then:
-        result.totalItems == 1
+        StepVerifier.create(result)
+                .expectNextCount(1)
+                .expectComplete()
+                .verify()
 
         when:
         def result2 = restUtil.getUpdates(PersonalressursResources.class, uri)
 
         then:
-        result2.totalItems == 0
+        then:
+        StepVerifier.create(result2).expectComplete()
     }
 
 }
