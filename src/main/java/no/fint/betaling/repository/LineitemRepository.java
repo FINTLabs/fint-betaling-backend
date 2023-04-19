@@ -52,6 +52,7 @@ public class LineitemRepository {
     public void updateLineitems() {
         log.info("Updating vare from {} ...", endpoints.getVare());
         restUtil.getUpdates(VareResources.class, endpoints.getVare())
+                .block()
                 .getContent()
                 .forEach(v -> {
                     Lineitem lineitem = new Lineitem();

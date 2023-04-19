@@ -4,20 +4,29 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 class ScheduleServiceSpec extends Specification {
-    private ClaimService claimService
-    private ScheduleService scheduleService
+    ClaimService claimService = Mock(ClaimService)
 
-    void setup() {
-        claimService = Mock(ClaimService)
-        scheduleService = new ScheduleService(claimService: claimService)
-    }
+    ScheduleService scheduleService = new ScheduleService(claimService)
 
-    @Ignore
-    def "Send invoices"() {
+    void "updateRecentlySentClaims() should call claimService.updateSentClaims()"() {
+        given:
+        claimService.updateSentClaims() >> { println "Updating sent claims..." }
+
         when:
-        scheduleService.sendInvoices()
+        scheduleService.updateRecentlySentClaims()
 
         then:
-        claimService.sendClaims(_ as String)
+        1 * claimService.updateSentClaims()
+    }
+
+    void "updateAcceptedClaims() should call claimService.updateAcceptedClaims()"() {
+        given:
+        claimService.updateAcceptedClaims() >> { println "Updating accepted claims..." }
+
+        when:
+        scheduleService.updateAcceptedClaims()
+
+        then:
+        1 * claimService.updateAcceptedClaims()
     }
 }

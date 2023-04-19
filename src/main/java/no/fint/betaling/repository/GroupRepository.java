@@ -94,7 +94,7 @@ public class GroupRepository {
         BasisgruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup());
+            resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup()).block();
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;
@@ -154,7 +154,7 @@ public class GroupRepository {
         KontaktlarergruppeResources resources;
 
         try {
-            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup());
+            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup()).block();
         } catch (InvalidResponseException ex) {
             log.error(ex.getMessage(), ex);
             return null;

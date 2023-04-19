@@ -50,6 +50,7 @@ public class InvoiceIssuerRepository {
     public void updateInvoiceIssuers() {
         log.info("Updating invoice issuer from {} ...", endpoints.getInvoiceIssuer());
         restUtil.getUpdates(FakturautstederResources.class, endpoints.getInvoiceIssuer())
+                .block()
                 .getContent()
                 .forEach(fakturautsteder -> {
                     Principal principal = new Principal();

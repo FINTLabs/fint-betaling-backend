@@ -7,6 +7,7 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.faktura.FakturautstederResource
 import no.fint.model.resource.okonomi.faktura.FakturautstederResources
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 class InvoiceIssuerRepositorySpec extends Specification {
@@ -42,7 +43,7 @@ class InvoiceIssuerRepositorySpec extends Specification {
         def result = repository.getInvoiceIssuers()
 
         then:
-        1 * restUtil.getUpdates(FakturautstederResources, endpoint) >> fakturautstederResources
+        1 * restUtil.getUpdates(FakturautstederResources, endpoint) >> Mono.just(fakturautstederResources)
         1 * lineitemRepository.getLineitemByUri(_ as String) >> new Lineitem(itemCode: 'abc')
         result.size() == 1
     }

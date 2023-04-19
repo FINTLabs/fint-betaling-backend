@@ -1,6 +1,6 @@
 package no.fint.betaling.util
 
-import no.fint.betaling.exception.InvalidResponseException
+
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource
@@ -172,13 +172,17 @@ class RestUtilSpec extends Specification {
         def result = restUtil.getUpdates(PersonalressursResources.class, uri)
 
         then:
-        result.totalItems == 1
+        StepVerifier.create(result)
+                .expectNextCount(1)
+                .expectComplete()
+                .verify()
 
         when:
         def result2 = restUtil.getUpdates(PersonalressursResources.class, uri)
 
         then:
-        result2.totalItems == 0
+        then:
+        StepVerifier.create(result2).expectComplete()
     }
 
 }

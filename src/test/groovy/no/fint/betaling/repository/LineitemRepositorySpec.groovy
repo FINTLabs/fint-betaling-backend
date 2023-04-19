@@ -7,6 +7,7 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.kodeverk.VareResource
 import no.fint.model.resource.okonomi.kodeverk.VareResources
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 class LineitemRepositorySpec extends Specification {
@@ -37,7 +38,7 @@ class LineitemRepositorySpec extends Specification {
         repository.updateLineitems()
 
         then:
-        1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> resources
+        1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> Mono.just(resources)
         1 * taxcodeRepository.getTaxcodeByUri('http://mvakode/1234') >> new Taxcode(rate: 0.25)
     }
 
@@ -59,7 +60,7 @@ class LineitemRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> resources
+        1 * restUtil.getUpdates(_ as Class<VareResources>, _ as String) >> Mono.just(resources)
         1 * taxcodeRepository.getTaxcodeByUri(_ as String) >> new Taxcode(rate: 0.25)
 
     }
