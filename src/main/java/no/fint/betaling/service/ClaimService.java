@@ -72,19 +72,12 @@ public class ClaimService {
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .collect(Collectors.toList());
 
-        log.info("Trinn1");
-
         return Flux.fromIterable(claims)
                 .flatMap(claim -> {
-                    log.info("Trinn2");
                     FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
 
                     return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId())
-                            .doOnNext(resp -> log.info("Response from restUtil.post(): {}", resp))
-                            .doOnError(e -> log.error("Error from restUtil.post(): {}", e.getMessage()))
-
                             .doOnNext(httpHeaders -> {
-                                log.info("Trinn3");
                                 if (httpHeaders.getLocation() != null) {
                                     claim.setInvoiceUri(httpHeaders.getLocation().toString());
                                     claim.setClaimStatus(ClaimStatus.SENT);

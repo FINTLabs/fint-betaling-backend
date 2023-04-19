@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders
 import reactor.core.publisher.Mono
 import spock.lang.Ignore
 import spock.lang.Specification
+import reactor.test.StepVerifier;
 
 class ClaimServiceSpec extends Specification {
     private ClaimService claimService
@@ -74,7 +75,6 @@ class ClaimServiceSpec extends Specification {
         then:
         StepVerifier
                 .create(claims)
-                .expectSubscription()
                 .assertNext({ c ->
                     assert c.claimStatus == ClaimStatus.SENT
                     assert c.invoiceUri == 'link.to.Location'
