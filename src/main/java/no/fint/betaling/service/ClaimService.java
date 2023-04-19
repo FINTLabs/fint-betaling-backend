@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -28,7 +27,6 @@ import reactor.core.publisher.Flux;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -98,41 +96,49 @@ public class ClaimService {
 
     public void updateSentClaims() {
         getSentClaims().forEach(claim -> {
-            try {
-                HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
-                if (headers.getLocation() != null) {
-                    claim.setInvoiceUri(headers.getLocation().toString());
-                    claim.setClaimStatus(ClaimStatus.ACCEPTED);
-                    log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                } else {
-                    log.info("Claim {} not updated", claim.getOrderNumber());
-                }
-                claim.setStatusMessage(null);
-            } catch (InvalidResponseException e) {
-                if (e.getStatus() == HttpStatus.GONE) {
-                    log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
-                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                    claim.setInvoiceUri(null);
-                } else {
-                    try {
-                        String result = restUtil.get(String.class, claim.getInvoiceUri());
-                        log.error("Unexpected result! {}", result);
-                    } catch (InvalidResponseException e2) {
-                        if (e2.getStatus().is4xxClientError()) {
-                            claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
-                        } else if (e2.getStatus().is5xxServerError()) {
-                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+            restUtil.head(claim.getInvoiceUri())
+                    .doOnNext(headers -> {
+                        if (headers.getLocation() != null) {
+                            claim.setInvoiceUri(headers.getLocation().toString());
+                            claim.setClaimStatus(ClaimStatus.ACCEPTED);
+                            log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                        } else {
+                            log.info("Claim {} not updated", claim.getOrderNumber());
                         }
-                        claim.setStatusMessage(e2.getMessage());
-                        log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatus(), e2.getMessage());
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-                log.error("Exception: " + e.getMessage(), e);
-            }
-            updateClaimStatus(claim);
+                        claim.setStatusMessage(null);
+                        updateClaimStatus(claim);
+                    })
+                    .doOnError(WebClientResponseException.class, e -> {
+                        if (e.getStatusCode() == HttpStatus.GONE) {
+                            log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
+                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                            claim.setInvoiceUri(null);
+                            updateClaimStatus(claim);
+                        } else {
+                            setClaimStatusFromFint(claim);
+                        }
+                    })
+                    .doOnError(e -> {
+                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+                        log.error("Exception: " + e.getMessage(), e);
+                    })
+                    .subscribe();
         });
+    }
+
+    private void setClaimStatusFromFint(Claim claim) {
+        try {
+            String result = restUtil.get(String.class, claim.getInvoiceUri());
+            log.error("Unexpected result! {}", result);
+        } catch (InvalidResponseException e2) {
+            if (e2.getStatus().is4xxClientError()) {
+                claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+            } else if (e2.getStatus().is5xxServerError()) {
+                claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+            }
+            claim.setStatusMessage(e2.getMessage());
+            log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatus(), e2.getMessage());
+        }
     }
 
     public void updateAcceptedClaims() {

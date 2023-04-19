@@ -68,8 +68,7 @@ public class RestUtil {
                 .bodyToMono(clazz);
     }
 
-    public HttpHeaders head(String uri) {
-        try {
+    public Mono<HttpHeaders> head(String uri) {
             log.info("GET {}", uri);
 
             return webClient
@@ -78,11 +77,7 @@ public class RestUtil {
                     .retrieve()
                     .toBodilessEntity()
                     .filter(entity -> entity.getStatusCode().is2xxSuccessful())
-                    .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()))
-                    .block();
-        } catch (WebClientResponseException e) {
-            throw new InvalidResponseException(e.getStatusCode(), e.getResponseBodyAsString(), e);
-        }
+                    .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()));
     }
 
     public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz, String orgId) {

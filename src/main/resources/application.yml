@@ -36,7 +36,7 @@ management:
 fint:
   betaling:
     date-range: "7, 14, 30"
-    invoice-update-rate: "900000"
+    invoice-update-rate: "300000"
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     demo-user-employeeid: "100006"
     demo: "false"
