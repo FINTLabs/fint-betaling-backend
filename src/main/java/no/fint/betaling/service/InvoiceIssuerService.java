@@ -43,7 +43,7 @@ public class InvoiceIssuerService {
     }
 
     private Principal getPrincipalByName(String organizationNumber, Organisation organisation) {
-        return getInvoiceIssuer(organizationNumber, organisation, (p, orgNum) -> StringUtils.equalsIgnoreCase(p.getDescription(), organisation.getName()));
+        return getInvoiceIssuer(organizationNumber, organisation, (p, orgNum) -> StringUtils.startsWithIgnoreCase(organisation.getName(), p.getDescription()));
     }
 
     private Principal getPrincipalFromOrgnummer(String organizationNumber, Organisation organisation) {
