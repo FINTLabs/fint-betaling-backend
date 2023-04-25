@@ -56,8 +56,10 @@ public class UserController {
             log.debug("User " + employeeId + " is admin: " + isAdminUser);
         }
 
-        if (StringUtils.isEmpty(employeeId))
-            throw new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!");
+        if (StringUtils.isEmpty(employeeId)) {
+            log.error("Brukerautorisering mangler employeeId!");
+            return Mono.error(new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!"));
+        }
 
         return userCacheService.getUser(employeeId, isAdminUser)
                 .doOnNext(user -> {
