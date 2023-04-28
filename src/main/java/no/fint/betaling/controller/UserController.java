@@ -70,6 +70,10 @@ public class UserController {
                 .onErrorResume(PersonalressursException.class, ex -> {
                     log.error(ex.getMessage());
                     return Mono.just(ResponseEntity.badRequest().body(null));
+                })
+                .onErrorResume(ex -> {
+                    log.error("An exception occured on handling getUser", ex);
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
                 });
     }
 
