@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 
 import java.text.ParseException;
@@ -40,7 +41,17 @@ public class ClaimController {
     @PostMapping("/send")
     public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<String> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
-        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.sendClaims(orderNumbers));
+        Flux<Claim> flux = claimService.sendClaims(orderNumbers);
+        // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:
+        if (flux == null) flux = Flux.empty();
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(flux
+                        .switchIfEmpty(Flux.empty())
+                        .onErrorMap(throwable -> {
+                            log.error("Error occurred while sending claims", throwable);
+                            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while sending claims", throwable);
+                        }));
     }
 
     @GetMapping
@@ -76,8 +87,7 @@ public class ClaimController {
     }
 
     /**
-     * @deprecated
-     * <p>This endpoint is being replaced by /count/status/{status}</p>
+     * @deprecated <p>This endpoint is being replaced by /count/status/{status}</p>
      */
     @Deprecated
     @GetMapping("/count/by-status/{status}")
@@ -99,7 +109,7 @@ public class ClaimController {
     }
 
     private ClaimStatus[] toClaimStatus(String[] status) {
-        if(status != null && status.length > 0)
+        if (status != null && status.length > 0)
             return Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new);
         else
             return null;

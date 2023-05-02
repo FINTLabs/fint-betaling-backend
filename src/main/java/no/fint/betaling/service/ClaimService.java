@@ -64,34 +64,35 @@ public class ClaimService {
     }
 
     public Flux<Claim> sendClaims(List<String> orderNumbers) {
-
-        List<Claim> claims = getUnsentClaims()
-                .stream()
+        return Flux.fromIterable(getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
-                .collect(Collectors.toList());
-
-        return Flux.fromIterable(claims)
-                .flatMap(claim -> {
-                    FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-
-                    return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId())
-                            .doOnNext(httpHeaders -> {
-                                if (httpHeaders.getLocation() != null) {
-                                    claim.setInvoiceUri(httpHeaders.getLocation().toString());
-                                    claim.setClaimStatus(ClaimStatus.SENT);
-                                    claim.setStatusMessage(null);
-                                    log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                                    updateClaimStatus(claim);
-                                }
-                            })
-                            .doOnError(WebClientResponseException.class, ex -> {
-                                claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                                claim.setStatusMessage(ex.getMessage());
-                                log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
-                                updateClaimStatus(claim);
-                            })
-                            .thenReturn(claim);
+                .flatMap(this::checkClaimStatus)
+                .onErrorResume(throwable -> {
+                    log.error("Error occurred while sending claims", throwable);
+                    return Flux.error(throwable);
                 });
+    }
+
+    private Mono<Claim> checkClaimStatus(Claim claim) {
+        FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
+
+        return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId())
+                .doOnNext(httpHeaders -> {
+                    if (httpHeaders.getLocation() != null) {
+                        claim.setInvoiceUri(httpHeaders.getLocation().toString());
+                        claim.setClaimStatus(ClaimStatus.SENT);
+                        claim.setStatusMessage(null);
+                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                        updateClaimStatus(claim);
+                    }
+                })
+                .doOnError(WebClientResponseException.class, ex -> {
+                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                    claim.setStatusMessage(ex.getMessage());
+                    log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
+                    updateClaimStatus(claim);
+                })
+                .thenReturn(claim);
     }
 
     public void updateSentClaims() {
