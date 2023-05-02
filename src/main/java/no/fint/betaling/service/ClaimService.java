@@ -266,10 +266,9 @@ public class ClaimService {
     }
 
     private List<Claim> getUnsentClaims() {
-        List<Claim> claims = claimRepository.getClaims(queryService.queryByClaimStatus(
+        return claimRepository.getClaims(queryService.queryByClaimStatus(
                 ClaimStatus.STORED,
                 ClaimStatus.SEND_ERROR));
-        return claims != null ? claims : Collections.emptyList();
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {
