@@ -41,8 +41,13 @@ public class ClaimController {
     @PostMapping("/send")
     public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<String> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
+        Flux<Claim> flux = claimService.sendClaims(orderNumbers);
+        // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:
+        if (flux == null) flux = Flux.empty();
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(claimService.sendClaims(orderNumbers)
+                .body(flux
+                        .switchIfEmpty(Flux.empty())
                         .onErrorMap(throwable -> {
                             log.error("Error occurred while sending claims", throwable);
                             return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while sending claims", throwable);
