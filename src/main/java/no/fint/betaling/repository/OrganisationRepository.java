@@ -76,7 +76,7 @@ public class OrganisationRepository {
                             .map(Link::getHref)
                             .map(StringUtils::lowerCase)
                             .forEach(link -> {
-                                log.debug("{}", link);
+                                log.trace("{}", link);
                                 organisations.put(link, organisation);
                                 o.getOverordnet()
                                         .stream()

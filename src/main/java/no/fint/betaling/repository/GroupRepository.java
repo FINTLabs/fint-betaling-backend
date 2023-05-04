@@ -63,7 +63,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(SkoleResources.class, endpoints.getSchool()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -97,7 +97,7 @@ public class GroupRepository {
         try {
             resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -127,7 +127,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(UndervisningsgruppeResources.class, endpoints.getTeachingGroup()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -157,7 +157,7 @@ public class GroupRepository {
         try {
             resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -187,7 +187,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(ElevforholdResources.class, endpoints.getStudentRelation()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -217,7 +217,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(PersonResources.class, endpoints.getPerson()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -249,7 +249,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(SkoleressursResources.class, endpoints.getSchoolResource()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
