@@ -43,7 +43,7 @@ public class GroupRepository {
         this.endpoints = endpoints;
     }
 
-    @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
+    @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
     public void init() {
         updateSchools();
         updateBasisGroups();

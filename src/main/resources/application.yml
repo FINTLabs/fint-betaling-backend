@@ -1,7 +1,7 @@
 spring:
   cache:
     caffeine:
-      spec: expireAfterWrite=2h
+      spec: expireAfterWrite=6h
     cache-names: me, schools, basisGroups, teachingGroups, contactTeacherGroups, studentRelations, students, organisations, persons, schoolresources
     type: CAFFEINE
   mvc:
