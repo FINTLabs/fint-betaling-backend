@@ -36,6 +36,7 @@ public class GroupRepository {
     private final Map<Link, KontaktlarergruppeResource> contactTeacherGroups = new HashMap<>();
     private final Map<Link, ElevforholdResource> studentRelations = new HashMap<>();
     private final Map<Link, PersonResource> students = new HashMap<>();
+    private final Map<Link, SkoleressursResource> schoolresources = new HashMap<>();
 
     public GroupRepository(RestUtil restUtil, Endpoints endpoints) {
         this.restUtil = restUtil;
@@ -50,6 +51,7 @@ public class GroupRepository {
         updateContactTeacherGroups();
         updateStudentRelations();
         updateStudents();
+        updateSchoolresources();
     }
 
     @CachePut(value = "schools", unless = "#result == null")
@@ -236,6 +238,36 @@ public class GroupRepository {
             updateStudents();
         }
         return students;
+    }
+
+    @CachePut(value = "schoolresources", unless = "#result == null")
+    public Map<Link, PersonResource> updateSchoolresources() {
+        log.info("Updating skoleressurs from {} ...", endpoints.getSchoolResource());
+
+        SkoleressursResources resources;
+
+        try {
+            resources = restUtil.get(SkoleressursResources.class, endpoints.getSchoolResource()).block();
+        } catch (WebClientResponseException ex) {
+            log.error(ex.getMessage(), ex);
+            return null;
+        }
+
+        if (resources.getTotalItems() == 0) return null;
+
+
+        resources.getContent().forEach(r -> r.getPersonalressurs().forEach(link -> schoolresources.put(link, r)));
+        log.info("Update completed, {} schoolresources.", schoolresources.size());
+
+        return students;
+    }
+
+    @Cacheable("schoolresources")
+    public Map<Link, SkoleressursResource> getSchoolresources() {
+        if (schoolresources.isEmpty()) {
+            updateSchoolresources();
+        }
+        return schoolresources;
     }
 
 }
