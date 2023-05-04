@@ -14,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,10 +49,15 @@ public class FintClient {
     }
 
     public Mono<SkoleressursResource> getSkoleressurs(PersonalressursResource personalressurs) {
-        if (personalressurs.getSkoleressurs().size() == 0)
-            throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
+        AtomicReference<SkoleressursResource> result = new AtomicReference<>();
+        personalressurs.getSelfLinks().forEach(selflink -> {
+            if (groupRepository.getSchoolresources().containsKey(selflink)) {
+                result.set(groupRepository.getSchoolresources().get(selflink));
+            }
+        });
 
-        return restUtil.get(SkoleressursResource.class, personalressurs.getSkoleressurs().get(0).getHref());
+        if (result.get() != null) return Mono.just(result.get());
+        throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
     }
 
     public List<SkoleResource> getSkoler(SkoleressursResource skoleressurs) {

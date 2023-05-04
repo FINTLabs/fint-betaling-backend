@@ -40,4 +40,7 @@ public class Endpoints {
 
     @Value("${fint.betaling.endpoints.mva-code:/okonomi/kodeverk/merverdiavgift}")
     private String taxcode;
+
+    @Value("${fint.betaling.endpoints.skoleressurs:/utdanning/elev/skoleressurs}")
+    private String schoolResource;
 }

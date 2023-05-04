@@ -36,13 +36,14 @@ public class GroupRepository {
     private final Map<Link, KontaktlarergruppeResource> contactTeacherGroups = new HashMap<>();
     private final Map<Link, ElevforholdResource> studentRelations = new HashMap<>();
     private final Map<Link, PersonResource> students = new HashMap<>();
+    private final Map<Link, SkoleressursResource> schoolresources = new HashMap<>();
 
     public GroupRepository(RestUtil restUtil, Endpoints endpoints) {
         this.restUtil = restUtil;
         this.endpoints = endpoints;
     }
 
-    @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
+    @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
     public void init() {
         updateSchools();
         updateBasisGroups();
@@ -50,6 +51,7 @@ public class GroupRepository {
         updateContactTeacherGroups();
         updateStudentRelations();
         updateStudents();
+        updateSchoolresources();
     }
 
     @CachePut(value = "schools", unless = "#result == null")
@@ -61,7 +63,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(SkoleResources.class, endpoints.getSchool()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -95,7 +97,7 @@ public class GroupRepository {
         try {
             resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -125,7 +127,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(UndervisningsgruppeResources.class, endpoints.getTeachingGroup()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -155,7 +157,7 @@ public class GroupRepository {
         try {
             resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -185,7 +187,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(ElevforholdResources.class, endpoints.getStudentRelation()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -215,7 +217,7 @@ public class GroupRepository {
         try {
             resources = restUtil.get(PersonResources.class, endpoints.getPerson()).block();
         } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage(), ex);
+            log.error(ex.getMessage());
             return null;
         }
 
@@ -236,6 +238,36 @@ public class GroupRepository {
             updateStudents();
         }
         return students;
+    }
+
+    @CachePut(value = "schoolresources", unless = "#result == null")
+    public Map<Link, PersonResource> updateSchoolresources() {
+        log.info("Updating skoleressurs from {} ...", endpoints.getSchoolResource());
+
+        SkoleressursResources resources;
+
+        try {
+            resources = restUtil.get(SkoleressursResources.class, endpoints.getSchoolResource()).block();
+        } catch (WebClientResponseException ex) {
+            log.error(ex.getMessage());
+            return null;
+        }
+
+        if (resources.getTotalItems() == 0) return null;
+
+
+        resources.getContent().forEach(r -> r.getPersonalressurs().forEach(link -> schoolresources.put(link, r)));
+        log.info("Update completed, {} schoolresources.", schoolresources.size());
+
+        return students;
+    }
+
+    @Cacheable("schoolresources")
+    public Map<Link, SkoleressursResource> getSchoolresources() {
+        if (schoolresources.isEmpty()) {
+            updateSchoolresources();
+        }
+        return schoolresources;
     }
 
 }
