@@ -16,16 +16,16 @@ public class ResourceCache<T extends FintLinks> {
     private final RestUtil restUtil;
     private final String endpoint;
     private final Map<Link, T> resources = new HashMap<>();
-    private final Class<T> clazz;
+    private final Class<GenericCollectionResoures<T>> clazz;
 
-    public ResourceCache(RestUtil restUtil, String endpoint, Class<T> clazz) {
+    public ResourceCache(RestUtil restUtil, String endpoint, Class<GenericCollectionResoures<T>> clazz) {
         this.restUtil = restUtil;
         this.endpoint = endpoint;
         this.clazz = clazz;
     }
 
     public Map<Link, T> update() {
-        log.info("Updating skoleressurs from {} ...", endpoint);
+        log.info("Updating ressurs from {} ...", endpoint);
 
         GenericCollectionResoures<T> updatedResources;
 
@@ -38,7 +38,7 @@ public class ResourceCache<T extends FintLinks> {
 
         if (updatedResources.getTotalItems() == 0) return null;
 
-        updatedResources.getContent().forEach(r -> r.getSelfLinks(link -> resources.put(link, r)));
+        updatedResources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> resources.put(link, r)));
         log.info("Update completed, {} resources.", resources.size());
 
         return resources;
