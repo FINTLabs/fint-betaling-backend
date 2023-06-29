@@ -8,11 +8,18 @@ spec:
       containers:
         - name: fint-betaling-backend
           image: ghcr.io/fintlabs/fint-betaling-backend:sha-0000000
+          resources:
+            limits:
+              memory: "18Gi"
+              cpu: "1"
+            requests:
+              memory: "6Gi"
+              cpu: "250m"
           envFrom:
             - secretRef:
                 name: betaling-viken
           env:
-            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx13G' }
+            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx16200M' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byName' }
             - { name: logging.level.no.fint.betaling, value: 'DEBUG' }
             - { name: logging.level.org.springframework.security, value: 'INFO' }
