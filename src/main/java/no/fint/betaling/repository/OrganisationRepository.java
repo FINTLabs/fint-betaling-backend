@@ -9,6 +9,7 @@ import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementRe
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,8 +63,18 @@ public class OrganisationRepository {
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
     public void updateOrganisations() {
         log.info("Updating organisations from {} ...", endpoints.getOrganisationselement());
-        restUtil.getUpdates(OrganisasjonselementResources.class, endpoints.getOrganisationselement())
-                .block()
+
+        OrganisasjonselementResources organisasjonselementResources;
+        try {
+            organisasjonselementResources = restUtil
+                    .getUpdates(OrganisasjonselementResources.class, endpoints.getOrganisationselement())
+                    .block();
+        } catch (WebClientResponseException ex) {
+            log.error(ex.getMessage());
+            return;
+        }
+
+        organisasjonselementResources
                 .getContent()
                 .forEach(o -> {
                     Organisation organisation = new Organisation();
@@ -85,7 +96,7 @@ public class OrganisationRepository {
                                         .forEach(superior -> superiors.put(link, superior));
                             });
                 });
+
         log.info("Update completed, {} organisations and {} links.", organisations.size(), superiors.size());
     }
-
 }
