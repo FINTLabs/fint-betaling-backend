@@ -54,7 +54,6 @@ public class GroupRepository {
         updateSchoolresources();
     }
 
-    @CachePut(value = "schools", unless = "#result == null")
     public Map<Link, SkoleResource> updateSchools() {
         log.info("Updating schools from {} ...", endpoints.getSchool());
 
@@ -76,7 +75,6 @@ public class GroupRepository {
         return schools;
     }
 
-    @Cacheable("schools")
     public Map<Link, SkoleResource> getSchools() {
         if (schools.isEmpty()) {
             updateSchools();
@@ -88,7 +86,6 @@ public class GroupRepository {
         return getSchools().values().stream().distinct().collect(Collectors.toList());
     }
 
-    @CachePut(value = "basisGroups", unless = "#result == null")
     public Map<Link, BasisgruppeResource> updateBasisGroups() {
         log.info("Updating basis groups from {} ...", endpoints.getBasisGroup());
 
@@ -110,7 +107,6 @@ public class GroupRepository {
         return basisGroups;
     }
 
-    @Cacheable("basisGroups")
     public Map<Link, BasisgruppeResource> getBasisGroups() {
         if (basisGroups.isEmpty()) {
             updateBasisGroups();
@@ -118,7 +114,6 @@ public class GroupRepository {
         return basisGroups;
     }
 
-    @CachePut(value = "teachingGroups", unless = "#result == null")
     public Map<Link, UndervisningsgruppeResource> updateTeachingGroups() {
         log.info("Updating teaching groups from {} ...", endpoints.getTeachingGroup());
 
@@ -140,7 +135,6 @@ public class GroupRepository {
         return teachingGroups;
     }
 
-    @Cacheable("teachingGroups")
     public Map<Link, UndervisningsgruppeResource> getTeachingGroups() {
         if (teachingGroups.isEmpty()) {
             updateTeachingGroups();
@@ -148,7 +142,6 @@ public class GroupRepository {
         return teachingGroups;
     }
 
-    @CachePut(value = "contactTeacherGroups", unless = "#result == null")
     public Map<Link, KontaktlarergruppeResource> updateContactTeacherGroups() {
         log.info("Updating contact teacher groups from {} ...", endpoints.getContactTeacherGroup());
 
@@ -170,7 +163,6 @@ public class GroupRepository {
         return contactTeacherGroups;
     }
 
-    @Cacheable("contactTeacherGroups")
     public Map<Link, KontaktlarergruppeResource> getContactTeacherGroups() {
         if (contactTeacherGroups.isEmpty()) {
             updateContactTeacherGroups();
@@ -178,7 +170,6 @@ public class GroupRepository {
         return contactTeacherGroups;
     }
 
-    @CachePut(value = "studentRelations", unless = "#result == null")
     public Map<Link, ElevforholdResource> updateStudentRelations() {
         log.info("Updating student relations from {} ...", endpoints.getStudentRelation());
 
@@ -200,7 +191,6 @@ public class GroupRepository {
         return studentRelations;
     }
 
-    @Cacheable("studentRelations")
     public Map<Link, ElevforholdResource> getStudentRelations() {
         if (studentRelations.isEmpty()) {
             updateStudentRelations();
@@ -208,7 +198,6 @@ public class GroupRepository {
         return studentRelations;
     }
 
-    @CachePut(value = "students", unless = "#result == null")
     public Map<Link, PersonResource> updateStudents() {
         log.info("Updating students from {} ...", endpoints.getPerson());
 
@@ -232,7 +221,6 @@ public class GroupRepository {
         return students;
     }
 
-    @Cacheable("students")
     public Map<Link, PersonResource> getStudents() {
         if (students.isEmpty()) {
             updateStudents();
@@ -240,7 +228,6 @@ public class GroupRepository {
         return students;
     }
 
-    @CachePut(value = "schoolresources", unless = "#result == null")
     public Map<Link, PersonResource> updateSchoolresources() {
         log.info("Updating skoleressurs from {} ...", endpoints.getSchoolResource());
 
@@ -262,7 +249,6 @@ public class GroupRepository {
         return students;
     }
 
-    @Cacheable("schoolresources")
     public Map<Link, SkoleressursResource> getSchoolresources() {
         if (schoolresources.isEmpty()) {
             updateSchoolresources();
