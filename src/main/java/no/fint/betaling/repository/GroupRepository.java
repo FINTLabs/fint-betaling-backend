@@ -11,8 +11,6 @@ import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -30,244 +28,66 @@ public class GroupRepository {
 
     private final Endpoints endpoints;
 
-    private final Map<Link, SkoleResource> schools = new HashMap<>();
-    private final Map<Link, BasisgruppeResource> basisGroups = new HashMap<>();
-    private final Map<Link, UndervisningsgruppeResource> teachingGroups = new HashMap<>();
-    private final Map<Link, KontaktlarergruppeResource> contactTeacherGroups = new HashMap<>();
-    private final Map<Link, ElevforholdResource> studentRelations = new HashMap<>();
-    private final Map<Link, PersonResource> students = new HashMap<>();
-    private final Map<Link, SkoleressursResource> schoolresources = new HashMap<>();
+    private final ResourceCache<SkoleResource, SkoleResources> schools;
+    private final ResourceCache<BasisgruppeResource, BasisgruppeResources> basisGroups;
+    private final ResourceCache<UndervisningsgruppeResource, UndervisningsgruppeResources> teachingGroups;
+    private final ResourceCache<KontaktlarergruppeResource, KontaktlarergruppeResources> contactTeacherGroups;
+    private final ResourceCache<ElevforholdResource, ElevforholdResources> studentRelations;
+    private final ResourceCache<PersonResource, PersonResources> students;
+    private final ResourceCache<SkoleressursResource, SkoleressursResources> schoolresources;
 
     public GroupRepository(RestUtil restUtil, Endpoints endpoints) {
         this.restUtil = restUtil;
         this.endpoints = endpoints;
+        schools = new ResourceCache<>(restUtil, endpoints.getSchool(), SkoleResources.class);
+        basisGroups = new ResourceCache<>(restUtil, endpoints.getBasisGroup(), BasisgruppeResources.class);
+        teachingGroups = new ResourceCache<>(restUtil, endpoints.getTeachingGroup(), UndervisningsgruppeResources.class);
+        contactTeacherGroups = new ResourceCache<>(restUtil, endpoints.getContactTeacherGroup(), KontaktlarergruppeResources.class);
+        studentRelations = new ResourceCache<>(restUtil, endpoints.getStudentRelation(), ElevforholdResources.class);
+        students = new ResourceCache<>(restUtil, endpoints.getPerson(), PersonResources.class, PersonResource::getElev);
+        schoolresources = new ResourceCache<>(restUtil, endpoints.getSchoolResource(), SkoleressursResources.class, SkoleressursResource::getPersonalressurs);
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
     public void init() {
-        updateSchools();
-        updateBasisGroups();
-        updateTeachingGroups();
-        updateContactTeacherGroups();
-        updateStudentRelations();
-        updateStudents();
-        updateSchoolresources();
+        schools.update();
+        basisGroups.update();
+        teachingGroups.update();
+        contactTeacherGroups.update();
+        studentRelations.update();
+        students.update();
+        schoolresources.update();
     }
 
-    @CachePut(value = "schools", unless = "#result == null")
-    public Map<Link, SkoleResource> updateSchools() {
-        log.info("Updating schools from {} ...", endpoints.getSchool());
-
-        SkoleResources resources;
-
-        try {
-            resources = restUtil.get(SkoleResources.class, endpoints.getSchool()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(resource -> resource.getSelfLinks().forEach(link -> schools.put(link, resource)));
-
-        log.info("Update completed, {} schools.", schools.size());
-
-        return schools;
-    }
-
-    @Cacheable("schools")
     public Map<Link, SkoleResource> getSchools() {
-        if (schools.isEmpty()) {
-            updateSchools();
-        }
-        return schools;
+        return schools.get();
     }
 
     public List<SkoleResource> getDistinctSchools() {
         return getSchools().values().stream().distinct().collect(Collectors.toList());
     }
 
-    @CachePut(value = "basisGroups", unless = "#result == null")
-    public Map<Link, BasisgruppeResource> updateBasisGroups() {
-        log.info("Updating basis groups from {} ...", endpoints.getBasisGroup());
-
-        BasisgruppeResources resources;
-
-        try {
-            resources = restUtil.getUpdates(BasisgruppeResources.class, endpoints.getBasisGroup()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> basisGroups.put(link, r)));
-
-        log.info("Update completed, {} basis groups.", basisGroups.size());
-
-        return basisGroups;
-    }
-
-    @Cacheable("basisGroups")
     public Map<Link, BasisgruppeResource> getBasisGroups() {
-        if (basisGroups.isEmpty()) {
-            updateBasisGroups();
-        }
-        return basisGroups;
+        return basisGroups.get();
     }
 
-    @CachePut(value = "teachingGroups", unless = "#result == null")
-    public Map<Link, UndervisningsgruppeResource> updateTeachingGroups() {
-        log.info("Updating teaching groups from {} ...", endpoints.getTeachingGroup());
-
-        UndervisningsgruppeResources resources;
-
-        try {
-            resources = restUtil.get(UndervisningsgruppeResources.class, endpoints.getTeachingGroup()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(resource -> resource.getSelfLinks().forEach(link -> teachingGroups.put(link, resource)));
-
-        log.info("Update completed, {} teaching groups.", teachingGroups.size());
-
-        return teachingGroups;
-    }
-
-    @Cacheable("teachingGroups")
     public Map<Link, UndervisningsgruppeResource> getTeachingGroups() {
-        if (teachingGroups.isEmpty()) {
-            updateTeachingGroups();
-        }
-        return teachingGroups;
+        return teachingGroups.get();
     }
 
-    @CachePut(value = "contactTeacherGroups", unless = "#result == null")
-    public Map<Link, KontaktlarergruppeResource> updateContactTeacherGroups() {
-        log.info("Updating contact teacher groups from {} ...", endpoints.getContactTeacherGroup());
-
-        KontaktlarergruppeResources resources;
-
-        try {
-            resources = restUtil.getUpdates(KontaktlarergruppeResources.class, endpoints.getContactTeacherGroup()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> contactTeacherGroups.put(link, r)));
-
-        log.info("Update completed, {} contact teacher groups.", contactTeacherGroups.size());
-
-        return contactTeacherGroups;
-    }
-
-    @Cacheable("contactTeacherGroups")
     public Map<Link, KontaktlarergruppeResource> getContactTeacherGroups() {
-        if (contactTeacherGroups.isEmpty()) {
-            updateContactTeacherGroups();
-        }
-        return contactTeacherGroups;
+        return contactTeacherGroups.get();
     }
 
-    @CachePut(value = "studentRelations", unless = "#result == null")
-    public Map<Link, ElevforholdResource> updateStudentRelations() {
-        log.info("Updating student relations from {} ...", endpoints.getStudentRelation());
-
-        ElevforholdResources resources;
-
-        try {
-            resources = restUtil.get(ElevforholdResources.class, endpoints.getStudentRelation()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(r -> r.getSelfLinks().forEach(link -> studentRelations.put(link, r)));
-
-        log.info("Update completed, {} student relations.", studentRelations.size());
-
-        return studentRelations;
-    }
-
-    @Cacheable("studentRelations")
     public Map<Link, ElevforholdResource> getStudentRelations() {
-        if (studentRelations.isEmpty()) {
-            updateStudentRelations();
-        }
-        return studentRelations;
+        return studentRelations.get();
     }
 
-    @CachePut(value = "students", unless = "#result == null")
-    public Map<Link, PersonResource> updateStudents() {
-        log.info("Updating students from {} ...", endpoints.getPerson());
-
-        PersonResources resources;
-
-        try {
-            resources = restUtil.get(PersonResources.class, endpoints.getPerson()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(person -> person.getElev()
-                .forEach(student -> students.put(student, person)));
-
-
-        log.info("Update completed, {} students.", students.size());
-
-        return students;
-    }
-
-    @Cacheable("students")
     public Map<Link, PersonResource> getStudents() {
-        if (students.isEmpty()) {
-            updateStudents();
-        }
-        return students;
+        return students.get();
     }
 
-    @CachePut(value = "schoolresources", unless = "#result == null")
-    public Map<Link, PersonResource> updateSchoolresources() {
-        log.info("Updating skoleressurs from {} ...", endpoints.getSchoolResource());
-
-        SkoleressursResources resources;
-
-        try {
-            resources = restUtil.get(SkoleressursResources.class, endpoints.getSchoolResource()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-
-        resources.getContent().forEach(r -> r.getPersonalressurs().forEach(link -> schoolresources.put(link, r)));
-        log.info("Update completed, {} schoolresources.", schoolresources.size());
-
-        return students;
-    }
-
-    @Cacheable("schoolresources")
     public Map<Link, SkoleressursResource> getSchoolresources() {
-        if (schoolresources.isEmpty()) {
-            updateSchoolresources();
-        }
-        return schoolresources;
+        return schoolresources.get();
     }
-
 }

@@ -48,7 +48,7 @@ public class OrganisationService {
         return restUtil.get(SkoleResource.class, uri)
                 .flatMap(skoleResource -> Mono.just(createOrganisation(skoleResource.getOrganisasjonsnummer(), skoleResource.getJuridiskNavn(), skoleResource.getNavn(), skoleResource.getOrganisasjonsnavn())))
                 .onErrorResume(WebClientResponseException.class, e -> {
-                    log.info("School {} not found: {} {}", id, e.getStatusCode(), e.getMessage());
+                    log.warn("School {} not found: {} {}", id, e.getStatusCode(), e.getMessage());
                     return e.getStatusCode() == HttpStatus.NOT_FOUND ? getOrganisationFromOrganisasjonselement(id) : Mono.error(e);
                 });
     }
