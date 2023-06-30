@@ -17,7 +17,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
 
     private final RestUtil restUtil;
     private final String endpoint;
-    private final Map<Link, T> resources = new HashMap<>();
+    private Map<Link, T> resources = new HashMap<>();
     private final Class<U> clazz;
     private final Function<T, List<Link>> linkProvider;
 
@@ -46,7 +46,9 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
 
         if (updatedResources.getTotalItems() == 0) return;
 
-        updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> resources.put(link, resource)));
+        Map<Link, T> newResources = new HashMap<>();
+        updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> newResources.put(link, resource)));
+        resources = newResources;
         log.info("Update completed, {} resources.", resources.size());
     }
 
@@ -58,7 +60,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
         return resources;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return resources.isEmpty();
     }
 
