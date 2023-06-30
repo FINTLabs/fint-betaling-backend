@@ -5,11 +5,12 @@ import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.utdanning.elev.SkoleressursResources;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Slf4j
 public class ResourceCache<T extends FintLinks, U extends AbstractCollectionResources<T>> {
@@ -18,11 +19,17 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
     private final String endpoint;
     private final Map<Link, T> resources = new HashMap<>();
     private final Class<U> clazz;
+    private final Function<T, List<Link>> linkProvider;
 
     public ResourceCache(RestUtil restUtil, String endpoint, Class<U> clazz) {
+        this(restUtil, endpoint, clazz, FintLinks::getSelfLinks);
+    }
+
+    public ResourceCache(RestUtil restUtil, String endpoint, Class<U> clazz, Function<T, List<Link>> linkProvider) {
         this.restUtil = restUtil;
         this.endpoint = endpoint;
         this.clazz = clazz;
+        this.linkProvider = linkProvider;
     }
 
     public void update() {
@@ -39,7 +46,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
 
         if (updatedResources.getTotalItems() == 0) return;
 
-        updatedResources.getContent().forEach(resource -> resource.getSelfLinks().forEach(link -> resources.put(link, resource)));
+        updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> resources.put(link, resource)));
         log.info("Update completed, {} resources.", resources.size());
     }
 

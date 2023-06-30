@@ -28,13 +28,13 @@ public class GroupRepository {
 
     private final Endpoints endpoints;
 
-    private final Map<Link, SkoleressursResource> schoolresources = new HashMap<>();
     private final ResourceCache<SkoleResource, SkoleResources> schools;
     private final ResourceCache<BasisgruppeResource, BasisgruppeResources> basisGroups;
     private final ResourceCache<UndervisningsgruppeResource, UndervisningsgruppeResources> teachingGroups;
     private final ResourceCache<KontaktlarergruppeResource, KontaktlarergruppeResources> contactTeacherGroups;
     private final ResourceCache<ElevforholdResource, ElevforholdResources> studentRelations;
     private final ResourceCache<PersonResource, PersonResources> students;
+    private final ResourceCache<SkoleressursResource, SkoleressursResources> schoolresources;
 
     public GroupRepository(RestUtil restUtil, Endpoints endpoints) {
         this.restUtil = restUtil;
@@ -44,7 +44,8 @@ public class GroupRepository {
         teachingGroups = new ResourceCache<>(restUtil, endpoints.getTeachingGroup(), UndervisningsgruppeResources.class);
         contactTeacherGroups = new ResourceCache<>(restUtil, endpoints.getContactTeacherGroup(), KontaktlarergruppeResources.class);
         studentRelations = new ResourceCache<>(restUtil, endpoints.getStudentRelation(), ElevforholdResources.class);
-        students = new ResourceCache<>(restUtil, endpoints.getPerson(), PersonResources.class);
+        students = new ResourceCache<>(restUtil, endpoints.getPerson(), PersonResources.class, PersonResource::getElev);
+        schoolresources = new ResourceCache<>(restUtil, endpoints.getSchoolResource(), SkoleressursResources.class, SkoleressursResource::getPersonalressurs);
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
@@ -55,7 +56,7 @@ public class GroupRepository {
         contactTeacherGroups.update();
         studentRelations.update();
         students.update();
-        updateSchoolresources();
+        schoolresources.update();
     }
 
     public Map<Link, SkoleResource> getSchools() {
@@ -67,7 +68,7 @@ public class GroupRepository {
     }
 
     public Map<Link, BasisgruppeResource> getBasisGroups() {
-     return basisGroups.get();
+        return basisGroups.get();
     }
 
     public Map<Link, UndervisningsgruppeResource> getTeachingGroups() {
@@ -82,59 +83,11 @@ public class GroupRepository {
         return studentRelations.get();
     }
 
-    public Map<Link, PersonResource> updateStudents() {
-        log.info("Updating students from {} ...", endpoints.getPerson());
-
-        PersonResources resources;
-
-        try {
-            resources = restUtil.get(PersonResources.class, endpoints.getPerson()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-        resources.getContent().forEach(person -> person.getElev()
-                .forEach(student -> students.put(student, person)));
-
-
-        log.info("Update completed, {} students.", students.size());
-
-        return students;
-    }
-
     public Map<Link, PersonResource> getStudents() {
         return students.get();
     }
 
-    public Map<Link, PersonResource> updateSchoolresources() {
-        log.info("Updating skoleressurs from {} ...", endpoints.getSchoolResource());
-
-        SkoleressursResources resources;
-
-        try {
-            resources = restUtil.get(SkoleressursResources.class, endpoints.getSchoolResource()).block();
-        } catch (WebClientResponseException ex) {
-            log.error(ex.getMessage());
-            return null;
-        }
-
-        if (resources.getTotalItems() == 0) return null;
-
-
-        resources.getContent().forEach(r -> r.getPersonalressurs().forEach(link -> schoolresources.put(link, r)));
-        log.info("Update completed, {} schoolresources.", schoolresources.size());
-
-        return students;
-    }
-
     public Map<Link, SkoleressursResource> getSchoolresources() {
-        if (schoolresources.isEmpty()) {
-            updateSchoolresources();
-        }
-        return schoolresources;
+        return schoolresources.get();
     }
-
 }
