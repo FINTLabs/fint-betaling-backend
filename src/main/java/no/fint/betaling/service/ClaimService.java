@@ -169,7 +169,8 @@ public class ClaimService {
                     .doOnError(e -> {
                         log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
                         log.error("Exception: " + e.getMessage(), e);
-                    });
+                    })
+                    .subscribe();
         });
     }
 
