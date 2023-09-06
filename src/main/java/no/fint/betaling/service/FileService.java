@@ -68,7 +68,7 @@ public class FileService {
 
         customerGroup.setCustomers(customers);
         CustomerFileGroup customerFileGroup = new CustomerFileGroup(customerGroup, notFoundCustomers);
-        if (!customerFileGroup.hasCustomers()){
+        if (!customerFileGroup.hasCustomers()) {
             throw new InsufficientDataException();
         }
         return customerFileGroup;
@@ -89,7 +89,7 @@ public class FileService {
                 .orElseThrow(NoVISIDColumnException::new);
     }
 
-    private Optional<Customer> getCustomerNumberByVisId(String visId, Map<String,Customer> customers) {
+    private Optional<Customer> getCustomerNumberByVisId(String visId, Map<String, Customer> customers) {
         return Optional.ofNullable(customers.get(visId));
     }
 
