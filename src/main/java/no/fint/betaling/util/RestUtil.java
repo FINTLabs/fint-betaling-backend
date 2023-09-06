@@ -8,7 +8,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +42,18 @@ public class RestUtil {
                         .doOnNext(it -> sinceTimestamp.put(uri, lastUpdated.getLastUpdated()))
                 );
     }
+
+    public <T> Mono<T> getWhitRetry(Class<T> clazz, String uri) {
+        return webClient.get()
+                .uri(uri.replace(baseUrl, ""))
+                .retrieve()
+                .bodyToMono(clazz)
+                .retryWhen(
+                        Retry.backoff(5, Duration.ofSeconds(10))
+                                .maxBackoff(Duration.ofSeconds(60))
+                );
+    }
+
 
     public <T> Mono<T> get(Class<T> clazz, String uri) {
         return webClient.get()
