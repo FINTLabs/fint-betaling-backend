@@ -26,6 +26,7 @@ public class InvoiceIssuerController {
     @GetMapping
     public Mono<Principal> getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return invoiceIssuerService.getInvoiceIssuer(schoolId)
+                //todo Sander logg ut lineItems med identifikator 1351. Nummer og navn
                 .onErrorResume(ex -> {
                     log.error("An exception occured on handling getInvoiceIssuer", ex);
                     return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));

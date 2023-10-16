@@ -56,6 +56,11 @@ public class LineitemRepository {
                     .block()
                     .getContent()
                     .forEach(v -> {
+
+                        if (v.getSystemId().getIdentifikatorverdi().contains("1351")) {
+                            log.info("Update product: {} - {}", v.getSystemId().getIdentifikatorverdi(), v.getNavn());
+                        }
+
                         Lineitem lineitem = new Lineitem();
                         //lineitem.setItemCode(v.getSystemId().getIdentifikatorverdi());
                         lineitem.setItemCode(v.getKode());
