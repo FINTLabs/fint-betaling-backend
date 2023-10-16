@@ -47,11 +47,13 @@ public class ClaimController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(flux
+                        .doOnNext(claim -> log.info("Sent claim: {}", claim))
                         .switchIfEmpty(Flux.empty())
                         .onErrorMap(throwable -> {
                             log.error("Error occurred while sending claims", throwable);
                             return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while sending claims", throwable);
-                        }));
+                        })
+                );
     }
 
     @GetMapping
