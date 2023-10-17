@@ -2,9 +2,9 @@ package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Principal;
+import no.fint.betaling.repository.LineitemRepository;
 import no.fint.betaling.service.InvoiceIssuerService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 public class InvoiceIssuerController {
 
     private final InvoiceIssuerService invoiceIssuerService;
+    private LineitemRepository lineitemRepository;
 
     public InvoiceIssuerController(InvoiceIssuerService invoiceIssuerService) {
         this.invoiceIssuerService = invoiceIssuerService;
@@ -26,7 +27,12 @@ public class InvoiceIssuerController {
     @GetMapping
     public Mono<Principal> getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
         return invoiceIssuerService.getInvoiceIssuer(schoolId)
-                //todo Sander logg ut lineItems med identifikator 1351. Nummer og navn
+                //Debug logging to solve product update issue
+                .doOnNext(principal -> {
+                    principal.getLineitems().stream()
+                            .filter(l -> l.getItemCode().contains("1351"))
+                            .peek(l -> log.info("Return product: " + l.getItemCode() + " - " + l.getDescription()));
+                })
                 .onErrorResume(ex -> {
                     log.error("An exception occured on handling getInvoiceIssuer", ex);
                     return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
