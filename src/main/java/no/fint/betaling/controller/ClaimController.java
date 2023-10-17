@@ -47,7 +47,7 @@ public class ClaimController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(flux
-                        .doOnNext(claim -> log.info("Sent claim: {}", claim))
+                        .doOnNext(claim -> log.info("Sent claim: orderNumber: {} Status: {} CreatedDate: {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getCreatedDate()))
                         .switchIfEmpty(Flux.empty())
                         .onErrorMap(throwable -> {
                             log.error("Error occurred while sending claims", throwable);
