@@ -31,19 +31,21 @@ public class RestUtil {
     }
 
     public <T> Mono<T> getUpdates(Class<T> clazz, String uri) {
+        final String url = checkUrl(uri);
         return webClient.get()
-                .uri(uri.concat("/last-updated"))
+                .uri(url.concat("/last-updated"))
                 .retrieve()
                 .bodyToMono(LastUpdated.class)
                 .flatMap(lastUpdated -> webClient.get()
-                        .uri(uri, uriBuilder -> uriBuilder.queryParam("sinceTimeStamp", sinceTimestamp.getOrDefault(uri, 0L)).build())
+                        .uri(url, uriBuilder -> uriBuilder.queryParam("sinceTimeStamp", sinceTimestamp.getOrDefault(url, 0L)).build())
                         .retrieve()
                         .bodyToMono(clazz)
-                        .doOnNext(it -> sinceTimestamp.put(uri, lastUpdated.getLastUpdated()))
+                        .doOnNext(it -> sinceTimestamp.put(url, lastUpdated.getLastUpdated()))
                 );
     }
 
     public <T> Mono<T> getWhitRetry(Class<T> clazz, String uri) {
+        uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
                 .retrieve()
@@ -56,6 +58,7 @@ public class RestUtil {
 
 
     public <T> Mono<T> get(Class<T> clazz, String uri) {
+        uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
                 .retrieve()
@@ -63,6 +66,7 @@ public class RestUtil {
     }
 
     public Mono<HttpHeaders> head(String uri) {
+        uri = checkUrl(uri);
         log.info("GET {}", uri);
 
         return webClient
@@ -75,6 +79,7 @@ public class RestUtil {
     }
 
     public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz, String orgId) {
+        uri = checkUrl(uri);
         // todo: what is x-client id ??
         log.info("POST {} {}", uri, content);
 
@@ -93,5 +98,10 @@ public class RestUtil {
     @Data
     private static class LastUpdated {
         private Long lastUpdated;
+    }
+
+    // To not waste time on this, we just replace old urls
+    private String checkUrl(String url) {
+        return url.replace("beta1.felleskomponent.no", "api.felleskomponent.no");
     }
 }
