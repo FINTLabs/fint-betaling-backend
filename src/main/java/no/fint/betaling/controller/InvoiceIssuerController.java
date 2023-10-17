@@ -2,7 +2,6 @@ package no.fint.betaling.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Principal;
-import no.fint.betaling.repository.LineitemRepository;
 import no.fint.betaling.service.InvoiceIssuerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +17,6 @@ import reactor.core.publisher.Mono;
 public class InvoiceIssuerController {
 
     private final InvoiceIssuerService invoiceIssuerService;
-    private LineitemRepository lineitemRepository;
 
     public InvoiceIssuerController(InvoiceIssuerService invoiceIssuerService) {
         this.invoiceIssuerService = invoiceIssuerService;
