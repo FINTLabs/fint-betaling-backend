@@ -3,10 +3,10 @@ package no.fint.betaling.service
 
 import no.fint.betaling.exception.InsufficientDataException
 import no.fint.betaling.exception.NoVISIDColumnException
+import no.fint.betaling.exception.UnsupportedMediaTypeException
 import no.fint.betaling.model.Customer
 import no.fint.betaling.util.FintObjectFactory
 import org.apache.commons.io.FileUtils
-import org.springframework.web.HttpMediaTypeNotAcceptableException
 import spock.lang.Specification
 
 class FileServiceSpec extends Specification {
@@ -52,7 +52,7 @@ class FileServiceSpec extends Specification {
         fileService.getSheetFromBytes(array)
 
         then:
-        thrown(HttpMediaTypeNotAcceptableException)
+        thrown(UnsupportedMediaTypeException)
     }
 
     def 'Given file with no "VIS-ID" column, NoVISIDColumnException should be thrown'() {

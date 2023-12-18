@@ -68,7 +68,7 @@ public class ClaimController {
     }
 
     @GetMapping("/name/{name}")
-    public List<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
+    public List<Claim> getClaimsByCustomerName(@PathVariable String name) {
         return claimService.getClaimsByCustomerName(name);
     }
 
@@ -78,13 +78,13 @@ public class ClaimController {
     }
 
     @GetMapping("/status/{status}")
-    public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
+    public List<Claim> getClaimsByStatus(@PathVariable String[] status) {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 
     @GetMapping("/count/status/{status}")
-    public int getCountByStatus(@PathVariable("status") String[] status,
-                                @RequestParam(value = "days", required = false) String days) {
+    public int getCountByStatus(@PathVariable String[] status,
+                                @RequestParam(required = false) String days) {
         return claimService.countClaimsByStatus(toClaimStatus(status), days);
     }
 
@@ -93,8 +93,8 @@ public class ClaimController {
      */
     @Deprecated
     @GetMapping("/count/by-status/{status}")
-    public int getCountByStatusOld(@PathVariable("status") String[] status,
-                                   @RequestParam(value = "days", required = false) String days) {
+    public int getCountByStatusOld(@PathVariable String[] status,
+                                   @RequestParam(required = false) String days) {
         return claimService.countClaimsByStatus(toClaimStatus(status), days);
     }
 

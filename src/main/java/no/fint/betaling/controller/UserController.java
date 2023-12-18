@@ -84,6 +84,6 @@ public class UserController {
 
     @ExceptionHandler({EmployeeIdException.class})
     public ResponseEntity handleEmployeeIdException(EmployeeIdException exception) {
-        return ResponseEntity.status(exception.getStatus()).body(exception.getMessage());
+        return ResponseEntity.status(exception.getStatusCode()).body(exception.getMessage());
     }
 }

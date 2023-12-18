@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.util.CloseableIterator
 import spock.lang.Specification
 
+import java.util.stream.Stream
+
 class ClaimRepositorySpec extends Specification {
 
     private Endpoints endpoints
@@ -69,29 +71,12 @@ class ClaimRepositorySpec extends Specification {
         given:
         def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
         def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
-        def claims = [highClaim, lowClaim].iterator()
-        def iter = new CloseableIterator() {
-            @Override
-            void close() {
-
-            }
-
-            @Override
-            boolean hasNext() {
-                return claims.hasNext()
-            }
-
-            @Override
-            Object next() {
-                return claims.next()
-            }
-        }
 
         when:
         claimRepository.setHighestOrderNumber()
 
         then:
-        1 * mongoTemplate.stream(_ as Query, _ as Class<Claim>) >> iter
+        1 * mongoTemplate.stream(_ as Query, _ as Class<Claim>) >> [highClaim, lowClaim].stream()
         claimRepository.orderNumberCounter.get() == 5678
     }
 }

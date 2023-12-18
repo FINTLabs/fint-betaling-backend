@@ -1,8 +1,8 @@
 package no.fint.betaling.repository;
 
+import jakarta.annotation.PostConstruct;
 import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Claim;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -60,7 +59,7 @@ public class ClaimRepository {
         query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
         query.addCriteria(Criteria.where(ORG_ID).is(orgId));
 
-        StreamUtils.createStreamFromIterator(mongoTemplate.stream(query, Claim.class))
+        mongoTemplate.stream(query, Claim.class)
                 .map(Claim::getOrderNumber)
                 .mapToLong(Long::parseLong)
                 .max()

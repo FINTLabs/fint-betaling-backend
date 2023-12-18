@@ -93,8 +93,8 @@ public class UserRepository {
     private String getName(PersonResource person) {
         final Personnavn n = person.getNavn();
         return StringUtils.isBlank(n.getMellomnavn())
-                ? String.format("%s %s", n.getFornavn(), n.getEtternavn())
-                : String.format("%s %s %s", n.getFornavn(), n.getMellomnavn(), n.getEtternavn());
+                ? "%s %s".formatted(n.getFornavn(), n.getEtternavn())
+                : "%s %s %s".formatted(n.getFornavn(), n.getMellomnavn(), n.getEtternavn());
     }
 
     private Optional<Organisation> getTopOrganisation(List<SkoleResource> schools) {

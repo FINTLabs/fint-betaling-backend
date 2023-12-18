@@ -2,6 +2,7 @@ package no.fint.betaling.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.exception.InsufficientDataException;
+import no.fint.betaling.exception.UnsupportedMediaTypeException;
 import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.model.Customer;
@@ -14,8 +15,6 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,10 +32,10 @@ public class FileService {
     @Value("${fint.betaling.dnd.VIS-ID:VIS-ID}")
     private String visId;
 
-    public Sheet getSheetFromBytes(byte[] file) throws UnableToReadFileException, HttpMediaTypeNotAcceptableException {
+    public Sheet getSheetFromBytes(byte[] file) throws UnableToReadFileException, UnsupportedMediaTypeException {
         String contentType = new Tika().detect(file);
         if (!isTypeOfTypeExcel(contentType)) {
-            throw new HttpMediaTypeNotAcceptableException(contentType);
+            throw new UnsupportedMediaTypeException(contentType);
         }
         try {
             return WorkbookFactory.create(new ByteArrayInputStream(file)).getSheetAt(0);
