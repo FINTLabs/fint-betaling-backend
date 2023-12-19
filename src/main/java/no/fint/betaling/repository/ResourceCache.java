@@ -5,7 +5,6 @@ import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +37,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
         U updatedResources;
 
         try {
-            updatedResources = restUtil.getWhitRetry(clazz, endpoint).block();
+            updatedResources = restUtil.getWhitRetry(clazz, endpoint);
         } catch (WebClientResponseException ex) {
             log.error(ex.getMessage());
             return;

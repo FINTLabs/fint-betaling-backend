@@ -13,7 +13,6 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.HashMap;
 import java.util.List;

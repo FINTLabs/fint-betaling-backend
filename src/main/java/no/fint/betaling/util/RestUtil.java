@@ -6,9 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
+import org.springframework.web.client.RestClient;
+
 
 import java.time.Duration;
 import java.util.Map;
@@ -22,15 +21,15 @@ public class RestUtil {
     @Value("${fint.client.base-url}")
     private String baseUrl;
 
-    private final WebClient webClient;
+    private final RestClient restClient;
 
     private final Map<String, Long> sinceTimestamp = new ConcurrentHashMap<>();
 
-    public RestUtil(WebClient webClient) {
-        this.webClient = webClient;
+    public RestUtil(RestClient restClient) {
+        this.restClient = restClient;
     }
 
-    public <T> Mono<T> getUpdates(Class<T> clazz, String uri) {
+    public <T> T getUpdates(Class<T> clazz, String uri) {
         final String url = checkUrl(uri);
         return webClient.get()
                 .uri(url.concat("/last-updated"))
@@ -44,7 +43,7 @@ public class RestUtil {
                 );
     }
 
-    public <T> Mono<T> getWhitRetry(Class<T> clazz, String uri) {
+    public <T> T getWhitRetry(Class<T> clazz, String uri) {
         uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
@@ -57,7 +56,7 @@ public class RestUtil {
     }
 
 
-    public <T> Mono<T> get(Class<T> clazz, String uri) {
+    public <T> T get(Class<T> clazz, String uri) {
         uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
@@ -65,7 +64,7 @@ public class RestUtil {
                 .bodyToMono(clazz);
     }
 
-    public Mono<HttpHeaders> head(String uri) {
+    public HttpHeaders head(String uri) {
         uri = checkUrl(uri);
         log.info("GET {}", uri);
 
@@ -78,7 +77,7 @@ public class RestUtil {
                 .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()));
     }
 
-    public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz, String orgId) {
+    public <T> HttpHeaders post(String uri, T content, Class<T> clazz, String orgId) {
         uri = checkUrl(uri);
         // todo: what is x-client id ??
         log.info("POST {} {}", uri, content);

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 import java.net.URISyntaxException;
 
@@ -42,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping
-    public Mono<ResponseEntity<User>> getMe(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<User> getMe(@AuthenticationPrincipal Jwt jwt) {
 
         String employeeId;
         boolean isAdminUser = false;
@@ -58,23 +57,14 @@ public class UserController {
 
         if (StringUtils.isEmpty(employeeId)) {
             log.error("Brukerautorisering mangler employeeId!");
-            return Mono.error(new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!"));
+            throw new EmployeeIdException(HttpStatus.BAD_REQUEST, "Brukerautorisering mangler nødvendig informasjon (employeeId)!");
         }
 
-        return userCacheService.getUser(employeeId, isAdminUser)
-                .doOnNext(user -> {
-                    user.setIdleTime(idleTime);
-                    log.debug("User: {}", user);
-                })
-                .map(ResponseEntity::ok)
-                .onErrorResume(PersonalressursException.class, ex -> {
-                    log.error(ex.getMessage());
-                    return Mono.just(ResponseEntity.badRequest().body(null));
-                })
-                .onErrorResume(ex -> {
-                    log.error("An exception occured on handling getUser", ex);
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                });
+        User user = userCacheService.getUser(employeeId, isAdminUser);
+
+        user.setIdleTime(idleTime);
+        log.debug("User: {}", user);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("ping")
@@ -84,6 +74,18 @@ public class UserController {
 
     @ExceptionHandler({EmployeeIdException.class})
     public ResponseEntity handleEmployeeIdException(EmployeeIdException exception) {
-        return ResponseEntity.status(exception.getStatus()).body(exception.getMessage());
+        return ResponseEntity.status(exception.getStatusCode()).body(exception.getMessage());
+    }
+
+    @ExceptionHandler({PersonalressursException.class})
+    public ResponseEntity handlePersonalressursException(PersonalressursException exception) {
+        log.error(exception.getMessage());
+        return ResponseEntity.badRequest().build();
+    }
+
+    @ExceptionHandler({Exception.class})
+    public ResponseEntity handleExeption(Exception exception) {
+        log.error("An exception occured on handling getUser", exception);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }

@@ -9,7 +9,6 @@ import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementRe
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Collection;
 import java.util.Collections;

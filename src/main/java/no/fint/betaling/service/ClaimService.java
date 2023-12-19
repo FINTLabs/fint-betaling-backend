@@ -19,11 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,67 +61,67 @@ public class ClaimService {
                 .collect(Collectors.toList());
     }
 
-    public Flux<Claim> sendClaims(List<String> orderNumbers) {
-        return Flux.fromIterable(getUnsentClaims())
-                .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
-                .flatMap(this::checkClaimStatus)
-                .onErrorResume(throwable -> {
-                    log.error("Error occurred while sending claims", throwable);
-                    return Flux.error(throwable);
-                });
+    public List<Claim> sendClaims(List<String> orderNumbers) {
+        try {
+            return getUnsentClaims()
+                    .stream()
+                    .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
+                    .map(this::checkClaimStatus)
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("Error occurred while sending claims", ex);
+            throw ex;
+        }
     }
 
-    private Mono<Claim> checkClaimStatus(Claim claim) {
+    private Claim checkClaimStatus(Claim claim) {
         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
 
-        return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId())
-                .doOnNext(httpHeaders -> {
-                    if (httpHeaders.getLocation() != null) {
-                        claim.setInvoiceUri(httpHeaders.getLocation().toString());
-                        claim.setClaimStatus(ClaimStatus.SENT);
-                        claim.setStatusMessage(null);
-                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                        updateClaimStatus(claim);
-                    }
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                    claim.setStatusMessage(ex.getMessage());
-                    log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
-                    updateClaimStatus(claim);
-                })
-                .thenReturn(claim);
+        HttpHeaders httpHeaders = restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId());
+        try {
+            if (httpHeaders.getLocation() != null) {
+                claim.setInvoiceUri(httpHeaders.getLocation().toString());
+                claim.setClaimStatus(ClaimStatus.SENT);
+                claim.setStatusMessage(null);
+                log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                updateClaimStatus(claim);
+            }
+        } catch (WebClientResponseException ex) {
+            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+            claim.setStatusMessage(ex.getMessage());
+            log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
+            updateClaimStatus(claim);
+        }
+
+        return claim;
     }
 
     public void updateSentClaims() {
         getSentClaims().forEach(claim -> {
-            restUtil.head(claim.getInvoiceUri())
-                    .doOnNext(headers -> {
-                        if (headers.getLocation() != null) {
-                            claim.setInvoiceUri(headers.getLocation().toString());
-                            claim.setClaimStatus(ClaimStatus.ACCEPTED);
-                            log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                        } else {
-                            log.info("Claim {} not updated", claim.getOrderNumber());
-                        }
-                        claim.setStatusMessage(null);
-                        updateClaimStatus(claim);
-                    })
-                    .doOnError(WebClientResponseException.class, e -> {
-                        if (e.getStatusCode() == HttpStatus.GONE) {
-                            log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
-                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                            claim.setInvoiceUri(null);
-                            updateClaimStatus(claim);
-                        } else {
-                            setClaimStatusFromFint(claim);
-                        }
-                    })
-                    .doOnError(e -> {
-                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-                        log.error("Exception: " + e.getMessage(), e);
-                    })
-                    .subscribe();
+            HttpHeaders headers = restUtil.head(claim.getInvoiceUri());
+            try {
+                if (headers.getLocation() != null) {
+                    claim.setInvoiceUri(headers.getLocation().toString());
+                    claim.setClaimStatus(ClaimStatus.ACCEPTED);
+                    log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                } else {
+                    log.info("Claim {} not updated", claim.getOrderNumber());
+                }
+                claim.setStatusMessage(null);
+                updateClaimStatus(claim);
+            } catch (WebClientResponseException e) {
+                if (e.getStatusCode() == HttpStatus.GONE) {
+                    log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
+                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                    claim.setInvoiceUri(null);
+                    updateClaimStatus(claim);
+                } else {
+                    setClaimStatusFromFint(claim);
+                }
+            } catch (Exception e) {
+                log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+                log.error("Exception: " + e.getMessage(), e);
+            }
         });
     }
 

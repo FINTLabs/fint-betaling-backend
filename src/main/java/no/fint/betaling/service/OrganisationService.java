@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 
@@ -42,23 +40,25 @@ public class OrganisationService {
     }
 
     @Cacheable("organisations")
-    public Mono<Organisation> getOrganisationByOrganisationNumber(String id) {
+    public Organisation getOrganisationByOrganisationNumber(String id) {
         String uri = UriComponentsBuilder.fromUriString(schoolEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString();
 
-        return restUtil.get(SkoleResource.class, uri)
-                .flatMap(skoleResource -> Mono.just(createOrganisation(skoleResource.getOrganisasjonsnummer(), skoleResource.getJuridiskNavn(), skoleResource.getNavn(), skoleResource.getOrganisasjonsnavn())))
-                .onErrorResume(WebClientResponseException.class, e -> {
-                    log.warn("School {} not found: {} {}", id, e.getStatusCode(), e.getMessage());
-                    return e.getStatusCode() == HttpStatus.NOT_FOUND ? getOrganisationFromOrganisasjonselement(id) : Mono.error(e);
-                });
+        try {
+            SkoleResource skoleResource = restUtil.get(SkoleResource.class, uri);
+            return createOrganisation(skoleResource.getOrganisasjonsnummer(), skoleResource.getJuridiskNavn(), skoleResource.getNavn(), skoleResource.getOrganisasjonsnavn());
+        } catch (WebClientResponseException e) {
+            log.warn("School {} not found: {} {}", id, e.getStatusCode(), e.getMessage());
+            return e.getStatusCode() == HttpStatus.NOT_FOUND ? getOrganisationFromOrganisasjonselement(id) : Mono.error(e);
+        }
     }
 
-    private Mono<Organisation> getOrganisationFromOrganisasjonselement(String id) {
+    private Organisation getOrganisationFromOrganisasjonselement(String id) {
         String orgUri = UriComponentsBuilder.fromUriString(organisationEndpoint).pathSegment("organisasjonsnummer", id).build().toUriString();
-        return restUtil.get(OrganisasjonselementResource.class, orgUri)
-                .map(organisasjonselementResource -> createOrganisation(organisasjonselementResource.getOrganisasjonsnummer(),
-                        organisasjonselementResource.getNavn(),
-                        organisasjonselementResource.getOrganisasjonsnavn(),
-                        organisasjonselementResource.getKortnavn()));
+        OrganisasjonselementResource organisasjonselementResource = restUtil.get(OrganisasjonselementResource.class, orgUri);
+
+        return createOrganisation(organisasjonselementResource.getOrganisasjonsnummer(),
+                organisasjonselementResource.getNavn(),
+                organisasjonselementResource.getOrganisasjonsnavn(),
+                organisasjonselementResource.getKortnavn());
     }
 }

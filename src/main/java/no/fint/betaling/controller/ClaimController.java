@@ -11,10 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,21 +38,15 @@ public class ClaimController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<String> orderNumbers) {
+    public ResponseEntity<List<Claim>> sendClaims(@RequestBody List<String> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
-        Flux<Claim> flux = claimService.sendClaims(orderNumbers);
-        // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:
-        if (flux == null) flux = Flux.empty();
+        List<Claim> claims = claimService.sendClaims(orderNumbers);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(flux
-                        .doOnNext(claim -> log.info("Sent claim: orderNumber: {} Status: {} CreatedDate: {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getCreatedDate()))
-                        .switchIfEmpty(Flux.empty())
-                        .onErrorMap(throwable -> {
-                            log.error("Error occurred while sending claims", throwable);
-                            return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred while sending claims", throwable);
-                        })
-                );
+        // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:
+        if (claims == null) claims = new ArrayList<>();
+
+        claims.forEach(claim -> log.info("Sent claim: orderNumber: {} Status: {} CreatedDate: {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getCreatedDate()));
+        return new ResponseEntity.status(HttpStatus.CREATED).body(claims);
     }
 
     @GetMapping
@@ -68,7 +61,7 @@ public class ClaimController {
     }
 
     @GetMapping("/name/{name}")
-    public List<Claim> getClaimsByCustomerName(@PathVariable(value = "name") String name) {
+    public List<Claim> getClaimsByCustomerName(@PathVariable String name) {
         return claimService.getClaimsByCustomerName(name);
     }
 
@@ -78,13 +71,13 @@ public class ClaimController {
     }
 
     @GetMapping("/status/{status}")
-    public List<Claim> getClaimsByStatus(@PathVariable("status") String[] status) {
+    public List<Claim> getClaimsByStatus(@PathVariable String[] status) {
         return claimService.getClaimsByStatus(toClaimStatus(status));
     }
 
     @GetMapping("/count/status/{status}")
-    public int getCountByStatus(@PathVariable("status") String[] status,
-                                @RequestParam(value = "days", required = false) String days) {
+    public int getCountByStatus(@PathVariable String[] status,
+                                @RequestParam(required = false) String days) {
         return claimService.countClaimsByStatus(toClaimStatus(status), days);
     }
 
@@ -93,8 +86,8 @@ public class ClaimController {
      */
     @Deprecated
     @GetMapping("/count/by-status/{status}")
-    public int getCountByStatusOld(@PathVariable("status") String[] status,
-                                   @RequestParam(value = "days", required = false) String days) {
+    public int getCountByStatusOld(@PathVariable String[] status,
+                                   @RequestParam(required = false) String days) {
         return claimService.countClaimsByStatus(toClaimStatus(status), days);
     }
 
@@ -115,5 +108,11 @@ public class ClaimController {
             return Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new);
         else
             return null;
+    }
+
+    @ExceptionHandler({Exception.class})
+    public ResponseEntity handleExeption(Exception exception) {
+        log.error("Error occurred in claim controller", exception);
+        return ResponseEntity.internalServerError().build();
     }
 }

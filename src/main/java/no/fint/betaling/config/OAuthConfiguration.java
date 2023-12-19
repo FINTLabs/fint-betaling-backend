@@ -1,27 +1,29 @@
 package no.fint.betaling.config;
 
-import io.netty.channel.ChannelOption;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.reactive.ClientHttpConnector;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.*;
 import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.resources.ConnectionProvider;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.web.client.RestClient;
 
-import java.time.Duration;
+import java.io.IOException;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
+
+@Slf4j
 @Getter
 @Setter
 @Configuration
@@ -36,7 +38,7 @@ public class OAuthConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "true", matchIfMissing = true)
-    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
+    public AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager(
             ReactiveClientRegistrationRepository clientRegistrationRepository,
             ReactiveOAuth2AuthorizedClientService authorizedClientService) {
 
@@ -62,30 +64,65 @@ public class OAuthConfiguration {
         return authorizedClientManager;
     }
 
-    @Bean
-    public ClientHttpConnector clientHttpConnector() {
-        return new ReactorClientHttpConnector(HttpClient.create(
-                        ConnectionProvider
-                                .builder("laidback")
-                                .maxConnections(100)
-                                .maxLifeTime(Duration.ofMinutes(30))
-                                .maxIdleTime(Duration.ofMinutes(5))
-                                .build())
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 600000)
-                .responseTimeout(Duration.ofMinutes(10))
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+
+        OAuth2AuthorizeRequest oAuth2AuthorizeRequest = OAuth2AuthorizeRequest
+                .withClientRegistrationId(clientRegistration.getRegistrationId())
+                .principal(principal)
+                .build();
+
+        OAuth2AuthorizedClient client = manager.authorize(oAuth2AuthorizeRequest);
+
+        if (isNull(client)) {
+            throw new IllegalStateException("client credentials flow on " + clientRegistration.getRegistrationId() + " failed, client is null");
+        }
+
+        log.debug("Bearer " + client.getAccessToken().getTokenValue() +
+                " - issued at : " + client.getAccessToken().getIssuedAt() +
+                " - expired at : " + client.getAccessToken().getExpiresAt()
         );
+
+        request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + client.getAccessToken().getTokenValue());
+        return execution.execute(request, body);
+    }
+
+    @Bean
+    public SimpleClientHttpRequestFactory simpleClientHttpRequestFactory() {
+        SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+        simpleClientHttpRequestFactory.setConnectTimeout(600000);
+        simpleClientHttpRequestFactory.setReadTimeout(600000);
+        return simpleClientHttpRequestFactory;
     }
 
     @Bean
     @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "true", matchIfMissing = true)
-    public WebClient webClient(
-            WebClient.Builder builder,
-            ReactiveOAuth2AuthorizedClientManager authorizedClientManager,
-            ClientHttpConnector clientHttpConnector) {
+    public RestClient restClient(
+            AuthorizedClientServiceOAuth2AuthorizedClientManager authorizedClientManager,
+            ClientHttpRequestFactory clientHttpRequestFactory,
+            ClientRegistrationRepository clientRegistrationRepository) {
 
-        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1))
+
+        ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId("fint");
+        //ClientHttpRequestInterceptor oauthInterceptor = new OAuthClientCredentialsRestTemplateInterceptor(authorizedClientManager, clientRegistration);
+        //ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client = new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
+                new ServletOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        oauth2Client.setDefaultClientRegistrationId("custom");
+
+
+
+        RestClient restClient = RestClient.builder()
+                .apply(oauth2Client.oauth2Configuration())
+                .requestFactory(clientHttpRequestFactory)
+                //.requestInterceptor(oauthInterceptor)
+                .baseUrl(baseUrl)
                 .build();
+
+
+//        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+//                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1))
+//                .build();
 
         ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Client = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
         oauth2Client.setDefaultClientRegistrationId(registrationId);
@@ -100,17 +137,9 @@ public class OAuthConfiguration {
 
     @Bean
     @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "false")
-    public WebClient webClientWithoutOauth(
-            WebClient.Builder builder,
-            ClientHttpConnector clientHttpConnector) {
-
-        ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(-1))
-                .build();
-
-        return builder
-                .clientConnector(clientHttpConnector)
-                .exchangeStrategies(exchangeStrategies)
+    public RestClient webClientWithoutOauth(ClientHttpRequestFactory clientHttpRequestFactory) {
+        return RestClient.builder()
+                .requestFactory(clientHttpRequestFactory)
                 .baseUrl(baseUrl)
                 .build();
     }
