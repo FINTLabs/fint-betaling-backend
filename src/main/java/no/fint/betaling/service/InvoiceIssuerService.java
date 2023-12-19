@@ -10,7 +10,6 @@ import no.fint.betaling.util.CloneUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.util.function.BiPredicate;
 
@@ -30,10 +29,10 @@ public class InvoiceIssuerService {
         this.invoiceIssuerRepository = invoiceIssuerRepository;
     }
 
-    public Mono<Principal> getInvoiceIssuer(String organizationNumber) {
-        return organisationService.getOrganisationByOrganisationNumber(organizationNumber)
-                .switchIfEmpty(Mono.error(new PrincipalNotFoundException(organizationNumber)))
-                .map(organisation -> getPrincipal(organizationNumber, organisation));
+    public Principal getInvoiceIssuer(String organizationNumber) {
+        Organisation organization = organisationService.getOrganisationByOrganisationNumber(organizationNumber);
+        if (organization == null) throw new PrincipalNotFoundException(organizationNumber);
+        return getPrincipal(organizationNumber, organization);
     }
 
     private Principal getPrincipal(String organizationNumber, Organisation organisation) {

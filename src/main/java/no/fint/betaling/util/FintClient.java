@@ -11,7 +11,6 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -33,7 +32,7 @@ public class FintClient {
         this.endpoints = endpoints;
     }
 
-    public Mono<PersonalressursResource> getPersonalressurs(String ansattnummer) {
+    public PersonalressursResource getPersonalressurs(String ansattnummer) {
 
         return restUtil.get(
                 PersonalressursResource.class,
@@ -41,14 +40,14 @@ public class FintClient {
         );
     }
 
-    public Mono<PersonResource> getPerson(PersonalressursResource personalressurs) {
+    public PersonResource getPerson(PersonalressursResource personalressurs) {
         return restUtil.get(
                 PersonResource.class,
                 personalressurs.getPerson().get(0).getHref()
         );
     }
 
-    public Mono<SkoleressursResource> getSkoleressurs(PersonalressursResource personalressurs) {
+    public SkoleressursResource getSkoleressurs(PersonalressursResource personalressurs) {
         AtomicReference<SkoleressursResource> result = new AtomicReference<>();
         personalressurs.getSelfLinks().forEach(selflink -> {
             if (groupRepository.getSchoolresources().containsKey(selflink)) {
@@ -56,7 +55,7 @@ public class FintClient {
             }
         });
 
-        if (result.get() != null) return Mono.just(result.get());
+        if (result.get() != null) return result.get();
         throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
     }
 

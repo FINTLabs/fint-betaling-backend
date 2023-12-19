@@ -5,7 +5,6 @@ import no.fint.betaling.model.User;
 import no.fint.betaling.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -22,19 +21,17 @@ public class UserCacheService {
         this.userRepository = userRepository;
     }
 
-    public Mono<User> getUser(String employeeId, boolean isAdminUser) {
+    public User getUser(String employeeId, boolean isAdminUser) {
         if (users.containsKey(employeeId)) {
             User user = users.get(employeeId);
             user.setAdmin(isAdminUser);
-            return Mono.just(user);
+            return user;
         }
 
-        return userRepository.mapUserFromResources(employeeId, isAdminUser)
-                .map(user -> {
-                    user.setAdmin(isAdminUser);
-                    users.put(employeeId, user);
-                    return user;
-                });
+        User user = userRepository.mapUserFromResources(employeeId, isAdminUser);
+        user.setAdmin(isAdminUser);
+        users.put(employeeId, user);
+        return user;
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
