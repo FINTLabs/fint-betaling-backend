@@ -18,7 +18,7 @@ public class OrderItem {
 
     private Long itemPrice;
 
-    @OneToOne(mappedBy = "itemCode")
+    @OneToOne()
     private Lineitem lineitem;
 
     public Long sum() {

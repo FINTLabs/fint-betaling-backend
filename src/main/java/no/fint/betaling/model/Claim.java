@@ -27,7 +27,7 @@ public class Claim {
 
     private LocalDate lastModifiedDate;
 
-    @OneToMany(mappedBy = "orderNumber", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<CreditNote> creditNotes;
 
     private Long amountDue;
@@ -36,12 +36,12 @@ public class Claim {
 
     private String requestedNumberOfDaysToPaymentDeadline;
 
-    @OneToOne(mappedBy = "id", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private Customer customer;
 
     private String createdByEmployeeNumber;
 
-    @OneToOne(mappedBy = "organisationNumber", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     private Organisation organisationUnit;
 
     private String principalCode;
@@ -50,7 +50,7 @@ public class Claim {
 
     private String invoiceUri;
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
     private ClaimStatus claimStatus;
