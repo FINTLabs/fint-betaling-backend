@@ -33,9 +33,10 @@ public class ClaimFactory {
         claim.setOriginalAmountDue(order.sum());
         claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
         claim.setCustomer(customer);
-        claim.setCreatedBy(order.getCreatedBy());
+        claim.setCreatedByEmployeeNumber(order.getCreatedBy().getEmployeeNumber());
         claim.setOrganisationUnit(order.getOrganisationUnit());
-        claim.setPrincipal(order.getPrincipal());
+        claim.setPrincipalCode(order.getPrincipal().getCode());
+        claim.setPrincipalUri(order.getPrincipal().getUri());
         claim.setOrderItems(order.getOrderItems());
         claim.setClaimStatus(ClaimStatus.STORED);
         return claim;

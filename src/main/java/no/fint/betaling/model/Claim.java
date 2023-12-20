@@ -1,5 +1,6 @@
 package no.fint.betaling.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -7,26 +8,66 @@ import java.util.List;
 import java.util.Set;
 
 @Data
+@Entity
+@Table(name = "claim")
 public class Claim {
     private String orgId;
+
+    @Id
     private String orderNumber;
-    private Set<String> invoiceNumbers;
+
+    @Column(name = "invoiceNumbers")
+    private String invoiceNumbersCommaSeperated;
+
     private LocalDate invoiceDate;
+
     private LocalDate paymentDueDate;
+
     private LocalDate createdDate;
+
     private LocalDate lastModifiedDate;
+
+    @OneToMany(mappedBy = "orderNumber", cascade = CascadeType.ALL)
     private List<CreditNote> creditNotes;
+
     private Long amountDue;
+
     private Long originalAmountDue;
+
     private String requestedNumberOfDaysToPaymentDeadline;
+
+    @OneToOne(mappedBy = "id", cascade = CascadeType.ALL)
     private Customer customer;
-    private User createdBy;
+
+    private String createdByEmployeeNumber;
+
+    @OneToOne(mappedBy = "organisationNumber", cascade = CascadeType.ALL)
     private Organisation organisationUnit;
-    private Principal principal;
+
+    private String principalCode;
+
+    private String principalUri;
+
     private String invoiceUri;
+
+    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
+
     private ClaimStatus claimStatus;
+
     private String statusMessage;
-    private Set<String> classes;
+
     private Long timestamp;
+
+    public Set<String> getInvoiceNumbers() {
+        if (invoiceNumbersCommaSeperated == null){
+            return Set.of();
+        }
+
+        return Set.of(invoiceNumbersCommaSeperated.split(","));
+    }
+
+    public void setInvoiceNumbers(Set<String> invoiceNumbers) {
+        invoiceNumbersCommaSeperated = String.join(",", invoiceNumbers);
+    }
 }
