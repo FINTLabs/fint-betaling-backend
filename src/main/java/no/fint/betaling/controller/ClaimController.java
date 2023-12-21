@@ -73,7 +73,7 @@ public class ClaimController {
     }
 
     @GetMapping("/order-number/{order-number}")
-    public List<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") String orderNumber) {
+    public Claim getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
         return claimService.getClaimsByOrderNumber(orderNumber);
     }
 
@@ -99,7 +99,7 @@ public class ClaimController {
     }
 
     @DeleteMapping("/order-number/{order-number}")
-    public ResponseEntity cancelClaimsByID(@PathVariable("order-number") String orderNumber) {
+    public ResponseEntity cancelClaimsByID(@PathVariable("order-number") long orderNumber) {
         claimService.cancelClaim(orderNumber);
         return ResponseEntity.noContent().build();
     }

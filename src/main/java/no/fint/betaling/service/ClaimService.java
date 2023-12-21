@@ -8,24 +8,23 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
+import no.fint.betaling.util.FintClient;
 import no.fint.betaling.util.RestUtil;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.apache.commons.lang3.StringUtils;
-import org.jooq.lambda.function.Consumer2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,7 +52,7 @@ public class ClaimService {
     private InvoiceFactory invoiceFactory;
 
     @Autowired
-    private QueryService queryService;
+    private FintClient fintClient;
 
     public List<Claim> storeClaims(Order order) {
         return claimFactory
@@ -185,49 +184,23 @@ public class ClaimService {
      * @return New claim status
      */
     public ClaimStatus updateClaim(FakturagrunnlagResource invoice) {
-        Update update = new Update();
-        Consumer2<String, Object> updater = Consumer2.from(update::set);
 
-        invoice.getSelfLinks()
-                .stream()
-                .map(Link::getHref)
-                .findAny()
-                .ifPresent(updater.acceptPartially(INVOICE_URI));
+        Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
+        fintClient.setInvoiceUri(invoice).ifPresent(claim::setInvoiceUri);
 
-        List<FakturaResource> fakturaList = invoice.getFaktura()
-                .stream()
-                .map(Link::getHref)
-                .map(uri -> restUtil.get(FakturaResource.class, uri).block())
-                .toList();
+        List<FakturaResource> fakturaList = fintClient.getFaktura(invoice);
+        claim.setInvoiceNumbers(fintClient.getFakturanummere(fakturaList));
+        fintClient.getInvoiceDate(fakturaList).ifPresent(claim::setInvoiceDate);
+        fintClient.getPaymentDueDate(fakturaList).ifPresent(claim::setPaymentDueDate);
+        fintClient.getAmountDue(fakturaList).ifPresent(claim::setAmountDue);
 
-        updater.accept("invoiceNumbers", fakturaList.stream()
-                .map(FakturaResource::getFakturanummer)
-                .map(Identifikator::getIdentifikatorverdi)
-                .collect(Collectors.toList()));
+        claimRepository.save(claim);
 
-        fakturaList.stream()
-                .map(FakturaResource::getDato)
-                .min(Comparator.naturalOrder())
-                .ifPresent(updater.acceptPartially("invoiceDate"));
-
-        fakturaList.stream()
-                .map(FakturaResource::getForfallsdato)
-                .max(Comparator.naturalOrder())
-                .ifPresent(updater.acceptPartially("paymentDueDate"));
-
-        fakturaList.stream()
-                .map(FakturaResource::getRestbelop)
-                .filter(Objects::nonNull)
-                .reduce(Long::sum)
-                .ifPresent(updater.acceptPartially(AMOUNT_DUE));
+        // todo: Split into separate methods
 
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
         boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
         boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
-
-        Query query = queryService.queryByOrderNumber(invoice.getOrdrenummer().getIdentifikatorverdi());
-
-        claimRepository.updateClaim(query, update);
 
         if (fakturaList.isEmpty()) {
             return ClaimStatus.ACCEPTED;
@@ -240,74 +213,67 @@ public class ClaimService {
     }
 
     private void updateClaimStatus(Claim claim) {
-        Update update = new Update();
-        update.set(INVOICE_URI, claim.getInvoiceUri());
-        update.set(CLAIM_STATUS, claim.getClaimStatus());
-        update.set(STATUS_MESSAGE, claim.getStatusMessage());
-
-        Query query = queryService.queryByOrderNumber(claim.getOrderNumber());
-        claimRepository.updateClaim(query, update);
+        claimRepository.save(claim);
     }
 
     public List<Claim> getClaims() {
-        return claimRepository.getClaims(queryService.createQuery());
+        return claimRepository.getAll();
     }
 
     private List<Claim> getAcceptedClaims() {
-        return claimRepository.getClaims(queryService.queryByClaimStatus(
+        return claimRepository.get(
                 ClaimStatus.ACCEPTED,
                 ClaimStatus.ISSUED,
                 // ClaimStatus.PAID,  // TODO Used to be workaround for issue with Visma Fakturering
-                ClaimStatus.UPDATE_ERROR));
+                ClaimStatus.UPDATE_ERROR);
     }
 
     private List<Claim> getSentClaims() {
-        return claimRepository.getClaims(queryService.queryByClaimStatus(
-                ClaimStatus.SENT));
+        return claimRepository.get(
+                ClaimStatus.SENT);
     }
 
     private List<Claim> getUnsentClaims() {
-        return claimRepository.getClaims(queryService.queryByClaimStatus(
+        return claimRepository.get(
                 ClaimStatus.STORED,
-                ClaimStatus.SEND_ERROR));
+                ClaimStatus.SEND_ERROR);
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {
-        return claimRepository.getClaims(queryService.queryByCustomerNameRegex(name));
+        return claimRepository.getByCustomerName(name);
     }
 
-    public List<Claim> getClaimsByOrderNumber(String orderNumber) {
-        return claimRepository.getClaims(queryService.queryByOrderNumber(orderNumber));
+    public Claim getClaimsByOrderNumber(long orderNumber) {
+        return claimRepository.get(orderNumber);
     }
 
     public List<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
-        return claimRepository.getClaims(queryService.queryByClaimStatus(statuses));
+        return claimRepository.get(statuses);
     }
 
     public int countClaimsByStatus(ClaimStatus[] statuses, String days) {
         if (StringUtils.isNotBlank(days)) {
-            return claimRepository.countClaims(queryService.queryByClaimStatusByDays(Long.parseLong(days), statuses));
+            return claimRepository.countByStatusAndDays(Long.parseLong(days), statuses);
         }
-        return claimRepository.countClaims(queryService.queryByClaimStatus(statuses));
+        return claimRepository.countByStatus(statuses);
     }
 
-    public void cancelClaim(String orderNumber) {
-        List<Claim> claimsByOrderNumber = getClaimsByOrderNumber(orderNumber);
-        claimsByOrderNumber
-                .stream()
-                .filter(claim -> claim.getClaimStatus().equals(ClaimStatus.STORED))
-                .peek(claim -> claim.setClaimStatus(ClaimStatus.CANCELLED))
-                .forEach(this::updateClaimStatus);
+    public void cancelClaim(long orderNumber) {
+        Claim claim = getClaimsByOrderNumber(orderNumber);
+
+        if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
+            claim.setClaimStatus(ClaimStatus.CANCELLED);
+            updateClaimStatus(claim);
+        } else {
+            log.warn("cancel claim called, but claim was not in stored status (orderNumber: {}, status: {})", orderNumber, claim.getClaimStatus());
+        }
     }
 
     public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
-
-        return claimRepository.getClaims(
-                queryService.queryByDateAndSchoolAndStatus(
-                        claimsDatePeriodToTimestamp(period),
-                        organisationNumber,
-                        statuses)
-        );
+        return claimRepository.getByDateAndSchoolAndStatus(
+                claimsDatePeriodToTimestamp(period),
+                organisationNumber,
+                statuses);
     }
 
     private Date claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {

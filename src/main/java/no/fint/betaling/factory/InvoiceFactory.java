@@ -47,7 +47,7 @@ public class InvoiceFactory {
         invoice.addFakturautsteder(Link.with(claim.getPrincipalUri()));
 
         Identifikator identifikator = new Identifikator();
-        identifikator.setIdentifikatorverdi(claim.getOrderNumber());
+        identifikator.setIdentifikatorverdi(String.valueOf(claim.getOrderNumber()));
         invoice.setOrdrenummer(identifikator);
 
         return invoice;

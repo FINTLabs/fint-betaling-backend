@@ -14,7 +14,7 @@ public class Claim {
     private String orgId;
 
     @Id
-    private String orderNumber;
+    private long orderNumber;
 
     @Column(name = "invoiceNumbers")
     private String invoiceNumbersCommaSeperated;

@@ -3,14 +3,12 @@ package no.fint.betaling.repository;
 import jakarta.annotation.PostConstruct;
 import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.model.Claim;
+import no.fint.betaling.model.ClaimStatus;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -19,7 +17,7 @@ public class ClaimRepository {
 
     private final Endpoints endpoints;
 
-    private final MongoTemplate mongoTemplate;
+    private final ClaimJpaRepository claimJpaRepository;
 
     private static final String ORG_ID = "orgId";
 
@@ -28,41 +26,81 @@ public class ClaimRepository {
 
     private final AtomicLong orderNumberCounter = new AtomicLong(100000L);
 
-    public ClaimRepository(Endpoints endpoints, MongoTemplate mongoTemplate) {
+    public ClaimRepository(Endpoints endpoints, ClaimJpaRepository claimJpaRepository) {
         this.endpoints = endpoints;
-        this.mongoTemplate = mongoTemplate;
+        this.claimJpaRepository = claimJpaRepository;
+    }
+
+    public Claim get(long orderNumber) {
+        throw new NotImplementedException();
+        // todo trond: implement
+//        return claimJpaRepository.findById(orderNumber)
+//                .orElseThrow(() -> new RuntimeException("Claim not found: " + orderNumber));
+    }
+
+    public List<Claim> get(ClaimStatus... statuses) {
+        return claimJpaRepository.findByClaimStatusIn(statuses);
     }
 
     public Claim storeClaim(Claim claim) {
-        claim.setOrderNumber(String.valueOf(orderNumberCounter.incrementAndGet()));
+        claim.setOrderNumber(orderNumberCounter.incrementAndGet());
         claim.setTimestamp(System.currentTimeMillis());
-        mongoTemplate.save(claim);
+        claimJpaRepository.save(claim);
         return claim;
     }
 
-    public List<Claim> getClaims(Query query) {
-        return mongoTemplate.find(query, Claim.class);
+    public List<Claim> getAll() {
+        return claimJpaRepository.findAll();
     }
 
-    public int countClaims(Query query) {
-        return Math.toIntExact(mongoTemplate.count(query, Claim.class));
+    public List<Claim> getByCustomerName(String name) {
+        return claimJpaRepository.findByCustomerName(name);
     }
 
-    public void updateClaim(Query query, Update update) {
-        update.set("timestamp", System.currentTimeMillis());
-        mongoTemplate.upsert(query, update, Claim.class);
+    public int countByStatus(ClaimStatus... statuses) {
+        return claimJpaRepository.countByStatus(statuses);
     }
+
+//    public Query queryByClaimStatusByDays(long days, ClaimStatus... statuses) {
+//        LocalDateTime date = LocalDateTime.now().plusDays(-1 * days);
+//
+//        return createQuery()
+//                .addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)))
+//                .addCriteria(Criteria.where("lastModifiedDate").gte(date));
+//    }
+//
+//    public Query queryByCustomerNameRegex(String name) {
+//        return createQuery().addCriteria(Criteria.where("customer.name").regex(name, "i"));
+//    }
+//
+//    public Query queryByDateAndSchoolAndStatus(Date date, String schoolOrganisationNumber, ClaimStatus... statuses) {
+//        Query query = createQuery();
+//
+//        if (date != null)
+//            query.addCriteria(Criteria.where("createdDate").gte(date));
+//        if (StringUtils.isNotBlank(schoolOrganisationNumber))
+//            query.addCriteria(Criteria.where("organisationUnit.organisationNumber").is(schoolOrganisationNumber));
+//        if (statuses != null && statuses.length > 0)
+//            query.addCriteria(Criteria.where("claimStatus").in(Arrays.asList(statuses)));
+//
+//        return query;
+//    }
+
 
     @PostConstruct
     public void setHighestOrderNumber() {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
+        orderNumberCounter.set( Long.parseLong(claimJpaRepository.findHighestOrderNumber().orElse("10000").toString()));
+    }
 
-        mongoTemplate.stream(query, Claim.class)
-                .map(Claim::getOrderNumber)
-                .mapToLong(Long::parseLong)
-                .max()
-                .ifPresent(orderNumberCounter::set);
+    public int countByStatusAndDays(long days, ClaimStatus[] statuses) {
+        return claimJpaRepository.countByStatusAndDays(days, statuses);
+    }
+
+    public List<Claim> getByDateAndSchoolAndStatus(Date date, String organisationNumber, ClaimStatus[] statuses) {
+        return claimJpaRepository.getByDateAndSchoolAndStatus(date, organisationNumber, statuses);
+    }
+
+    public void save(Claim claim) {
+        claimJpaRepository.save(claim);
     }
 }
