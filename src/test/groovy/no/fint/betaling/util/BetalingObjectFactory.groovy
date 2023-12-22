@@ -54,7 +54,7 @@ class BetalingObjectFactory {
         )
     }
 
-    static Claim newClaim(String orderNumber, ClaimStatus claimStatus) {
+    static Claim newClaim(long orderNumber, ClaimStatus claimStatus) {
         def order = newOrder()
         return new Claim(
                 orgId: '123',
@@ -69,9 +69,9 @@ class BetalingObjectFactory {
                 originalAmountDue: order.sum(),
                 requestedNumberOfDaysToPaymentDeadline: order.requestedNumberOfDaysToPaymentDeadline,
                 customer: newCustomer(),
-                createdBy: newUser(),
+                createdByEmployeeNumber: newUser().getEmployeeNumber(),
                 organisationUnit: newOrganisationUnit(),
-                principal: newPrincipal(),
+                principalCode: newPrincipal().getCode(),
                 invoiceUri: 'link.to.Invoice',
                 orderItems: order.orderItems,
                 claimStatus: claimStatus,

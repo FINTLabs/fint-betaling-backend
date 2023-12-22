@@ -22,7 +22,7 @@ class InvoiceFactorySpec extends Specification {
 
     def "Get invoice given valid payment returns invoice"() {
         given:
-        def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim(123L, ClaimStatus.STORED)
 
         when:
         def invoice = invoiceFactory.createInvoice(claim)

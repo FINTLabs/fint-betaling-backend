@@ -22,7 +22,7 @@ class ClaimRepositorySpec extends Specification {
 
     def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
         given:
-        def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim(123L, ClaimStatus.STORED)
 
         when:
         claimRepository.storeClaim(claim)
@@ -65,8 +65,8 @@ class ClaimRepositorySpec extends Specification {
     @Ignore("Must be rewritten from mongoDb to postgresql")
     def "Get highest order number"() {
         given:
-        def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
-        def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
+        def lowClaim = betalingObjectFactory.newClaim(1234L, ClaimStatus.SENT)
+        def highClaim = betalingObjectFactory.newClaim(5678L, ClaimStatus.STORED)
 
         when:
         claimRepository.setHighestOrderNumber()

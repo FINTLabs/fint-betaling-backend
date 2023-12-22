@@ -33,15 +33,14 @@ class ClaimServiceSpec extends Specification {
                 restUtil: restUtil,
                 claimRepository: claimRepository,
                 claimFactory: claimFactory,
-                invoiceFactory: invoiceFactory,
-                queryService: queryService)
+                invoiceFactory: invoiceFactory)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
     def "Given valid order, create and store claims"() {
         given:
         def order = betalingObjectFactory.newOrder()
-        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
 
         when:
         def claims = claimService.storeClaims(order)
@@ -58,7 +57,7 @@ class ClaimServiceSpec extends Specification {
     @Ignore("Must be rewritten from mongoDb to postgresql")
     def "Given valid claims, send invoices and update claims"() {
         given:
-        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
         def header = new HttpHeaders();
         header.setLocation(new URI("link.to.Location"))
 
@@ -111,7 +110,7 @@ class ClaimServiceSpec extends Specification {
     @Ignore
     def "Get status given payment with valid location uri returns invoice"() {
         given:
-        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
 
         when:
         def invoice = claimService.getStatus(claim)
@@ -189,36 +188,32 @@ class ClaimServiceSpec extends Specification {
 
     def "Get count of claims by status"() {
         given:
-        queryService = Mock()
         claimService = new ClaimService(
                 restUtil: restUtil,
                 claimRepository: claimRepository,
                 claimFactory: claimFactory,
-                invoiceFactory: invoiceFactory,
-                queryService: queryService)
+                invoiceFactory: invoiceFactory)
         when:
         def claims = claimService.countClaimsByStatus([ClaimStatus.ERROR] as ClaimStatus[], '')
 
         then:
-        1 * queryService.queryByClaimStatus(ClaimStatus.ERROR)
+        //1 * queryService.queryByClaimStatus(ClaimStatus.ERROR)
         1 * claimRepository.countClaims(_) >> 8
         claims == 8
     }
 
     def "Get count of claims by status and days"() {
         given:
-        queryService = Mock()
         claimService = new ClaimService(
                 restUtil: restUtil,
                 claimRepository: claimRepository,
                 claimFactory: claimFactory,
-                invoiceFactory: invoiceFactory,
-                queryService: queryService)
+                invoiceFactory: invoiceFactory)
         when:
         def claims = claimService.countClaimsByStatus([ClaimStatus.SENT] as ClaimStatus[], '14')
 
         then:
-        1 * queryService.queryByClaimStatusByDays(14, ClaimStatus.SENT)
+        //1 * queryService.queryByClaimStatusByDays(14, ClaimStatus.SENT)
         1 * claimRepository.countClaims(_) >> 143
         claims == 143
     }
