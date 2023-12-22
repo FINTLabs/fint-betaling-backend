@@ -1,0 +1,26 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+#      javax:
+#        persistence:
+#          schema-generation:
+#            scripts:
+#              action: create
+#              create-target: __init.sql
+#              create-source: metadata
+
+    hibernate:
+      ddl-auto: create
+    generate-ddl: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test
+    username: postgres
+    password: postgres
+    hikari:
+      schema: fintlabs_no
