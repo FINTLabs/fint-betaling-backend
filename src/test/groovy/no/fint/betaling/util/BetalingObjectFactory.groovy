@@ -72,6 +72,7 @@ class BetalingObjectFactory {
                 createdByEmployeeNumber: newUser().getEmployeeNumber(),
                 organisationUnit: newOrganisationUnit(),
                 principalCode: newPrincipal().getCode(),
+                principalUri: newPrincipal().getUri(),
                 invoiceUri: 'link.to.Invoice',
                 orderItems: order.orderItems,
                 claimStatus: claimStatus,
