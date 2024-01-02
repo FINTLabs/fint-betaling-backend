@@ -33,7 +33,7 @@ public class ClaimController {
     }
 
     @PostMapping
-    public ResponseEntity<?> storeClaim(@RequestBody Order order) {
+    public ResponseEntity<List<Claim>> storeClaim(@RequestBody Order order) {
         log.info("Received order: {}", order);
         return ResponseEntity.status(HttpStatus.CREATED).body(claimService.storeClaims(order));
     }
@@ -57,35 +57,35 @@ public class ClaimController {
     }
 
     @GetMapping
-    public List<Claim> getAllClaims(@RequestParam(required = false) String periodSelection,
+    public ResponseEntity<List<Claim>> getAllClaims(@RequestParam(required = false) String periodSelection,
                                     @RequestParam(required = false) String schoolSelection,
                                     @RequestParam(required = false) String[] status) throws ParseException {
 
         if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
         ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-        return claimService.getClaims(period, schoolSelection, toClaimStatus(status));
+        return ResponseEntity.ok(claimService.getClaims(period, schoolSelection, toClaimStatus(status)));
 
     }
 
     @GetMapping("/name/{name}")
-    public List<Claim> getClaimsByCustomerName(@PathVariable String name) {
-        return claimService.getClaimsByCustomerName(name);
+    public ResponseEntity<List<Claim>> getClaimsByCustomerName(@PathVariable String name) {
+        return ResponseEntity.ok(claimService.getClaimsByCustomerName(name));
     }
 
     @GetMapping("/order-number/{order-number}")
-    public Claim getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
-        return claimService.getClaimsByOrderNumber(orderNumber);
+    public ResponseEntity<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
+        return ResponseEntity.ok(claimService.getClaimByOrderNumber(orderNumber));
     }
 
     @GetMapping("/status/{status}")
-    public List<Claim> getClaimsByStatus(@PathVariable String[] status) {
-        return claimService.getClaimsByStatus(toClaimStatus(status));
+    public ResponseEntity<List<Claim>> getClaimsByStatus(@PathVariable String[] status) {
+        return ResponseEntity.ok(claimService.getClaimsByStatus(toClaimStatus(status)));
     }
 
     @GetMapping("/count/status/{status}")
-    public int getCountByStatus(@PathVariable String[] status,
+    public ResponseEntity<Integer> getCountByStatus(@PathVariable String[] status,
                                 @RequestParam(required = false) String days) {
-        return claimService.countClaimsByStatus(toClaimStatus(status), days);
+        return ResponseEntity.ok(claimService.countClaimsByStatus(toClaimStatus(status), days));
     }
 
     /**
@@ -93,9 +93,9 @@ public class ClaimController {
      */
     @Deprecated
     @GetMapping("/count/by-status/{status}")
-    public int getCountByStatusOld(@PathVariable String[] status,
+    public ResponseEntity<Integer> getCountByStatusOld(@PathVariable String[] status,
                                    @RequestParam(required = false) String days) {
-        return claimService.countClaimsByStatus(toClaimStatus(status), days);
+        return ResponseEntity.ok(claimService.countClaimsByStatus(toClaimStatus(status), days));
     }
 
     @DeleteMapping("/order-number/{order-number}")

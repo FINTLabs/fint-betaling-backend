@@ -10,7 +10,6 @@ import no.fint.betaling.model.Order;
 import no.fint.betaling.repository.ClaimRepository;
 import no.fint.betaling.util.FintClient;
 import no.fint.betaling.util.RestUtil;
-import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.apache.commons.lang3.StringUtils;
@@ -243,7 +242,7 @@ public class ClaimService {
         return claimRepository.getByCustomerName(name);
     }
 
-    public Claim getClaimsByOrderNumber(long orderNumber) {
+    public Claim getClaimByOrderNumber(long orderNumber) {
         return claimRepository.get(orderNumber);
     }
 
@@ -259,7 +258,7 @@ public class ClaimService {
     }
 
     public void cancelClaim(long orderNumber) {
-        Claim claim = getClaimsByOrderNumber(orderNumber);
+        Claim claim = getClaimByOrderNumber(orderNumber);
 
         if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
             claim.setClaimStatus(ClaimStatus.CANCELLED);

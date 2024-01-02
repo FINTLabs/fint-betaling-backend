@@ -50,7 +50,7 @@ class ClaimServiceSpec extends Specification {
         1 * claimRepository.storeClaim(_ as Claim) >> claim
         claims.size() == 1
         claims.every { it.orderItems.size() == 1 }
-        claims.every { it.orderNumber == '12345' }
+        claims.every { it.orderNumber == 12345L }
         claims.every { it.customer.name == 'Ola Testesen' }
     }
 

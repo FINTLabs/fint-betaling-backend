@@ -9,18 +9,18 @@ import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
 
-    private Endpoints endpoints
-    private ClaimRepository claimRepository
-    private BetalingObjectFactory betalingObjectFactory;
+    ClaimRepository claimRepository
+    BetalingObjectFactory betalingObjectFactory
+    ClaimJpaRepository claimJpaRepository
+
 
     void setup() {
-        endpoints = Mock(Endpoints)
-        mongoTemplate = Mock(MongoTemplate)
-        claimRepository = new ClaimRepository(endpoints, mongoTemplate)
+        claimJpaRepository = Mock()
+        claimRepository = new ClaimRepository(claimJpaRepository)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
-    def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
+    def "Set payment given valid data sends Betaling and orgId to claimJpaRepository"() {
         given:
         def claim = betalingObjectFactory.newClaim(123L, ClaimStatus.STORED)
 
@@ -28,8 +28,8 @@ class ClaimRepositorySpec extends Specification {
         claimRepository.storeClaim(claim)
 
         then:
-        1 * mongoTemplate.save(_ as Claim)
-        claim.orderNumber == '100001'
+        1 * claimJpaRepository.save(claim)
+        claim.orderNumber == 100001L
     }
 
     @Ignore("Must be rewritten from mongoDb to postgresql")

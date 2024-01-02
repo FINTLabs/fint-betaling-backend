@@ -90,6 +90,7 @@ class BetalingObjectFactory {
     static User newUser() {
         return new User(
                 name: 'Frank Testesen',
+                employeeNumber: '2001',
                 organisation: newOrganisation(),
                 organisationUnits: [newOrganisationUnit()]
         )
