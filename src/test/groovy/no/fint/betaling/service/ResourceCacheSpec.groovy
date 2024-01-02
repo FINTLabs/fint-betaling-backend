@@ -27,7 +27,7 @@ class ResourceCacheSpec extends Specification {
         ElevfravarResources elevfravarResources = new ElevfravarResources()
         elevfravarResources.addResource(createResource("test-url-1"))
         elevfravarResources.addResource(createResource("test-url-2"))
-        restUtil.getWhitRetry(_, _) >> Mono.just(elevfravarResources)
+        restUtil.getWithRetry(_, _) >> Mono.just(elevfravarResources)
 
         when:
         resourceCache.update()
@@ -48,7 +48,7 @@ class ResourceCacheSpec extends Specification {
         ElevfravarResources elevfravarResources = new ElevfravarResources()
         elevfravarResources.addResource(createResource("test-url-1", "Test1"))
         elevfravarResources.addResource(createResource("test-url-2", "Test2"))
-        restUtil.getWhitRetry(_, _) >> Mono.just(elevfravarResources)
+        restUtil.getWithRetry(_, _) >> Mono.just(elevfravarResources)
 
         when:
         resourceCache.update()
@@ -78,7 +78,7 @@ class ResourceCacheSpec extends Specification {
         String endpoint = "https://example.com/resources"
         ResourceCache<ElevfravarResource, ElevfravarResources> resourceCache = new ResourceCache<>(restUtil, endpoint, ElevfravarResource.class)
 
-        restUtil.getWhitRetry(_, _) >> Mono.just(new ElevfravarResources())
+        restUtil.getWithRetry(_, _) >> Mono.just(new ElevfravarResources())
 
         when:
         resourceCache.update()
@@ -94,7 +94,7 @@ class ResourceCacheSpec extends Specification {
         ResourceCache<ElevfravarResource, ElevfravarResources> resourceCache = new ResourceCache<>(restUtil, endpoint, ElevfravarResource.class)
 
         WebClientResponseException exception = Mock(WebClientResponseException)
-        restUtil.getWhitRetry(_, _) >> { throw exception }
+        restUtil.getWithRetry(_, _) >> { throw exception }
 
         when:
         resourceCache.update()

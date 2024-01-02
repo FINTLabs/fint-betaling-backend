@@ -38,7 +38,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
         U updatedResources;
 
         try {
-            updatedResources = restUtil.getWhitRetry(clazz, endpoint).block();
+            updatedResources = restUtil.getWithRetry(clazz, endpoint).block();
         } catch (WebClientResponseException ex) {
             log.error(ex.getMessage());
             return;

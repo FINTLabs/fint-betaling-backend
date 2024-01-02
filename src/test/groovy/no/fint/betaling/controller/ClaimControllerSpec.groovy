@@ -26,16 +26,15 @@ class ClaimControllerSpec extends Specification {
         controller = new ClaimController(claimService, scheduleService)
     }
 
-    @Ignore
     def "Get all payments"() {
         given:
         def claim = createClaim(123L, 'Testesen')
 
         when:
-        def response = controller.getAllClaims()
+        def response = controller.getAllClaims('', '', null)
 
         then:
-        1 * claimService.getClaims() >> [claim]
+        1 * claimService.getClaims(_, _, _) >> [claim]
         response.statusCode == HttpStatus.OK
         response.getBody() == [claim]
     }

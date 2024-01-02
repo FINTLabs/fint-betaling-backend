@@ -44,7 +44,7 @@ public class RestUtil {
                 );
     }
 
-    public <T> Mono<T> getWhitRetry(Class<T> clazz, String uri) {
+    public <T> Mono<T> getWithRetry(Class<T> clazz, String uri) {
         uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))

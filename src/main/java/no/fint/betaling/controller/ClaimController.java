@@ -59,12 +59,11 @@ public class ClaimController {
     @GetMapping
     public ResponseEntity<List<Claim>> getAllClaims(@RequestParam(required = false) String periodSelection,
                                     @RequestParam(required = false) String schoolSelection,
-                                    @RequestParam(required = false) String[] status) throws ParseException {
+                                    @RequestParam(required = false) String[] status) {
 
         if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
         ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
         return ResponseEntity.ok(claimService.getClaims(period, schoolSelection, toClaimStatus(status)));
-
     }
 
     @GetMapping("/name/{name}")

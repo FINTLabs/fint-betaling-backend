@@ -49,7 +49,7 @@ public class GroupRepository {
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
-    public void init() {
+    public void updateAll() {
         schools.update();
         basisGroups.update();
         teachingGroups.update();
