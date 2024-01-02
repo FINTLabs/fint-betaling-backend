@@ -44,7 +44,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
             return;
         }
 
-        if (updatedResources.getTotalItems() == 0) return;
+        if (updatedResources == null || updatedResources.getTotalItems() == 0) return;
 
         Map<Link, T> newResources = new HashMap<>();
         updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> newResources.put(link, resource)));

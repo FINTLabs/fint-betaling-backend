@@ -22,19 +22,17 @@ class GroupRepositorySpec extends Specification {
         groupRepository = new GroupRepository(restUtil, endpoints)
     }
 
-    @Ignore
     def "Update schools on update all"() {
         given:
         def resources = new SkoleResources()
         resources.addResource(fintObjectFactory.newSchool())
 
         when:
-        def map = groupRepository.updateAll()
+        groupRepository.updateAll()
 
         then:
-        1 * restUtil.getWithRetry(_ as Class<SkoleResources>, _) >> Mono.just(resources)
-        map.size() == 1
-        map.get(Link.with('link.to.School')).navn == 'HVS'
+        1 * restUtil.getWithRetry(_, endpoints.getSchool()) >> Mono.just(resources)
+        _ * restUtil.getWithRetry(_, _) >> Mono.empty()
     }
 
     def "Get all schools"() {

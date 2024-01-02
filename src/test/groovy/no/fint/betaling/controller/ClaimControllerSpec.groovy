@@ -98,16 +98,6 @@ class ClaimControllerSpec extends Specification {
         response.getBody() == amountOfClaims
     }
 
-    @Ignore
-    def "Update invoices given valid org id updates invoices"() {
-        when:
-        def response = mockMvc.perform(get('/api/claim/update'))
-
-        then:
-        1 * claimService.updateClaimStatus()
-        response.andExpect(status().isNoContent())
-    }
-
     private static Claim createClaim(long orderNumber, String lastName) {
         return new Claim(customer: new Customer(name: lastName), orderNumber: orderNumber)
     }

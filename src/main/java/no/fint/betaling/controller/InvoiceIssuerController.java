@@ -27,9 +27,11 @@ public class InvoiceIssuerController {
         return invoiceIssuerService.getInvoiceIssuer(schoolId)
                 //Debug logging to solve product update issue
                 .doOnNext(principal -> {
-                    principal.getLineitems().stream()
-                            .filter(l -> l.getItemCode().contains("1351"))
-                            .peek(l -> log.info("Return product: " + l.getItemCode() + " - " + l.getDescription()));
+                    if (principal.getLineitems() != null) {
+                        principal.getLineitems().stream()
+                                .filter(l -> l.getItemCode().contains("1351"))
+                                .peek(l -> log.info("Return product: " + l.getItemCode() + " - " + l.getDescription()));
+                    }
                 })
                 .onErrorResume(ex -> {
                     log.error("An exception occured on handling getInvoiceIssuer", ex);
