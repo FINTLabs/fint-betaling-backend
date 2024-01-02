@@ -7,38 +7,26 @@ import no.fint.betaling.service.GroupService
 import no.fint.betaling.util.CustomerFileGroup
 import org.apache.poi.ss.usermodel.Sheet
 import org.spockframework.spring.SpringBean
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.context.ApplicationContext
-import org.springframework.http.MediaType
-import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.http.HttpStatus
 import spock.lang.Specification
 
-@WebFluxTest(controllers = FileController.class)
 class FileControllerSpec extends Specification {
-
-    @Autowired
-    private ApplicationContext applicationContext
-
-    private WebTestClient webTestClient
 
     private FileController fileController
 
     @SpringBean
-    private FileService fileService = Mock(FileService.class)
+    FileService fileService = Mock()
 
     @SpringBean
-    private GroupService groupService = Mock(GroupService.class)
+    GroupService groupService = Mock()
 
     void setup() {
         fileController = new FileController(fileService, groupService)
-        webTestClient = WebTestClient.bindToController(fileController).build()
     }
 
-    def "Get customers with correct file structure returns HttpStatus 200 with correct body"() {
+    def "Get normal result for customer file group"() {
         given:
-        def result = new CustomerFileGroup(
+        def fileGroup = new CustomerFileGroup(
                 notFoundCustomers: ['123'],
                 foundCustomers: new CustomerGroup(
                         customers: [new Customer()]
@@ -46,26 +34,14 @@ class FileControllerSpec extends Specification {
         )
 
         when:
-        def response = webTestClient
-                .post()
-                .uri('/api/file')
-                .header('x-school-org-id', '')
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(new byte[1]))
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
+        def result = fileController.getCustomersOnFile('', new byte[1])
 
         then:
         1 * fileService.getSheetFromBytes(_) >> Mock(Sheet)
-        1 * fileService.extractCustomerFileGroupFromSheet(_, _) >> result
+        1 * fileService.extractCustomerFileGroupFromSheet(_, _) >> fileGroup
         1 * groupService.getCustomersForSchoolWithVisIdKey(_) >> ['hei': new Customer()]
-        response
-                .jsonPath('$.foundCustomers.customers.length()').isEqualTo(1)
-        //.jsonPath() andExpect(jsonPathSize('$.foundCustomers.customers', 1))
-                //.andExpect(jsonPathSize('$.notFoundCustomers', 1))
-                .jsonPath('$.notFoundCustomers.length()').isEqualTo(1)
-    }
 
+        result.statusCode == HttpStatus.OK
+        result.getBody() == fileGroup
+    }
 }

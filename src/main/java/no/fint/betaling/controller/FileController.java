@@ -7,6 +7,7 @@ import no.fint.betaling.exception.NoVISIDColumnException;
 import no.fint.betaling.exception.UnableToReadFileException;
 import no.fint.betaling.service.FileService;
 import no.fint.betaling.service.GroupService;
+import no.fint.betaling.util.CustomerFileGroup;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class FileController {
 
     @PostMapping
     // TODO: Burde egentlig x-school-org-id vært en del av api url'en?
-    public ResponseEntity getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException, InsufficientDataException, UnsupportedMediaTypeException {
+    public ResponseEntity<CustomerFileGroup> getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException, InsufficientDataException, UnsupportedMediaTypeException {
         return ResponseEntity.ok(fileService.extractCustomerFileGroupFromSheet(
                 fileService.getSheetFromBytes(file),
                 groupService.getCustomersForSchoolWithVisIdKey(schoolId)));

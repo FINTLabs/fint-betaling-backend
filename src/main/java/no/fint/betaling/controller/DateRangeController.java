@@ -1,6 +1,7 @@
 package no.fint.betaling.controller;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class DateRangeController {
 
     @Value("${fint.betaling.date-range:7, 14, 30}")
-    private String[] dateRanges;
+    private String[] dateRange;
 
     @GetMapping
-    public String[] getDateRange() {
-        return dateRanges;
+    public ResponseEntity<String[]> getDateRange() {
+        return ResponseEntity.ok(dateRange);
     }
 }
