@@ -68,6 +68,8 @@ public class Claim {
     }
 
     public void setInvoiceNumbers(Set<String> invoiceNumbers) {
-        invoiceNumbersCommaSeperated = String.join(",", invoiceNumbers);
+        if (invoiceNumbers !=null) {
+            invoiceNumbersCommaSeperated = String.join(",", invoiceNumbers);
+        }
     }
 }

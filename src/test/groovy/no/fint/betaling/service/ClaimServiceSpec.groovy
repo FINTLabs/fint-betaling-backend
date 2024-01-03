@@ -1,6 +1,6 @@
 package no.fint.betaling.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
+
 import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.model.Claim
@@ -8,32 +8,37 @@ import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
+import no.fint.betaling.util.FintClient
 import no.fint.betaling.util.RestUtil
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.http.HttpHeaders
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 import spock.lang.Ignore
 import spock.lang.Specification
-import reactor.test.StepVerifier;
 
 class ClaimServiceSpec extends Specification {
-    private ClaimService claimService
-    private ClaimRepository claimRepository
-    private ClaimFactory claimFactory
-    private InvoiceFactory invoiceFactory
-    private RestUtil restUtil
-    private BetalingObjectFactory betalingObjectFactory
+    ClaimService claimService
+    ClaimRepository claimRepository
+    ClaimFactory claimFactory
+    InvoiceFactory invoiceFactory
+    RestUtil restUtil
+    BetalingObjectFactory betalingObjectFactory
+    FintClient fintClient
 
     void setup() {
         claimRepository = Mock()
         claimFactory = Mock()
         restUtil = Mock()
         invoiceFactory = Mock()
+        fintClient = Mock()
+
         claimService = new ClaimService(
                 restUtil: restUtil,
                 claimRepository: claimRepository,
                 claimFactory: claimFactory,
-                invoiceFactory: invoiceFactory)
+                invoiceFactory: invoiceFactory,
+                fintClient: fintClient)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -54,19 +59,18 @@ class ClaimServiceSpec extends Specification {
         claims.every { it.customer.name == 'Ola Testesen' }
     }
 
-    @Ignore("Must be rewritten from mongoDb to postgresql")
     def "Given valid claims, send invoices and update claims"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
         def header = new HttpHeaders();
-        header.setLocation(new URI("link.to.Location"))
+        header.setLocation(new URI('link.to.Location'))
 
-        //claimRepository.getAll(_ as Query) >> [claim]
+        claimRepository.get(*_) >> [claim]
         restUtil.post(*_) >> Mono.just(header)
         invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
 
         when:
-        def claims = claimService.sendClaims(['12345'])
+        def claims = claimService.sendClaims([12345L])
 
         then:
         StepVerifier
@@ -80,16 +84,20 @@ class ClaimServiceSpec extends Specification {
     }
 
     @Ignore
-    def "Send claim as inovice returns link to location"() {
-        given:
-        def invoice = betalingObjectFactory.newFakturagrunnlag()
-
-        when:
-        def response = claimService.sendClaim(invoice)
-
-        then:
-        1 * restUtil.post(_ as Class<FakturagrunnlagResource>, _) >> new URI('link.to.Location')
-        response == 'link.to.Location'.toURI()
+    def "Send claim as inovice returns status"() {
+//        given:
+//        def invoice = betalingObjectFactory.newFakturagrunnlag()
+//        def thisIsTheInvoice = betalingObjectFactory.newFaktura()
+//
+//        when:
+//        def response = claimService.updateClaim(invoice)
+//
+//        then:
+//        1* claimRepository.get(12345L)  >> betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
+//        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
+//        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
+//        1 * fintClient.setInvoiceUri(_) >> Optional.of('link.to.Location')
+//        //response.claimStatus == ClaimStatus.ACCEPTED.toString()
     }
 
     @Ignore
@@ -202,7 +210,7 @@ class ClaimServiceSpec extends Specification {
         def claims = claimService.countClaimsByStatus([ClaimStatus.SENT] as ClaimStatus[], '14')
 
         then:
-        1 * claimRepository.countByStatusAndDays(14,ClaimStatus.SENT) >> 143
+        1 * claimRepository.countByStatusAndDays(14, ClaimStatus.SENT) >> 143
         claims == 143
     }
 }

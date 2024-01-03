@@ -39,7 +39,7 @@ public class ClaimController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<String> orderNumbers) {
+    public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<Long> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
         Flux<Claim> flux = claimService.sendClaims(orderNumbers);
         // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:

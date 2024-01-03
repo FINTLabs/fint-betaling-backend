@@ -61,7 +61,7 @@ public class ClaimService {
                 .collect(Collectors.toList());
     }
 
-    public Flux<Claim> sendClaims(List<String> orderNumbers) {
+    public Flux<Claim> sendClaims(List<Long> orderNumbers) {
         return Flux.fromIterable(getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .flatMap(this::checkClaimStatus)

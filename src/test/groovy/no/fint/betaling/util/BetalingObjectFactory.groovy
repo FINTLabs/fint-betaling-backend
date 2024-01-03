@@ -127,6 +127,7 @@ class BetalingObjectFactory {
         faktura.setBelop(r.nextLong(50000, 100000))
         faktura.setRestbelop(r.nextLong(10000, 50000))
         faktura.setFakturanummer(new Identifikator(identifikatorverdi: r.nextLong(100000, 3000000)))
+        faktura.setDato(new Date(2024,1,3))
         use(TimeCategory) {
             def now = new Date()
             faktura.setDato(now - 12.days)
