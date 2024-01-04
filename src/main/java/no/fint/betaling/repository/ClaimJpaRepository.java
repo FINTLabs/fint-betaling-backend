@@ -24,11 +24,11 @@ public interface ClaimJpaRepository extends JpaRepository<Claim, Long> {
     @Query("SELECT COUNT(c) FROM Claim c WHERE c.claimStatus IN :statuses")
     int countByStatus(@Param("statuses") ClaimStatus... statuses);
 
-    @Query("SELECT COUNT(c) FROM Claim c WHERE (CURRENT_DATE - c.createdDate) < :days AND c.claimStatus IN :statuses")
+    @Query("SELECT COUNT(c) FROM Claim c WHERE FUNCTION('DATEDIFF', DAY, CURRENT_DATE, c.createdDate) < :days AND c.claimStatus IN :statuses")
     int countByStatusAndDays(@Param("days") long days, @Param("statuses") ClaimStatus[] statuses);
 
     @Query("SELECT c FROM Claim c WHERE (:date IS NULL OR c.createdDate >= :date) AND (COALESCE(:statuses) IS NULL OR c.claimStatus IN :statuses) AND (:organisationNumber IS NULL OR c.organisationUnit.organisationNumber = :organisationNumber)")
-    List<Claim> getByDateAndSchoolAndStatus(@Param("date") Date date, @Param("organisationNumber") String organisationNumber, @Param("statuses") ClaimStatus[] statuses);
+    List<Claim> getByDateAndSchoolAndStatus(@Param("date") Date date, @Param("organisationNumber") String organisationNumber, @Param("statuses") List<ClaimStatus> statuses);
 
 
 // Todo: Finn ut hvordan vi alltid kan oppdatere denne

@@ -6,6 +6,7 @@ import no.fint.betaling.model.ClaimStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -59,9 +60,9 @@ public class ClaimRepository {
     }
 
     public List<Claim> getByDateAndSchoolAndStatus(Date date, String organisationNumber, ClaimStatus[] statuses) {
-        if (!StringUtils.hasText(organisationNumber)) organisationNumber = null;
-        if (statuses != null && statuses.length == 0) statuses = null;
-        return claimJpaRepository.getByDateAndSchoolAndStatus(date, organisationNumber, statuses);
+        String orgNumber = StringUtils.hasText(organisationNumber) ? organisationNumber : null;
+        List<ClaimStatus> statusList = (statuses != null && statuses.length > 0) ? Arrays.asList(statuses) : null;
+        return claimJpaRepository.getByDateAndSchoolAndStatus(date, orgNumber, statusList);
     }
 
     public void save(Claim claim) {
