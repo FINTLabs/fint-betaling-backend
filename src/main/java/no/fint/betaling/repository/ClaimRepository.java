@@ -6,6 +6,10 @@ import no.fint.betaling.model.ClaimStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -62,10 +66,20 @@ public class ClaimRepository {
     public List<Claim> getByDateAndSchoolAndStatus(Date date, String organisationNumber, ClaimStatus[] statuses) {
         String orgNumber = StringUtils.hasText(organisationNumber) ? organisationNumber : null;
         List<ClaimStatus> statusList = (statuses != null && statuses.length > 0) ? Arrays.asList(statuses) : null;
-        return claimJpaRepository.getByDateAndSchoolAndStatus(date, orgNumber, statusList);
+        return claimJpaRepository.getByDateAndSchoolAndStatus(convertToLocalDate(date), orgNumber, statusList);
     }
 
     public void save(Claim claim) {
         claimJpaRepository.save(claim);
+    }
+
+    private LocalDate convertToLocalDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+
+        Instant instant = date.toInstant();
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
+        return zonedDateTime.toLocalDate();
     }
 }
