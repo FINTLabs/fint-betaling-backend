@@ -1,4 +1,9 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          fint.client-id: pwf
   jpa:
     properties:
       hibernate:
@@ -6,17 +11,20 @@ spring:
           lob:
             non_contextual_creation: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-#      javax:
-#        persistence:
-#          schema-generation:
-#            scripts:
-#              action: create
-#              create-target: __init.sql
-#              create-source: metadata
+        javax:
+          persistence:
+            schema-generation:
+              scripts:
+                action: create
+                create-target: __init.sql
+                create-source: metadata
 
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     generate-ddl: true
+
+
+
 
   datasource:
     url: jdbc:postgresql://localhost:5432/test
@@ -24,3 +32,10 @@ spring:
     password: postgres
     hikari:
       schema: fintlabs_no
+
+fint:
+  client:
+    enabled: false
+    base-url: https://play-with-fint.felleskomponent.no
+  betaling:
+    org-id: fintlabs_no
