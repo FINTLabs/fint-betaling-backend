@@ -58,11 +58,15 @@ create table lineitem
 );
 create table orderitem
 (
-    id                 bigint not null,
-    item_price         bigint,
-    item_quantity      bigint,
-    description        varchar(255),
-    lineitem_item_code varchar(255) unique,
+    id                   bigint not null,
+    item_price           bigint,
+    item_quantity        bigint,
+    description          varchar(255),
+    original_item_price  bigint,
+    tax_rate             bigint,
+    original_description varchar(255),
+    item_code            varchar(255),
+    item_uri             varchar(255),
     primary key (id)
 );
 create table organisation
@@ -83,5 +87,3 @@ alter table if exists claim_order_items
     add constraint FKkdmj5wc95hk8k2xs7ut6borj foreign key (order_items_id) references orderitem;
 alter table if exists claim_order_items
     add constraint FKtfsdi5yof26rfwb9y0uaqo7pk foreign key (claim_order_number) references claim;
-alter table if exists orderitem
-    add constraint FKspymui268558oowe2wm47lcy7 foreign key (lineitem_item_code) references lineitem;
