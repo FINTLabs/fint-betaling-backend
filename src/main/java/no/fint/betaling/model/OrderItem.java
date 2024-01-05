@@ -18,13 +18,17 @@ public class OrderItem {
 
     private Long itemPrice;
 
-    @OneToOne()
-    private Lineitem lineitem;
+    private String itemCode;
+
+    private Long originalItemPrice;
+
+    private Long taxRate;
+
+    private String originalDescription;
+
+    private String itemUri;
 
     public Long sum() {
-        if (itemPrice == null) {
-            return itemQuantity * lineitem.getItemPrice();
-        }
-        return itemQuantity * itemPrice;
+        return itemPrice == null ? itemQuantity * originalItemPrice : itemQuantity * itemPrice;
     }
 }
