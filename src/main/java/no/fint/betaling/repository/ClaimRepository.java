@@ -66,20 +66,10 @@ public class ClaimRepository {
     public List<Claim> getByDateAndSchoolAndStatus(Date date, String organisationNumber, ClaimStatus[] statuses) {
         String orgNumber = StringUtils.hasText(organisationNumber) ? organisationNumber : null;
         List<ClaimStatus> statusList = (statuses != null && statuses.length > 0) ? Arrays.asList(statuses) : null;
-        return claimJpaRepository.getByDateAndSchoolAndStatus(convertToLocalDate(date), orgNumber, statusList);
+        return claimJpaRepository.getByDateAndSchoolAndStatus(date, orgNumber, statusList);
     }
 
     public void save(Claim claim) {
         claimJpaRepository.save(claim);
-    }
-
-    private LocalDate convertToLocalDate(Date date) {
-        if (date == null) {
-            return null;
-        }
-
-        Instant instant = date.toInstant();
-        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
-        return zonedDateTime.toLocalDate();
     }
 }
