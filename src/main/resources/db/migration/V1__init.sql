@@ -11,11 +11,12 @@ create table claim
     original_amount_due                          bigint,
     timestamp                                    bigint,
     created_by_employee_number                   varchar(255),
-    customer_id                                  varchar(255) unique,
+    customer_id                                  varchar(255),
+    customer_name                                varchar(255),
     invoice_numbers                              varchar(255),
     invoice_uri                                  varchar(255),
     org_id                                       varchar(255),
-    organisation_unit_organisation_number        varchar(255) unique,
+    organisation_unit_organisation_number        varchar(255),
     principal_code                               varchar(255),
     principal_uri                                varchar(255),
     requested_number_of_days_to_payment_deadline varchar(255),
@@ -39,12 +40,6 @@ create table creditnote
     comment      varchar(255),
     id           varchar(255) not null,
     order_number varchar(255),
-    primary key (id)
-);
-create table customer
-(
-    id   varchar(255) not null,
-    name varchar(255),
     primary key (id)
 );
 create table lineitem
@@ -75,8 +70,6 @@ create table organisation
     organisation_number varchar(255) not null,
     primary key (organisation_number)
 );
-alter table if exists claim
-    add constraint FKlmon26is6b9p2wipdl88yn68y foreign key (customer_id) references customer;
 alter table if exists claim
     add constraint FKnqqwwrtfkwy0q24b6g26s0hrk foreign key (organisation_unit_organisation_number) references organisation;
 alter table if exists claim_credit_notes

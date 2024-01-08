@@ -39,7 +39,7 @@ public class InvoiceFactory {
         invoice.setFakturalinjer(invoiceLines);
         invoice.setLeveringsdato(startOfDayFrom(claim.getCreatedDate()));
         invoice.setNettobelop(claim.getOriginalAmountDue());
-        invoice.setMottaker(personService.getFakturamottakerByPersonId(claim.getCustomer().getId()));
+        invoice.setMottaker(personService.getFakturamottakerByPersonId(claim.getCustomerId()));
         invoice.addFakturautsteder(Link.with(claim.getPrincipalUri()));
 
         Identifikator identifikator = new Identifikator();

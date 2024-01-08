@@ -41,12 +41,13 @@ public class Claim {
 
     private String requestedNumberOfDaysToPaymentDeadline;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    private Customer customer;
+    private String customerId;
+
+    private String customerName;
 
     private String createdByEmployeeNumber;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     private Organisation organisationUnit;
 
     private String principalCode;

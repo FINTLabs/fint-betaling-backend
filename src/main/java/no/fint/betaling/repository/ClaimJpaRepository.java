@@ -18,7 +18,7 @@ public interface ClaimJpaRepository extends JpaRepository<Claim, Long> {
     @Query("SELECT c FROM Claim c WHERE c.claimStatus IN :statuses")
     List<Claim> findByClaimStatusIn(@Param("statuses") ClaimStatus... statuses);
 
-    @Query("SELECT c FROM Claim c WHERE lower(c.customer.name) LIKE lower(concat('%', :name, '%'))")
+    @Query("SELECT c FROM Claim c WHERE lower(c.customerName) LIKE lower(concat('%', :name, '%'))")
     List<Claim> findByCustomerName(@Param("name") String name);
 
     @Query("SELECT COUNT(c) FROM Claim c WHERE c.claimStatus IN :statuses")
