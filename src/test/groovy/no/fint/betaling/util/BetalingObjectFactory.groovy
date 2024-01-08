@@ -8,6 +8,7 @@ import no.fint.model.resource.okonomi.faktura.FakturaResource
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.ThreadLocalRandom
 
 class BetalingObjectFactory {
@@ -29,8 +30,11 @@ class BetalingObjectFactory {
 
     static OrderItem newOrderItem() {
         return new OrderItem(
-                lineitem: newLineitem(),
                 description: 'Monkeyballs',
+                originalDescription: 'Monkeyballs Original',
+                originalItemPrice: 1000000,
+                itemCode: 'MBP',
+                itemUri: 'link.to.Item',
                 itemQuantity: 1
         )
     }
@@ -62,8 +66,8 @@ class BetalingObjectFactory {
                 invoiceNumbers: ['456'],
                 invoiceDate: LocalDate.parse('2019-11-10'),
                 paymentDueDate: LocalDate.parse('2019-11-17'),
-                createdDate: LocalDate.parse('2019-11-01'),
-                lastModifiedDate: LocalDate.parse('2019-11-05'),
+                createdDate: LocalDateTime.parse('2019-11-01T00:00:00'),
+                lastModifiedDate: LocalDateTime.parse('2019-11-05T00:00:00'),
                 creditNotes: [newCreditNote()],
                 amountDue: 500000,
                 originalAmountDue: order.sum(),
@@ -82,7 +86,7 @@ class BetalingObjectFactory {
     static CreditNote newCreditNote() {
         return new CreditNote(
                 id: '111',
-                date: LocalDate.parse('2019-11-12'),
+                date: LocalDateTime.parse('2019-12-11T00:00:00'),
                 amount: 500000,
                 comment: 'This is a comment'
         )

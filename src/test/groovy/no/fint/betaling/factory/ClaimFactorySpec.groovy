@@ -23,8 +23,8 @@ class ClaimFactorySpec extends Specification {
         def claims = claimFactory.createClaims(order)
 
         then:
-        claims.get(0).createdDate == LocalDate.now()
-        claims.get(0).lastModifiedDate == LocalDate.now()
+        claims.get(0).createdDate.toLocalDate() == LocalDate.now()
+        claims.get(0).lastModifiedDate.toLocalDate() == LocalDate.now()
         claims.get(0).originalAmountDue == 1000000
         claims.get(0).requestedNumberOfDaysToPaymentDeadline == '7'
         claims.get(0).customer.name == 'Ola Testesen'
