@@ -28,7 +28,7 @@ class ClaimControllerSpec extends Specification {
 
     def "Get all payments"() {
         given:
-        def claim = createClaim(123L, 'Testesen')
+        def claim = createClaim(123L)
 
         when:
         def response = controller.getAllClaims('', '', null)
@@ -51,7 +51,7 @@ class ClaimControllerSpec extends Specification {
 
     def "Get payment by name given lastname returns list of payments with matching lastname"() {
         given:
-        def claim = createClaim(123L, 'Testesen')
+        def claim = createClaim(123L)
 
         when:
         def response = controller.getClaimsByCustomerName('Testesen')
@@ -64,7 +64,7 @@ class ClaimControllerSpec extends Specification {
 
     def "Get payment by orderNumber given valid orderNumber returns list of payments with matching orderNumber"() {
         given:
-        def claim = createClaim(123L, 'Testesen')
+        def claim = createClaim(123L)
 
         when:
         def response = controller.getClaimsByOrderNumber(123L)
@@ -98,7 +98,7 @@ class ClaimControllerSpec extends Specification {
         response.getBody() == amountOfClaims
     }
 
-    private static Claim createClaim(long orderNumber, String lastName) {
-        return new Claim(customer: new Customer(name: lastName), orderNumber: orderNumber)
+    private static Claim createClaim(long orderNumber) {
+        return new Claim(orderNumber: orderNumber)
     }
 }

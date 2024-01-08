@@ -27,7 +27,7 @@ class ClaimFactorySpec extends Specification {
         claims.get(0).lastModifiedDate.toLocalDate() == LocalDate.now()
         claims.get(0).originalAmountDue == 1000000
         claims.get(0).requestedNumberOfDaysToPaymentDeadline == '7'
-        claims.get(0).customer.name == 'Ola Testesen'
+        claims.get(0).customerName == 'Ola Testesen'
         claims.get(0).createdByEmployeeNumber == '2001'
         claims.get(0).organisationUnit.name == 'HVS'
         claims.get(0).principalCode == 'tt0093780'

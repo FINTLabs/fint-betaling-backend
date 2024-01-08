@@ -5,6 +5,7 @@ import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.model.Customer
 import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
@@ -46,6 +47,8 @@ class ClaimServiceSpec extends Specification {
         given:
         def order = betalingObjectFactory.newOrder()
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
+        //claim.setCustomerName('Ola Testesen')
+
 
         when:
         def claims = claimService.storeClaims(order)
@@ -56,7 +59,7 @@ class ClaimServiceSpec extends Specification {
         claims.size() == 1
         claims.every { it.orderItems.size() == 1 }
         claims.every { it.orderNumber == 12345L }
-        claims.every { it.customer.name == 'Ola Testesen' }
+        claims.every { it.customerName == 'Ola Testesen' }
     }
 
     def "Given valid claims, send invoices and update claims"() {
