@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -19,13 +20,17 @@ public class Claim {
     @Column(name = "invoiceNumbers")
     private String invoiceNumbersCommaSeperated;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime lastModifiedDate;
+
+    @Temporal(TemporalType.DATE)
     private LocalDate invoiceDate;
 
+    @Temporal(TemporalType.DATE)
     private LocalDate paymentDueDate;
-
-    private LocalDate createdDate;
-
-    private LocalDate lastModifiedDate;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<CreditNote> creditNotes;

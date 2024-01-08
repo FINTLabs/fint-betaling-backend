@@ -2,9 +2,9 @@ create sequence orderitem_seq start with 1 increment by 50;
 create table claim
 (
     claim_status                                 smallint check (claim_status between 0 and 9),
-    created_date                                 date,
+    created_date                                 timestamp,
+    last_modified_date                           timestamp,
     invoice_date                                 date,
-    last_modified_date                           date,
     payment_due_date                             date,
     amount_due                                   bigint,
     order_number                                 bigint not null,
@@ -34,7 +34,7 @@ create table claim_order_items
 );
 create table creditnote
 (
-    date         date,
+    date         timestamp,
     amount       bigint,
     comment      varchar(255),
     id           varchar(255) not null,

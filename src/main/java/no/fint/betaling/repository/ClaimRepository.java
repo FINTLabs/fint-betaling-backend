@@ -6,12 +6,8 @@ import no.fint.betaling.model.ClaimStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -63,7 +59,7 @@ public class ClaimRepository {
         return claimJpaRepository.countByStatusAndDays(days, statuses);
     }
 
-    public List<Claim> getByDateAndSchoolAndStatus(Date date, String organisationNumber, ClaimStatus[] statuses) {
+    public List<Claim> getByDateAndSchoolAndStatus(LocalDateTime date, String organisationNumber, ClaimStatus[] statuses) {
         String orgNumber = StringUtils.hasText(organisationNumber) ? organisationNumber : null;
         List<ClaimStatus> statusList = (statuses != null && statuses.length > 0) ? Arrays.asList(statuses) : null;
         return claimJpaRepository.getByDateAndSchoolAndStatus(date, orgNumber, statusList);

@@ -1,12 +1,9 @@
 package no.fint.betaling.model;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -19,7 +16,8 @@ public class CreditNote {
     @Id
     private String id;
 
-    private LocalDate date;
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime date;
 
     private Long amount;
 

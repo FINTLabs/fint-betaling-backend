@@ -7,7 +7,7 @@ import no.fint.betaling.model.Order;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,8 +28,8 @@ public class ClaimFactory {
     private Claim createClaim(Order order, Customer customer) {
         Claim claim = new Claim();
         claim.setOrgId(orgId);
-        claim.setCreatedDate(LocalDate.now());
-        claim.setLastModifiedDate(LocalDate.now());
+        claim.setCreatedDate(LocalDateTime.now());
+        claim.setLastModifiedDate(LocalDateTime.now());
         claim.setOriginalAmountDue(order.sum());
         claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
         claim.setCustomer(customer);

@@ -8,6 +8,8 @@ import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import no.fint.model.resource.okonomi.faktura.FakturalinjeResource;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
@@ -35,7 +37,7 @@ public class InvoiceFactory {
 
         FakturagrunnlagResource invoice = new FakturagrunnlagResource();
         invoice.setFakturalinjer(invoiceLines);
-        invoice.setLeveringsdato(Date.from(claim.getCreatedDate().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        invoice.setLeveringsdato(startOfDayFrom(claim.getCreatedDate()));
         invoice.setNettobelop(claim.getOriginalAmountDue());
         invoice.setMottaker(personService.getFakturamottakerByPersonId(claim.getCustomer().getId()));
         invoice.addFakturautsteder(Link.with(claim.getPrincipalUri()));
@@ -45,5 +47,9 @@ public class InvoiceFactory {
         invoice.setOrdrenummer(identifikator);
 
         return invoice;
+    }
+
+    private static Date startOfDayFrom(LocalDateTime localDateTime) {
+        return Date.from(localDateTime.with(LocalTime.MIN).atZone(ZoneId.systemDefault()).toInstant());
     }
 }

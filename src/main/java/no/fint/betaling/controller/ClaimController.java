@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,8 +57,8 @@ public class ClaimController {
 
     @GetMapping
     public ResponseEntity<List<Claim>> getAllClaims(@RequestParam(required = false) String periodSelection,
-                                    @RequestParam(required = false) String schoolSelection,
-                                    @RequestParam(required = false) String[] status) {
+                                                    @RequestParam(required = false) String schoolSelection,
+                                                    @RequestParam(required = false) String[] status) {
 
         if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
         ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
@@ -83,7 +82,7 @@ public class ClaimController {
 
     @GetMapping("/count/status/{status}")
     public ResponseEntity<Integer> getCountByStatus(@PathVariable String[] status,
-                                @RequestParam(required = false) String days) {
+                                                    @RequestParam(required = false) String days) {
         return ResponseEntity.ok(claimService.countClaimsByStatus(toClaimStatus(status), days));
     }
 
@@ -93,7 +92,7 @@ public class ClaimController {
     @Deprecated
     @GetMapping("/count/by-status/{status}")
     public ResponseEntity<Integer> getCountByStatusOld(@PathVariable String[] status,
-                                   @RequestParam(required = false) String days) {
+                                                       @RequestParam(required = false) String days) {
         return ResponseEntity.ok(claimService.countClaimsByStatus(toClaimStatus(status), days));
     }
 

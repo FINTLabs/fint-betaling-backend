@@ -21,8 +21,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -275,7 +276,7 @@ public class ClaimService {
                 statuses);
     }
 
-    private Date claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+    private LocalDateTime claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.clear(Calendar.MINUTE);
@@ -296,6 +297,6 @@ public class ClaimService {
                 break;
         }
 
-        return period == ClaimsDatePeriod.ALL ? null : calendar.getTime();
+        return period == ClaimsDatePeriod.ALL ? null : LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
     }
 }
