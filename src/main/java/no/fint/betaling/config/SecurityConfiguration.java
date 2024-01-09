@@ -34,10 +34,8 @@ public class SecurityConfiguration {
 
         log.warn("Starting WITHOUT security. SecurityWebFilterChain disabled.");
 
-        return http.csrf()
-                .disable()
-                .httpBasic()
-                .disable()
+        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .build();
     }
 
@@ -51,8 +49,7 @@ public class SecurityConfiguration {
                         .anyExchange()
                         .authenticated())
                 .oauth2ResourceServer((resourceServer) -> resourceServer
-                        .jwt()
-                        .jwtAuthenticationConverter(new CustomUserConverter()));
+                        .jwt(jwtSpec -> jwtSpec.jwtAuthenticationConverter(new CustomUserConverter())));
         return http.build();
     }
 
