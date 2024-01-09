@@ -13,7 +13,6 @@ import no.fint.betaling.util.RestUtil;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,20 +38,24 @@ public class ClaimService {
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    @Autowired
-    private RestUtil restUtil;
+    private final RestUtil restUtil;
+    private final ClaimRepository claimRepository;
+    private final ClaimFactory claimFactory;
+    private final InvoiceFactory invoiceFactory;
+    private final FintClient fintClient;
 
-    @Autowired
-    private ClaimRepository claimRepository;
+    public ClaimService(RestUtil restUtil,
+                        ClaimRepository claimRepository,
+                        ClaimFactory claimFactory,
+                        InvoiceFactory invoiceFactory,
+                        FintClient fintClient) {
+        this.restUtil = restUtil;
+        this.claimRepository = claimRepository;
+        this.claimFactory = claimFactory;
+        this.invoiceFactory = invoiceFactory;
+        this.fintClient = fintClient;
+    }
 
-    @Autowired
-    private ClaimFactory claimFactory;
-
-    @Autowired
-    private InvoiceFactory invoiceFactory;
-
-    @Autowired
-    private FintClient fintClient;
 
     public List<Claim> storeClaims(Order order) {
         return claimFactory

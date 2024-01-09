@@ -1,11 +1,9 @@
 package no.fint.betaling.service
 
-
 import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.Customer
 import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
@@ -20,26 +18,22 @@ import spock.lang.Specification
 
 class ClaimServiceSpec extends Specification {
     ClaimService claimService
+    RestUtil restUtil
     ClaimRepository claimRepository
     ClaimFactory claimFactory
     InvoiceFactory invoiceFactory
-    RestUtil restUtil
-    BetalingObjectFactory betalingObjectFactory
     FintClient fintClient
+    BetalingObjectFactory betalingObjectFactory
 
     void setup() {
+        restUtil = Mock()
         claimRepository = Mock()
         claimFactory = Mock()
-        restUtil = Mock()
         invoiceFactory = Mock()
         fintClient = Mock()
 
-        claimService = new ClaimService(
-                restUtil: restUtil,
-                claimRepository: claimRepository,
-                claimFactory: claimFactory,
-                invoiceFactory: invoiceFactory,
-                fintClient: fintClient)
+        claimService = new ClaimService(restUtil, claimRepository, claimFactory, invoiceFactory, fintClient)
+
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -47,8 +41,6 @@ class ClaimServiceSpec extends Specification {
         given:
         def order = betalingObjectFactory.newOrder()
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-        //claim.setCustomerName('Ola Testesen')
-
 
         when:
         def claims = claimService.storeClaims(order)
