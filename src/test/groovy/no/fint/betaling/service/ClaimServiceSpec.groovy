@@ -78,8 +78,8 @@ class ClaimServiceSpec extends Specification {
                 .verify()
     }
 
-    @Ignore
-    def "Send claim as inovice returns status"() {
+
+//    def "Send claim as inovice returns status"() {
 //        given:
 //        def invoice = betalingObjectFactory.newFakturagrunnlag()
 //        def thisIsTheInvoice = betalingObjectFactory.newFaktura()
@@ -92,8 +92,8 @@ class ClaimServiceSpec extends Specification {
 //        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
 //        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
 //        1 * fintClient.setInvoiceUri(_) >> Optional.of('link.to.Location')
-//        //response.claimStatus == ClaimStatus.ACCEPTED.toString()
-    }
+//        response.claimStatus == ClaimStatus.ACCEPTED.toString()
+//    }
 
     @Ignore
     def "Update claims fetches invoices and updates claims"() {
@@ -123,8 +123,8 @@ class ClaimServiceSpec extends Specification {
         invoice.ordrenummer.identifikatorverdi == '12345'
     }
 
-    @Ignore("Must be rewritten from mongoDb to postgresql")
-    def "Update claim given valid invoice updates claim"() {
+//    @Ignore("Must be rewritten from mongoDb to postgresql")
+//    def "Update claim given valid invoice updates claim"() {
 //        given:
 //        def invoice = betalingObjectFactory.newFakturagrunnlag()
 //
@@ -133,34 +133,34 @@ class ClaimServiceSpec extends Specification {
 //
 //        then:
 //        1 * claimRepository.updateClaim(_ as Query, _ as Update)
-    }
+//    }
 
-    @Ignore("Must be rewritten from mongoDb to postgresql")
     def "Get all claims returns list"() {
-//        when:
-//        def claims = claimService.getClaims()
-//
-//        then:
-//        1 * claimRepository.getAll(_ as Query) >> [betalingObjectFactory.newClaim('12345', ClaimStatus.STORED), betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)]
-//        claims.size() == 2
+        when:
+        def claims = claimService.getClaims()
+
+        then:
+        1 * claimRepository.getAll() >> [betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED),
+                                         betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)]
+        claims.size() == 2
     }
 
-    @Ignore("Must be rewritten from mongoDb to postgresql")
-    def "Get claims by customer name returns list of claims matching name"() {
+//    @Ignore("Must be rewritten from mongoDb to postgresql")
+//    def "Get claims by customer name returns list of claims matching name"() {
 //        given:
-//        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
+//        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
 //
 //        when:
 //        def claims = claimService.getClaimsByCustomerName('Ola Testesen')
 //
 //        then:
-//        1 * claimRepository.getAll(_ as Query) >> [claim]
+//        1 * claimRepository.getAll() >> [claim]
 //        claims.size() == 1
-//        claims.get(0).customer.name == 'Ola Testesen'
-    }
+//        claims.get(0).customerName == 'Ola Testesen'
+//    }
 
-    @Ignore("Must be rewritten from mongoDb to postgresql")
-    def "Get claims given valid order number returns list of claims matching order number"() {
+//    @Ignore("Must be rewritten from mongoDb to postgresql")
+//    def "Get claims given valid order number returns list of claims matching order number"() {
 //        given:
 //        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
 //
@@ -171,10 +171,10 @@ class ClaimServiceSpec extends Specification {
 //        1 * claimRepository.getAll(_ as Query) >> [claim]
 //        claims.size() == 1
 //        claims.get(0).orderNumber == '12345'
-    }
+//    }
 
-    @Ignore("Must be rewritten from mongoDb to postgresql")
-    def 'Fetch links to Faktura for Fakturagrunnlag'() {
+//    @Ignore("Must be rewritten from mongoDb to postgresql")
+//    def 'Fetch links to Faktura for Fakturagrunnlag'() {
 //        given:
 //        def mapper = new ObjectMapper()
 //        def fakturagrunnlag = mapper.readValue(getClass().getResourceAsStream('/dummy_fakturagrunnlag.json'), FakturagrunnlagResource)
@@ -187,7 +187,7 @@ class ClaimServiceSpec extends Specification {
 //        1 * claimRepository.updateClaim(_ as Query,
 //                _/*{it.modifierOps['$set'].every { it.key ['invoiceUri', 'invoiceNumbers', 'invoiceDate', 'paymentDueDate', 'amountDue'] }}*/
 //        )
-    }
+//    }
 
     def "Get count of claims by status"() {
 

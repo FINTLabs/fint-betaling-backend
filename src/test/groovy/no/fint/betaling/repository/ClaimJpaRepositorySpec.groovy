@@ -12,11 +12,8 @@ import java.time.LocalDate
 @DataJpaTest
 class ClaimJpaRepositorySpec extends Specification {
 
-    @Autowired
-    ClaimJpaRepository claimJpaRepository
-
     def setupSpec() {
-        // Initialisering av testdata kan gjøres her, hvis nødvendig
+        claimJpaRepository = Mock(ClaimJpaRepository)
     }
 
     def "should find highest order number"() {
