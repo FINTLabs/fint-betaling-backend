@@ -1,0 +1,53 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Application
+metadata:
+  name: fint-betaling-backend
+  namespace: fintlabs-no
+  labels:
+    app.kubernetes.io/name: fint-betaling-backend
+    app.kubernetes.io/instance: fint-betaling-backend_fintlabs_no
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: fint-core
+    fintlabs.no/team: core
+    fintlabs.no/org-id: fintlabs.no
+spec:
+  port: 8080
+  orgId: fintlabs.no
+  image: ghcr.io/fintlabs/fint-betaling-backend:latest
+  env:
+    - name: fint.betaling.principal-matching-strategy
+      value: byOrgnummer
+    - name: fint.oauth.enabled
+      value: 'true'
+    - name: fint.client.enabled
+      value: 'true'
+    - name: fint.client.base-url
+      value: https://api.felleskomponent.no
+    - name: fint.betaling.client-name
+      value: FINT-Betaling
+    - name: fint.betaling.date-range
+      value: 7, 14, 30
+    - name: fint.betaling.invoice-update-cron
+      value: 0 30 16 ? * MON-FRI
+    - name: fint.betaling.endpoints.environment
+      value: api
+    - name: fint.betaling.demo
+      value: 'false'
+  onePassword:
+    itemPath: test
+  database:
+    database: fint-core
+  url:
+    hostname: betaling-org.felleskomponent.no
+    basePath: /api
+  ingress:
+    enabled: true
+    basePath: /api
+  resources:
+    limits:
+      memory: 14Gi
+      cpu: '2'
+    requests:
+      memory: 6Gi
+      cpu: 250m

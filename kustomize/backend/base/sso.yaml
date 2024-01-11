@@ -1,0 +1,17 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: FLAISSso
+metadata:
+  name: fint-betaling-backend
+  labels:
+    app.kubernetes.io/name: fint-betaling-backend
+    app.kubernetes.io/instance: fint-betaling-backend_fintlabs_no
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: sso
+    app.kubernetes.io/part-of: fint-core
+    fintlabs.no/team: core
+    fintlabs.no/org-id: fintlabs.no
+spec:
+  basePath: /
+  upnClaim: sub
+  hostname: kunde-beta.felleskomponent.no
+  loggingLevel: debug
