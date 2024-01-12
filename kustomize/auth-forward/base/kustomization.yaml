@@ -1,8 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - ingress-route.yaml
-  - deployment.yaml
-  - middleware.yaml
-  - oauthclient.yaml
-  - service.yaml
