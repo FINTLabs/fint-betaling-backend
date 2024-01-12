@@ -3,8 +3,7 @@ kind: Application
 metadata:
   name: fint-betaling-backend
   labels:
-    app.kubernetes.io/instance: fint-betaling-backend_fintlabs_no
-    fintlabs.no/org-id: fintlabs.no
+    app.kubernetes.io/component: backend
 spec:
   port: 8080
   orgId: fintlabs.no
