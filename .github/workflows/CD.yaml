@@ -7,7 +7,6 @@ on:
   repository_dispatch:
     types: [ trigger-cd ]
 
-
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -57,28 +56,28 @@ jobs:
     strategy:
       matrix:
         org:
-          - default
-        #          - agderfk-no
-        #          - innlandetfylke-no
-        #          - mrfylke-no
-        #          - nfk-no
-        #          - tffk-no
-        #          - trondelagfylke-no
-        #          - ude-oslo-kommune-no
-        #          - viken-no
-        #          - vlfk-no
-        #          - vtfk-no
-        #          - ofk-no
-        #          - bfk-no
-        #          - afk-no
-        #          - vestfoldfylke-no
-        #          - telemarkfylke-no
-        #          - tromsfylke-no
-        #          - ffk-no
+          - fintlabs-no
+#          - agderfk-no
+#          - innlandetfylke-no
+#          - mrfylke-no
+#          - nfk-no
+#          - tffk-no
+#          - trondelagfylke-no
+#          - ude-oslo-kommune-no
+#          - viken-no
+#          - vlfk-no
+#          - vtfk-no
+#          - ofk-no
+#          - bfk-no
+#          - afk-no
+#          - vestfoldfylke-no
+#          - telemarkfylke-no
+#          - tromsfylke-no
+#          - ffk-no
         cluster:
-          #          - aks-alpha-fint-2021-11-18
-          # - aks-beta-fint-2021-11-23
-          #          - aks-api-fint-2022-02-08
+#          - aks-alpha-fint-2021-11-18
+#          - aks-beta-fint-2021-11-23
+#          - aks-api-fint-2022-02-08
           - aks-pwf-fint-2021-10-20
 
     steps:
