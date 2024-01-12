@@ -7,7 +7,6 @@ metadata:
     app.kubernetes.io/component: sso
     fintlabs.no/org-id: fintlabs.no
 spec:
-  basePath: /
-  upnClaim: sub
-  hostname: kunde-beta.felleskomponent.no
+  basePath: /api
+  hostname: betaling-replace.felleskomponent.no
   loggingLevel: debug
