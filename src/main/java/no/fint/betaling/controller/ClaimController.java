@@ -6,6 +6,7 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import no.fint.betaling.service.ClaimService;
+import no.fint.betaling.service.FetchClaims;
 import no.fint.betaling.service.ScheduleService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -26,9 +27,12 @@ public class ClaimController {
 
     private ScheduleService scheduleService;
 
-    public ClaimController(ClaimService claimService, ScheduleService scheduleService) {
+    private FetchClaims fetchClaims;
+
+    public ClaimController(ClaimService claimService, ScheduleService scheduleService, FetchClaims fetchClaims) {
         this.claimService = claimService;
         this.scheduleService = scheduleService;
+        this.fetchClaims = fetchClaims;
     }
 
     @PostMapping
@@ -62,22 +66,22 @@ public class ClaimController {
 
         if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
         ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-        return ResponseEntity.ok(claimService.getClaims(period, schoolSelection, toClaimStatus(status)));
+        return ResponseEntity.ok(fetchClaims.getClaims(period, schoolSelection, toClaimStatus(status)));
     }
 
     @GetMapping("/name/{name}")
     public ResponseEntity<List<Claim>> getClaimsByCustomerName(@PathVariable String name) {
-        return ResponseEntity.ok(claimService.getClaimsByCustomerName(name));
+        return ResponseEntity.ok(fetchClaims.getClaimsByCustomerName(name));
     }
 
     @GetMapping("/order-number/{order-number}")
     public ResponseEntity<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
-        return ResponseEntity.ok(claimService.getClaimByOrderNumber(orderNumber));
+        return ResponseEntity.ok(fetchClaims.getClaimByOrderNumber(orderNumber));
     }
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Claim>> getClaimsByStatus(@PathVariable String[] status) {
-        return ResponseEntity.ok(claimService.getClaimsByStatus(toClaimStatus(status)));
+        return ResponseEntity.ok(fetchClaims.getClaimsByStatus(toClaimStatus(status)));
     }
 
     @GetMapping("/count/status/{status}")

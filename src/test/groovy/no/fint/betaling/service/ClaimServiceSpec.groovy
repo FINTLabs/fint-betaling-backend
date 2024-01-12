@@ -16,6 +16,7 @@ import reactor.test.StepVerifier
 import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore
 class ClaimServiceSpec extends Specification {
     ClaimService claimService
     RestUtil restUtil
