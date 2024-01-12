@@ -9,11 +9,11 @@ import java.util.List;
 
 import static no.fint.betaling.service.ClaimService.claimsDatePeriodToTimestamp;
 
-public class FetchClaims {
+public class ClaimFetcherService {
 
     private final ClaimRepository claimRepository;
 
-    public FetchClaims(ClaimRepository claimRepository) {
+    public ClaimFetcherService(ClaimRepository claimRepository) {
         this.claimRepository = claimRepository;
     }
 

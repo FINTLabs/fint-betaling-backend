@@ -43,20 +43,20 @@ public class ClaimService {
     private final ClaimFactory claimFactory;
     private final InvoiceFactory invoiceFactory;
     private final FintClient fintClient;
-    private final FetchClaims fetchClaims;
+    private final ClaimFetcherService claimFetcherService;
 
     public ClaimService(RestUtil restUtil,
                         ClaimRepository claimRepository,
                         ClaimFactory claimFactory,
                         InvoiceFactory invoiceFactory,
                         FintClient fintClient,
-                        FetchClaims fetchClaims) {
+                        ClaimFetcherService claimFetcherService) {
         this.restUtil = restUtil;
         this.claimRepository = claimRepository;
         this.claimFactory = claimFactory;
         this.invoiceFactory = invoiceFactory;
         this.fintClient = fintClient;
-        this.fetchClaims = fetchClaims;
+        this.claimFetcherService = claimFetcherService;
     }
 
 
@@ -69,7 +69,7 @@ public class ClaimService {
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
-        return Flux.fromIterable(fetchClaims.getUnsentClaims())
+        return Flux.fromIterable(claimFetcherService.getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .flatMap(this::checkClaimStatus)
                 .onErrorResume(throwable -> {
@@ -101,7 +101,7 @@ public class ClaimService {
     }
 
     public void updateSentClaims() {
-        fetchClaims.getSentClaims().forEach(claim -> {
+        claimFetcherService.getSentClaims().forEach(claim -> {
             restUtil.head(claim.getInvoiceUri())
                     .doOnNext(headers -> {
                         if (headers.getLocation() != null) {
@@ -154,7 +154,7 @@ public class ClaimService {
 
     public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
-        fetchClaims.getAcceptedClaims().forEach(claim -> {
+        claimFetcherService.getAcceptedClaims().forEach(claim -> {
 
             restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                     .doOnNext(fakturagrunnlagResource -> {
@@ -229,7 +229,7 @@ public class ClaimService {
     }
 
     public void cancelClaim(long orderNumber) {
-        Claim claim = fetchClaims.getClaimByOrderNumber(orderNumber);
+        Claim claim = claimFetcherService.getClaimByOrderNumber(orderNumber);
 
         if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
             claim.setClaimStatus(ClaimStatus.CANCELLED);
