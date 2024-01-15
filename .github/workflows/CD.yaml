@@ -103,7 +103,7 @@ jobs:
         uses: azure/k8s-bake@v2.4
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: 'kustomize/backend/overlays/demo-pwf'
+          kustomizationPath: 'kustomize/backend/overlays/${{ steps.environment.outputs.result }}/${{ matrix.org }}''
 
       - uses: azure/login@v1
         with:

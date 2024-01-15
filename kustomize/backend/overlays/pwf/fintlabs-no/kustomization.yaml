@@ -4,12 +4,11 @@ resources:
   - deployment.yaml
   - ingress-route.yaml
   - service.yaml
-namespace: default
+namespace: fintlabs-no
 commonLabels:
   app.kubernetes.io/name: fint-betaling-backend-demo
-  app.kubernetes.io/instance: fint-betaling-backend-demo
+  app.kubernetes.io/instance: fint-betaling-backend_fintlabs-no
   app.kubernetes.io/version: "latest"
-  app.kubernetes.io/managed-by: "ga"
   app.kubernetes.io/component: backend
   app.kubernetes.io/part-of: fint-betaling
   fintlabs.no/team: core
