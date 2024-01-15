@@ -4,6 +4,7 @@ resources:
   - deployment.yaml
   - ingress-route.yaml
   - service.yaml
+  - onepassword.yaml
 namespace: fintlabs-no
 commonLabels:
   app.kubernetes.io/name: fint-betaling-backend-demo
