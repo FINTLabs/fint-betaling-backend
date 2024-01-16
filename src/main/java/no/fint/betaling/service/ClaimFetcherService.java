@@ -17,7 +17,7 @@ public class ClaimFetcherService {
         this.claimRepository = claimRepository;
     }
 
-    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+    public List<Claim> getClaimsByPeriodAndOrganisationnumberAndStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
         return claimRepository.getByDateAndSchoolAndStatus(
                 claimsDatePeriodToTimestamp(period),
                 organisationNumber,

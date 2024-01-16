@@ -66,7 +66,7 @@ public class ClaimController {
 
         if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
         ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-        return ResponseEntity.ok(claimFetcherService.getClaims(period, schoolSelection, toClaimStatus(status)));
+        return ResponseEntity.ok(claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, schoolSelection, toClaimStatus(status)));
     }
 
     @GetMapping("/name/{name}")

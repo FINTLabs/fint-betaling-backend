@@ -4,11 +4,13 @@ import no.fint.betaling.factory.ClaimFactory
 import no.fint.betaling.factory.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.model.Order
 import no.fint.betaling.repository.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.betaling.util.FintClient
 import no.fint.betaling.util.RestUtil
+import no.fint.model.felles.kompleksedatatyper.Periode
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.http.HttpHeaders
 import reactor.core.publisher.Mono
@@ -16,7 +18,8 @@ import reactor.test.StepVerifier
 import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore
+import java.time.LocalDate
+
 class ClaimServiceSpec extends Specification {
     ClaimService claimService
     RestUtil restUtil
@@ -25,6 +28,7 @@ class ClaimServiceSpec extends Specification {
     InvoiceFactory invoiceFactory
     FintClient fintClient
     BetalingObjectFactory betalingObjectFactory
+    ClaimFetcherService claimFetcherService
 
     void setup() {
         restUtil = Mock()
@@ -32,8 +36,10 @@ class ClaimServiceSpec extends Specification {
         claimFactory = Mock()
         invoiceFactory = Mock()
         fintClient = Mock()
+        claimFetcherService = Mock()
 
-        claimService = new ClaimService(restUtil, claimRepository, claimFactory, invoiceFactory, fintClient)
+        claimService = new ClaimService(restUtil, claimRepository, claimFactory, invoiceFactory, fintClient, claimFetcherService)
+        claimFetcherService = new ClaimFetcherService(claimRepository)
 
         betalingObjectFactory = new BetalingObjectFactory()
     }
@@ -137,12 +143,16 @@ class ClaimServiceSpec extends Specification {
 //    }
 
     def "Get all claims returns list"() {
+        given:
+        String periodSelection = '2023-03-30-2024-03-30'
+        def period = ClaimsDatePeriod.ALL
+        1 * claimRepository.getByDateAndSchoolAndStatus(_, _, _) >> [betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED),
+                                                                     betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)]
+
         when:
-        def claims = claimService.getClaims()
+        def claims = claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, '12345', [ClaimStatus.STORED, ClaimStatus.SENT] as ClaimStatus[])
 
         then:
-        1 * claimRepository.getAll() >> [betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED),
-                                         betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)]
         claims.size() == 2
     }
 
