@@ -55,15 +55,17 @@ jobs:
       packages: write
     strategy:
       matrix:
-#        org:
+        org:
+          - fintlabs-no
 #          - ofk-no
 #          - bfk-no
 #          - afk-no
-#        cluster:
+        cluster:
 #          - aks-api-fint-2022-02-08
-        include:
-          - org: fintlabs-no
-            cluster: aks-beta-fint-2021-11-23
+          - aks-beta-fint-2021-11-23
+#        include:
+#          - org: fintlabs-no
+#            cluster: aks-beta-fint-2021-11-23
 
     steps:
       - name: Checkout repository
