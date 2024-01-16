@@ -32,11 +32,11 @@ spec:
             - { name: fint.betaling.default-org-id, value: "pwf.no" }
             - { name: fint.betaling.default-school-org-id, value: "970123458" }
             - { name: fint.betaling.date-range, value: "7, 14, 30" }
-            - { name: fint.betaling.demo, value: "true" }
             - { name: fint.betaling.demo-user-employeeid, value: "100006" }
+            - { name: fint.betaling.demo, value: "true" }
             - { name: fint.betaling.demo-user-org-id, value: "970123458" }
             - { name: fint.betaling.invoice-update-cron, value: "0 0 0 31 2 ?" }
-            - { name: fint.betaling.endpoints.environment, value: "play-with-fint" }
+            - { name: fint.betaling.endpoints.environment, value: "beta" }
             - { name: spring.datasource.url, valueFrom: { secretKeyRef: { name: fint-betaling-backend, key: fint.database.url } } }
             - { name: spring.datasource.username, valueFrom: { secretKeyRef: { name: fint-betaling-backend, key: fint.database.username } } }
             - { name: spring.datasource.passsword, valueFrom: { secretKeyRef: { name: fint-betaling-backend, key: fint.database.password } } }
