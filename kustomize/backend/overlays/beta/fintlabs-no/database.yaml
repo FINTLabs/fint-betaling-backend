@@ -9,6 +9,6 @@ metadata:
     app.kubernetes.io/component: backend
     app.kubernetes.io/part-of: fint-betaling
     fintlabs.no/team: core
-    fintlabs.no/org-id: fintlabs-no
+    fintlabs.no/org-id: fintlabs.no
 spec:
   database: fint-core

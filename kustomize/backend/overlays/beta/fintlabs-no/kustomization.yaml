@@ -4,7 +4,6 @@ resources:
   - deployment.yaml
   - ingress-route.yaml
   - service.yaml
-  - onepassword.yaml
   - database.yaml
 namespace: fintlabs-no
 commonLabels:
