@@ -37,7 +37,7 @@ spec:
             - { name: fint.betaling.demo-user-org-id, value: "970123458" }
             - { name: fint.betaling.invoice-update-cron, value: "0 0 0 31 2 ?" }
             - { name: fint.betaling.endpoints.environment, value: "play-with-fint" }
-#            - { name: spring.datasource.url, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.url } } }
-#            - { name: spring.datasource.username, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.username } } }
-#            - { name: spring.datasource.passsword, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.password } } }
-#            - { name: spring.datasource.hikari.schema, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.username } } }
+            - { name: spring.datasource.url, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.url } } }
+            - { name: spring.datasource.username, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.username } } }
+            - { name: spring.datasource.passsword, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.password } } }
+            - { name: spring.datasource.hikari.schema, valueFrom: { secretKeyRef: { name: fint-betaling-demo, key: database.username } } }
