@@ -20,8 +20,3 @@ spring:
   flyway:
     locations: classpath:db/migration/
     lock-retry-count: 300
-
-logging:
-  level:
-    root: debug
-    no.fint: debug
