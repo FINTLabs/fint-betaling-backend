@@ -23,4 +23,5 @@ spring:
 
 logging:
   level:
+    root: debug
     no.fint: debug
