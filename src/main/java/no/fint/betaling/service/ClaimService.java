@@ -43,17 +43,20 @@ public class ClaimService {
     private final ClaimFactory claimFactory;
     private final InvoiceFactory invoiceFactory;
     private final FintClient fintClient;
+    private final ClaimFetcherService claimFetcherService;
 
     public ClaimService(RestUtil restUtil,
                         ClaimRepository claimRepository,
                         ClaimFactory claimFactory,
                         InvoiceFactory invoiceFactory,
-                        FintClient fintClient) {
+                        FintClient fintClient,
+                        ClaimFetcherService claimFetcherService) {
         this.restUtil = restUtil;
         this.claimRepository = claimRepository;
         this.claimFactory = claimFactory;
         this.invoiceFactory = invoiceFactory;
         this.fintClient = fintClient;
+        this.claimFetcherService = claimFetcherService;
     }
 
 
@@ -66,7 +69,7 @@ public class ClaimService {
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
-        return Flux.fromIterable(getUnsentClaims())
+        return Flux.fromIterable(claimFetcherService.getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
                 .flatMap(this::checkClaimStatus)
                 .onErrorResume(throwable -> {
@@ -98,7 +101,7 @@ public class ClaimService {
     }
 
     public void updateSentClaims() {
-        getSentClaims().forEach(claim -> {
+        claimFetcherService.getSentClaims().forEach(claim -> {
             restUtil.head(claim.getInvoiceUri())
                     .doOnNext(headers -> {
                         if (headers.getLocation() != null) {
@@ -130,7 +133,6 @@ public class ClaimService {
     }
 
     private void setClaimStatusFromFint(Claim claim) {
-
         restUtil.get(String.class, claim.getInvoiceUri())
                 .flatMap(result -> {
                     log.error("Unexpected result! {}", result);
@@ -152,7 +154,7 @@ public class ClaimService {
 
     public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
-        getAcceptedClaims().forEach(claim -> {
+        claimFetcherService.getAcceptedClaims().forEach(claim -> {
 
             restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                     .doOnNext(fakturagrunnlagResource -> {
@@ -219,41 +221,6 @@ public class ClaimService {
         claimRepository.save(claim);
     }
 
-    public List<Claim> getClaims() {
-        return claimRepository.getAll();
-    }
-
-    private List<Claim> getAcceptedClaims() {
-        return claimRepository.get(
-                ClaimStatus.ACCEPTED,
-                ClaimStatus.ISSUED,
-                // ClaimStatus.PAID,  // TODO Used to be workaround for issue with Visma Fakturering
-                ClaimStatus.UPDATE_ERROR);
-    }
-
-    private List<Claim> getSentClaims() {
-        return claimRepository.get(
-                ClaimStatus.SENT);
-    }
-
-    private List<Claim> getUnsentClaims() {
-        return claimRepository.get(
-                ClaimStatus.STORED,
-                ClaimStatus.SEND_ERROR);
-    }
-
-    public List<Claim> getClaimsByCustomerName(String name) {
-        return claimRepository.getByCustomerName(name);
-    }
-
-    public Claim getClaimByOrderNumber(long orderNumber) {
-        return claimRepository.get(orderNumber);
-    }
-
-    public List<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
-        return claimRepository.get(statuses);
-    }
-
     public int countClaimsByStatus(ClaimStatus[] statuses, String days) {
         if (StringUtils.isNotBlank(days)) {
             return claimRepository.countByStatusAndDays(Long.parseLong(days), statuses);
@@ -262,7 +229,7 @@ public class ClaimService {
     }
 
     public void cancelClaim(long orderNumber) {
-        Claim claim = getClaimByOrderNumber(orderNumber);
+        Claim claim = claimFetcherService.getClaimByOrderNumber(orderNumber);
 
         if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
             claim.setClaimStatus(ClaimStatus.CANCELLED);
@@ -272,14 +239,7 @@ public class ClaimService {
         }
     }
 
-    public List<Claim> getClaims(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
-        return claimRepository.getByDateAndSchoolAndStatus(
-                claimsDatePeriodToTimestamp(period),
-                organisationNumber,
-                statuses);
-    }
-
-    private LocalDateTime claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+    public static LocalDateTime claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.clear(Calendar.MINUTE);
