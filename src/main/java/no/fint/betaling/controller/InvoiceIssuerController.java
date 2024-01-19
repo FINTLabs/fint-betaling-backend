@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/principal")
+@RequestMapping(value = "/principal")
 public class InvoiceIssuerController {
 
     private final InvoiceIssuerService invoiceIssuerService;

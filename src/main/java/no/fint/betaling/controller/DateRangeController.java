@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Setter
 @RestController
-@RequestMapping(value = "/api/date-range")
+@RequestMapping(value = "/date-range")
 public class DateRangeController {
 
     @Value("${fint.betaling.date-range:7, 14, 30}")

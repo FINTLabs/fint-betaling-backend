@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 import java.net.URISyntaxException;
 
 @RestController
-@RequestMapping(value = "/api/me")
+@RequestMapping(value = "/me")
 @Slf4j
 public class UserController {
 
@@ -77,7 +77,7 @@ public class UserController {
                 });
     }
 
-    @GetMapping("ping")
+    @GetMapping("/ping")
     public ResponseEntity<String> ping() throws URISyntaxException {
         return ResponseEntity.ok("Greetings from FINTLabs :)");
     }

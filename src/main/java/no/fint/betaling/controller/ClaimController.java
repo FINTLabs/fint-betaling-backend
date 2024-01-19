@@ -20,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/claim")
+@RequestMapping(value = "/claim")
 public class ClaimController {
 
     private ClaimService claimService;

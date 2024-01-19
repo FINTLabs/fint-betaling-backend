@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/group")
+@RequestMapping(value = "/group")
 public class GroupController {
 
     private final GroupService groupService;

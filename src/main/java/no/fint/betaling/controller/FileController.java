@@ -16,7 +16,7 @@ import java.util.Collections;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/file")
+@RequestMapping(value = "/file")
 public class FileController {
 
     private FileService fileService;

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collection;
 
 @RestController
-@RequestMapping(value = "/api/mva-code")
+@RequestMapping(value = "/mva-code")
 public class TaxcodeController {
 
     private TaxcodeRepository repository;
