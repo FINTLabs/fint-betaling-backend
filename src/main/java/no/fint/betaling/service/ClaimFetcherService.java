@@ -4,11 +4,13 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.repository.ClaimRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 import static no.fint.betaling.service.ClaimService.claimsDatePeriodToTimestamp;
 
+@Service
 public class ClaimFetcherService {
 
     private final ClaimRepository claimRepository;
