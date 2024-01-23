@@ -9,7 +9,8 @@ import lombok.Data;
 public class OrderItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orderitem_sequence_generator")
+    @SequenceGenerator(name = "orderitem_sequence_generator", sequenceName = "orderitem_seq", allocationSize = 1)
     private long id;
 
     private String description;
@@ -31,4 +32,8 @@ public class OrderItem {
     public Long sum() {
         return itemPrice == null ? itemQuantity * originalItemPrice : itemQuantity * itemPrice;
     }
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "claim_id")
+    private Claim claim;
 }

@@ -22,4 +22,8 @@ public class CreditNote {
     private Long amount;
 
     private String comment;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "claim_id")
+    private Claim claim;
 }

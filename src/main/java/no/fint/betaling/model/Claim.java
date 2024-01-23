@@ -32,7 +32,7 @@ public class Claim {
     @Temporal(TemporalType.DATE)
     private LocalDate paymentDueDate;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<CreditNote> creditNotes;
 
     private Long amountDue;
@@ -48,6 +48,7 @@ public class Claim {
     private String createdByEmployeeNumber;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "organisationNumber")
     private Organisation organisationUnit;
 
     private String principalCode;
@@ -56,7 +57,7 @@ public class Claim {
 
     private String invoiceUri;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<OrderItem> orderItems;
 
     private ClaimStatus claimStatus;
