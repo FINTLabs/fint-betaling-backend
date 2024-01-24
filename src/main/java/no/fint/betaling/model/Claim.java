@@ -32,9 +32,6 @@ public class Claim {
     @Temporal(TemporalType.DATE)
     private LocalDate paymentDueDate;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
-    private List<CreditNote> creditNotes;
-
     private Long amountDue;
 
     private Long originalAmountDue;

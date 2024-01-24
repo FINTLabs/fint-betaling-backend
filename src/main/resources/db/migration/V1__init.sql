@@ -29,17 +29,17 @@ create table claim
     requested_number_of_days_to_payment_deadline varchar(255),
     status_message                               varchar(255)
 );
-create table creditnote
-(
-    id           varchar(255) not null primary key,
-    amount       bigint,
-    comment      varchar(255),
-    date         timestamp(6),
-    order_number varchar(255),
-    claim_id     bigint
-        constraint fknvqiliucjt9r4mj1hug9w973x
-            references claim
-);
+-- create table creditnote
+-- (
+--     id           varchar(255) not null primary key,
+--     amount       bigint,
+--     comment      varchar(255),
+--     date         timestamp(6),
+--     order_number varchar(255),
+--     claim_id     bigint
+--         constraint fknvqiliucjt9r4mj1hug9w973x
+--             references claim
+-- );
 create table orderitem
 (
     id                   bigint not null primary key,
