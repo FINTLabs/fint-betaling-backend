@@ -44,7 +44,7 @@ public class Claim {
 
     private String createdByEmployeeNumber;
 
-    @ManyToOne()
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "organisationNumber")
     private Organisation organisationUnit;
 
@@ -54,7 +54,7 @@ public class Claim {
 
     private String invoiceUri;
 
-    @OneToMany(mappedBy = "claim")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "claim")
     private List<OrderItem> orderItems;
 
     private ClaimStatus claimStatus;

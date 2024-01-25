@@ -33,7 +33,7 @@ public class OrderItem {
         return itemPrice == null ? itemQuantity * originalItemPrice : itemQuantity * itemPrice;
     }
 
-    @ManyToOne()
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "claim_id")
     private Claim claim;
 }
