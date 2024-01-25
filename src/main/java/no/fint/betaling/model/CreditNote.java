@@ -23,7 +23,7 @@ public class CreditNote {
 
     private String comment;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     @JoinColumn(name = "claim_id")
     private Claim claim;
 }

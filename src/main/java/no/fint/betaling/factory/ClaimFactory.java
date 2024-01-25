@@ -1,9 +1,7 @@
 package no.fint.betaling.factory;
 
-import no.fint.betaling.model.Claim;
-import no.fint.betaling.model.ClaimStatus;
-import no.fint.betaling.model.Customer;
-import no.fint.betaling.model.Order;
+import no.fint.betaling.model.*;
+import no.fint.betaling.util.CloneUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +24,9 @@ public class ClaimFactory {
     }
 
     private Claim createClaim(Order order, Customer customer) {
+
+        List<OrderItem> clonedOrderItems = order.getOrderItems().stream().map(CloneUtil::cloneObject).toList();
+
         Claim claim = new Claim();
         claim.setOrgId(orgId);
         claim.setCreatedDate(LocalDateTime.now());
@@ -38,8 +39,11 @@ public class ClaimFactory {
         claim.setOrganisationUnit(order.getOrganisationUnit());
         claim.setPrincipalCode(order.getPrincipal().getCode());
         claim.setPrincipalUri(order.getPrincipal().getUri());
-        claim.setOrderItems(order.getOrderItems());
         claim.setClaimStatus(ClaimStatus.STORED);
+
+        claim.setOrderItems(order.getOrderItems());
+        clonedOrderItems.forEach(orderItem -> orderItem.setClaim(claim));
+
         return claim;
     }
 }
