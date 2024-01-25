@@ -13,7 +13,7 @@ import java.util.Collection;
 @RequestMapping(value = "/mva-code")
 public class TaxcodeController {
 
-    private TaxcodeRepository repository;
+    private final TaxcodeRepository repository;
 
     public TaxcodeController(TaxcodeRepository repository) {
         this.repository = repository;

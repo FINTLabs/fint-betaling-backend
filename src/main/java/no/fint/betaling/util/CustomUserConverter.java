@@ -1,4 +1,4 @@
-package no.fint.betaling;
+package no.fint.betaling.util;
 
 import no.vigoiks.resourceserver.security.FintJwtDefaultConverter;
 

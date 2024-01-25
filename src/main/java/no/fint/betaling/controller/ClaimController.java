@@ -23,11 +23,11 @@ import java.util.List;
 @RequestMapping(value = "/claim")
 public class ClaimController {
 
-    private ClaimService claimService;
+    private final ClaimService claimService;
 
-    private ScheduleService scheduleService;
+    private final ScheduleService scheduleService;
 
-    private ClaimFetcherService claimFetcherService;
+    private final ClaimFetcherService claimFetcherService;
 
     public ClaimController(ClaimService claimService, ScheduleService scheduleService, ClaimFetcherService claimFetcherService) {
         this.claimService = claimService;

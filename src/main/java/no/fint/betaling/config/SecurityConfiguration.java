@@ -1,7 +1,7 @@
 package no.fint.betaling.config;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.CustomUserConverter;
+import no.fint.betaling.util.CustomUserConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;

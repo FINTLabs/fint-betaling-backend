@@ -19,9 +19,9 @@ import java.util.Collections;
 @RequestMapping(value = "/file")
 public class FileController {
 
-    private FileService fileService;
+    private final FileService fileService;
 
-    private GroupService groupService;
+    private final GroupService groupService;
 
     public FileController(FileService fileService, GroupService groupService) {
         this.fileService = fileService;
