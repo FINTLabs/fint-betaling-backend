@@ -54,7 +54,7 @@ public class Claim {
 
     private String invoiceUri;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "claim")
     private List<OrderItem> orderItems;
 
     private ClaimStatus claimStatus;
