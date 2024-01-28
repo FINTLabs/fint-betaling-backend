@@ -1,4 +1,5 @@
 create sequence orderitem_seq start with 1 increment by 1;
+create sequence claim_seq start with 10000 increment by 1;
 create table organisation
 (
     organisation_number varchar(255) not null primary key,

@@ -15,6 +15,8 @@ public class Claim {
     private String orgId;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "claim_sequence_generator")
+    @SequenceGenerator(name = "claim_sequence_generator", sequenceName = "claim_seq", allocationSize = 1, initialValue = 10000)
     private long orderNumber;
 
     @Column(name = "invoiceNumbers")

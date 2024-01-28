@@ -12,9 +12,6 @@ import java.util.Optional;
 
 public interface ClaimJpaRepository extends JpaRepository<Claim, Long> {
 
-    @Query("SELECT MAX(c.orderNumber) FROM Claim c")
-    Optional<Long> findHighestOrderNumber();
-
     @Query("SELECT c FROM Claim c WHERE c.claimStatus IN :statuses")
     List<Claim> findByClaimStatusIn(@Param("statuses") ClaimStatus... statuses);
 

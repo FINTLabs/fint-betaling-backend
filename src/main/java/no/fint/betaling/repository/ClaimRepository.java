@@ -16,15 +16,8 @@ public class ClaimRepository {
 
     private final ClaimJpaRepository claimJpaRepository;
 
-    private final AtomicLong orderNumberCounter = new AtomicLong(100000L);
-
     public ClaimRepository(ClaimJpaRepository claimJpaRepository) {
         this.claimJpaRepository = claimJpaRepository;
-    }
-
-    @PostConstruct
-    public void setHighestOrderNumber() {
-        orderNumberCounter.set(Long.parseLong(claimJpaRepository.findHighestOrderNumber().orElse(10000L).toString()));
     }
 
     public Claim get(long orderNumber) {
@@ -37,7 +30,6 @@ public class ClaimRepository {
     }
 
     public Claim storeClaim(Claim claim) {
-        claim.setOrderNumber(orderNumberCounter.incrementAndGet());
         claim.setTimestamp(System.currentTimeMillis());
         claimJpaRepository.save(claim);
         return claim;
