@@ -28,9 +28,9 @@ class ClaimRepositorySpec extends Specification {
 
         then:
         1 * claimJpaRepository.save(claim)
-        claim.orderNumber == 100001L
     }
 
+    @Ignore("Changed into using sequence")
     def "Get highest order number"() {
         when:
         claimRepository.setHighestOrderNumber()
@@ -40,6 +40,7 @@ class ClaimRepositorySpec extends Specification {
         claimRepository.orderNumberCounter.get() == 5678
     }
 
+    @Ignore("Changed into using sequence")
     def "Get highest order number - use default value"(){
             when:
             claimRepository.setHighestOrderNumber()
