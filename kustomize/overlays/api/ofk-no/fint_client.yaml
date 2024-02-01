@@ -2,7 +2,7 @@ apiVersion: fintlabs.no/v1alpha1
 kind: FintClient
 metadata:
   name: fint-betaling-backend
-  namespace: afk-no
+  namespace: ofk-no
   labels:
     app.kubernetes.io/name: fint-betaling-backend-client
     app.kubernetes.io/instance: fint-betaling-client
@@ -10,10 +10,10 @@ metadata:
     app.kubernetes.io/component: client
     app.kubernetes.io/part-of: core
     fintlabs.no/team: core
-    fintlabs.no/org-id: afk.no
+    fintlabs.no/org-id: ofk.no
 
 spec:
-  orgId: afk.no
+  orgId: ofk.no
   note: Client til fint-betaling-backend
   components:
     - okonomi_faktura
