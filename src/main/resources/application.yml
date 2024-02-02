@@ -9,6 +9,8 @@ spring:
     type: CAFFEINE
   mvc:
     dispatch-options-request: true
+  webflux:
+    base-path: /api
   security:
     oauth2:
       resourceserver:
@@ -43,4 +45,3 @@ fint:
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     demo-user-employeeid: "100006"
     demo: "false"
-

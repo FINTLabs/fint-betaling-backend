@@ -9,7 +9,9 @@ import lombok.Data;
 @Entity
 @Table(name = "organisation")
 public class Organisation {
-    private String name;
+
     @Id
     private String organisationNumber;
+
+    private String name;
 }

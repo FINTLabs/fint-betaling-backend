@@ -1,6 +1,5 @@
 package no.fint.betaling.repository;
 
-import jakarta.annotation.PostConstruct;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import org.springframework.stereotype.Repository;
@@ -9,7 +8,6 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class ClaimRepository {
