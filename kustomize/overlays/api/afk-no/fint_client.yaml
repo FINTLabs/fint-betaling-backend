@@ -3,15 +3,6 @@ kind: FintClient
 metadata:
   name: fint-betaling-backend
   namespace: afk-no
-  labels:
-    app.kubernetes.io/name: fint-betaling-backend-client
-    app.kubernetes.io/instance: fint-betaling-client
-    app.kubernetes.io/version: latest
-    app.kubernetes.io/component: client
-    app.kubernetes.io/part-of: core
-    fintlabs.no/team: core
-    fintlabs.no/org-id: afk.no
-
 spec:
   orgId: afk.no
   note: Client til fint-betaling-backend for afk

@@ -3,30 +3,40 @@ kind: Application
 metadata:
   name: fint-betaling-backend
   namespace: afk-no
-  labels:
-    app.kubernetes.io/name: fint-betaling-backend
-    app.kubernetes.io/instance: fint-betaling-backend_afk_no
-    app.kubernetes.io/version: latest
-    app.kubernetes.io/component: fint-betaling-backend
-    app.kubernetes.io/part-of: core
-    fintlabs.no/team: core
-    fintlabs.no/org-id: afk.no
 spec:
   port: 8080
   orgId: afk.no
   image: ghcr.io/fintlabs/fint-betaling-backend:latest
   imagePullPolicy: Always
   env:
-    - name: ENV1
-      value: test
-    - name: ENV2
-      value: test
-    - name: ENV3
-      value: test
-  envFrom:
-    - secretRef:
-        name:
-
+    - name: fint.betaling.org-id
+      value: afk.no
+    - name: fint.betaling.default-org-id
+      value: afk.no
+    - name: JAVA_TOOL_OPTIONS
+      value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M'
+    - name: fint.betaling.invoice-update-rate
+      value: '3600000'
+    - name: fint.betaling.principal-matching-strategy
+      value: 'byOrgnummer'
+    - name: fint.client.enabled
+      value: 'true'
+    - name: fint.client.base-url
+      value: 'https://api.felleskomponent.no'
+    - name: fint.betaling.client-name
+      value: 'FINT-Betaling'
+    - name: fint.betaling.default-org-id
+      value: 'afk.no'
+    - name: fint.betaling.default-school-org-id
+      value: afk.no
+    - name: fint.betaling.date-range
+      value: '7, 14, 30'
+    - name: fint.betaling.invoice-update-cron
+      value: '0 0 0 31 2 ?'
+    - name: fint.betaling.endpoints.environment
+      value: 'api'
+    - name: logging.level.root
+      value: 'INFO'
   database:
     database: fint-core
   url:
@@ -34,8 +44,6 @@ spec:
     basePath: /api/afk-no
   ingress:
     enabled: true
-    basePath: /api
-
   resources:
     limits:
       memory: "5Gi"
