@@ -46,7 +46,7 @@ public class Claim {
 
     private String createdByEmployeeNumber;
 
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.EAGER)
     @JoinColumn(name = "organisationNumber")
     private Organisation organisationUnit;
 
@@ -66,7 +66,7 @@ public class Claim {
     private Long timestamp;
 
     public Set<String> getInvoiceNumbers() {
-        if (invoiceNumbersCommaSeperated == null){
+        if (invoiceNumbersCommaSeperated == null) {
             return Set.of();
         }
 
@@ -74,7 +74,7 @@ public class Claim {
     }
 
     public void setInvoiceNumbers(Set<String> invoiceNumbers) {
-        if (invoiceNumbers !=null) {
+        if (invoiceNumbers != null) {
             invoiceNumbersCommaSeperated = String.join(",", invoiceNumbers);
         }
     }
