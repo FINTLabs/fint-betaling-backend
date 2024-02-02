@@ -39,7 +39,6 @@ class ClaimServiceSpec extends Specification {
         claimFetcherService = Mock()
 
         claimService = new ClaimService(restUtil, claimRepository, claimFactory, invoiceFactory, fintClient, claimFetcherService)
-        claimFetcherService = new ClaimFetcherService(claimRepository)
 
         betalingObjectFactory = new BetalingObjectFactory()
     }
@@ -61,47 +60,44 @@ class ClaimServiceSpec extends Specification {
         claims.every { it.customerName == 'Ola Testesen' }
     }
 
-    @Ignore
     def "Given valid claims, send invoices and update claims"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-//        def header = new HttpHeaders();
-//        header.setLocation(new URI('link.to.Location'))
-//
-//        claimRepository.get(*_) >> [claim]
-//        restUtil.post(*_) >> Mono.just(header)
-//        invoiceFactory.createInvoice(claim) >> new FakturagrunnlagResource()
-//
-//        when:
-//        def claims = claimService.sendClaims([12345L])
-//
-//        then:
-//        StepVerifier
-//                .create(claims)
-//                .assertNext({ c ->
-//                    assert c.claimStatus == ClaimStatus.SENT
-//                    assert c.invoiceUri == 'link.to.Location'
-//                })
-//                .expectComplete()
-//                .verify()
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
+        def header = new HttpHeaders();
+        header.setLocation(new URI('link.to.Location'))
+
+        claimFetcherService.getUnsentClaims() >> [claim]
+        restUtil.post(*_) >> Mono.just(header)
+
+        when:
+        def claims = claimService.sendClaims([12345L])
+
+        then:
+        StepVerifier
+                .create(claims)
+                .assertNext({ c ->
+                    assert c.claimStatus == ClaimStatus.SENT
+                    assert c.invoiceUri == 'link.to.Location'
+                })
+                .expectComplete()
+                .verify()
     }
 
+    def "Send claim as inovice returns status"() {
+        given:
+        def invoice = betalingObjectFactory.newFakturagrunnlag()
+        def thisIsTheInvoice = betalingObjectFactory.newFaktura()
 
-//    def "Send claim as inovice returns status"() {
-//        given:
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//        def thisIsTheInvoice = betalingObjectFactory.newFaktura()
-//
-//        when:
-//        def response = claimService.updateClaim(invoice)
-//
-//        then:
-//        1* claimRepository.get(12345L)  >> betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-//        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
-//        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
-//        1 * fintClient.setInvoiceUri(_) >> Optional.of('link.to.Location')
-//        response.claimStatus == ClaimStatus.ACCEPTED.toString()
-//    }
+        when:
+        def response = claimService.updateClaim(invoice)
+
+        then:
+        1* claimRepository.get(12345L)  >> betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
+        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
+        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
+        1 * fintClient.setInvoiceUri(_) >> Optional.of('link.to.Location')
+        response.claimStatus == ClaimStatus.ACCEPTED.toString()
+    }
 
     @Ignore
     def "Update claims fetches invoices and updates claims"() {
