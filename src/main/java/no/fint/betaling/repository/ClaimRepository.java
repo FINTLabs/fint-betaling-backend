@@ -50,9 +50,7 @@ public class ClaimRepository {
                 orderItem.setClaim(claim);
             }
 
-            log.info("Storing {} order items with claim-id {}", claim.getOrderItems().size(), claim.getOrderNumber());
-            List<OrderItem> orderItems = orderItemJpaRepository.saveAll(claim.getOrderItems());
-            orderItems.forEach(orderItem -> log.info("Stored order item: {}", orderItem.getId()));
+            orderItemJpaRepository.saveAll(claim.getOrderItems());
         }
 
         return claim;

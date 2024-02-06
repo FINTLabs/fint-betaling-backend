@@ -8,7 +8,7 @@ create table organisation
 create table claim
 (
     order_number                                 bigint not null primary key,
-    claim_status                                 smallint check (claim_status between 0 and 9),
+    status                                       varchar(100),
     created_date                                 timestamp,
     last_modified_date                           timestamp,
     invoice_date                                 date,

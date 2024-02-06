@@ -61,6 +61,8 @@ public class Claim {
     @JsonManagedReference
     private List<OrderItem> orderItems;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", columnDefinition = "VARCHAR(100)")
     private ClaimStatus claimStatus;
 
     private String statusMessage;
