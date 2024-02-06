@@ -11,14 +11,14 @@ create table claim
     status                                       varchar(100),
     created_date                                 timestamp,
     last_modified_date                           timestamp,
-    invoice_date                                 date,
-    payment_due_date                             date,
-    amount_due                                   bigint,
-    original_amount_due                          bigint,
-    timestamp                                    bigint,
-    created_by_employee_number                   varchar(255),
     customer_id                                  varchar(255),
     customer_name                                varchar(255),
+    invoice_date                                 date,
+    original_amount_due                          bigint,
+    payment_due_date                             date,
+    amount_due                                   bigint,
+    timestamp                                    bigint,
+    created_by_employee_number                   varchar(255),
     invoice_numbers                              varchar(255),
     invoice_uri                                  varchar(255),
     org_id                                       varchar(255),
@@ -28,7 +28,7 @@ create table claim
     principal_code                               varchar(255),
     principal_uri                                varchar(255),
     requested_number_of_days_to_payment_deadline varchar(255),
-    status_message                               varchar(255)
+    status_message                               varchar(1024)
 );
 -- create table creditnote
 -- (
@@ -44,15 +44,15 @@ create table claim
 create table orderitem
 (
     id                   bigint not null primary key,
-    description          varchar(255),
-    item_code            varchar(255),
-    item_price           bigint,
-    item_quantity        bigint,
-    item_uri             varchar(255),
-    original_description varchar(255),
-    original_item_price  bigint,
-    tax_rate             bigint,
     claim_id             bigint
         constraint fkruat9euoapto0my3i5ua184ue
-            references claim
+            references claim,
+    item_code            varchar(255),
+    description          varchar(1024),
+    original_description varchar(255),
+    item_price           bigint,
+    original_item_price  bigint,
+    item_quantity        bigint,
+    item_uri             varchar(255),
+    tax_rate             bigint
 );

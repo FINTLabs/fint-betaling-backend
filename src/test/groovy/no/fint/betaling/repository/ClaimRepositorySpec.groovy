@@ -11,11 +11,14 @@ class ClaimRepositorySpec extends Specification {
     ClaimRepository claimRepository
     BetalingObjectFactory betalingObjectFactory
     ClaimJpaRepository claimJpaRepository
-
+    OrganisationJpaRepository organisationJpaRepository
+    OrderItemJpaRepository orderItemJpaRepository
 
     void setup() {
         claimJpaRepository = Mock()
-        claimRepository = new ClaimRepository(claimJpaRepository)
+        organisationJpaRepository = Mock()
+        orderItemJpaRepository = Mock()
+        claimRepository = new ClaimRepository(claimJpaRepository, organisationJpaRepository, orderItemJpaRepository)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -27,7 +30,7 @@ class ClaimRepositorySpec extends Specification {
         claimRepository.storeClaim(claim)
 
         then:
-        1 * claimJpaRepository.save(claim)
+        1 * claimJpaRepository.save(claim) >> claim
     }
 
     @Ignore("Changed into using sequence")
