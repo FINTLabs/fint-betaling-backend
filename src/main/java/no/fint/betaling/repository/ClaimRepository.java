@@ -1,7 +1,9 @@
 package no.fint.betaling.repository;
 
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.OrderItem;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -9,13 +11,20 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Repository
 public class ClaimRepository {
 
     private final ClaimJpaRepository claimJpaRepository;
 
-    public ClaimRepository(ClaimJpaRepository claimJpaRepository) {
+    private final OrganisationJpaRepository organisationJpaRepository;
+
+    private final OrderItemJpaRepository orderItemJpaRepository;
+
+    public ClaimRepository(ClaimJpaRepository claimJpaRepository, OrganisationJpaRepository organisationJpaRepository, OrderItemJpaRepository orderItemJpaRepository) {
         this.claimJpaRepository = claimJpaRepository;
+        this.organisationJpaRepository = organisationJpaRepository;
+        this.orderItemJpaRepository = orderItemJpaRepository;
     }
 
     public Claim get(long orderNumber) {
@@ -27,14 +36,26 @@ public class ClaimRepository {
         return claimJpaRepository.findByClaimStatusIn(statuses);
     }
 
-    public Claim storeClaim(Claim claim) {
-        claim.setTimestamp(System.currentTimeMillis());
-        claimJpaRepository.save(claim);
-        return claim;
-    }
+    public synchronized Claim storeClaim(Claim claim) {
 
-    public List<Claim> getAll() {
-        return claimJpaRepository.findAll();
+        if (claim.getOrganisationUnit() != null) {
+            organisationJpaRepository.save(claim.getOrganisationUnit());
+        }
+
+        claim.setTimestamp(System.currentTimeMillis());
+        claim = claimJpaRepository.save(claim);
+
+        if (claim.getOrderItems() != null) {
+            for (OrderItem orderItem : claim.getOrderItems()) {
+                orderItem.setClaim(claim);
+            }
+
+            log.info("Storing {} order items with claim-id {}", claim.getOrderItems().size(), claim.getOrderNumber());
+            List<OrderItem> orderItems = orderItemJpaRepository.saveAll(claim.getOrderItems());
+            orderItems.forEach(orderItem -> log.info("Stored order item: {}", orderItem.getId()));
+        }
+
+        return claim;
     }
 
     public List<Claim> getByCustomerName(String name) {

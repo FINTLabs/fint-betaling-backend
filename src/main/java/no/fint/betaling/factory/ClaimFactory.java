@@ -41,8 +41,11 @@ public class ClaimFactory {
         claim.setPrincipalUri(order.getPrincipal().getUri());
         claim.setClaimStatus(ClaimStatus.STORED);
 
-        claim.setOrderItems(order.getOrderItems());
+        claim.setOrderItems(clonedOrderItems);
         clonedOrderItems.forEach(orderItem -> orderItem.setClaim(claim));
+
+        // Moving from NO-SQL to SQL, so we change OrderItem id from internal counter to sequence
+        clonedOrderItems.forEach(orderItem -> orderItem.setId(0L));
 
         return claim;
     }

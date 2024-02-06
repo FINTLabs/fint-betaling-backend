@@ -1,5 +1,6 @@
 package no.fint.betaling.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -33,7 +34,8 @@ public class OrderItem {
         return itemPrice == null ? itemQuantity * originalItemPrice : itemQuantity * itemPrice;
     }
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id")
+    @JsonBackReference
     private Claim claim;
 }

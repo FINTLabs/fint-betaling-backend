@@ -1,5 +1,6 @@
 package no.fint.betaling.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -46,7 +47,7 @@ public class Claim {
 
     private String createdByEmployeeNumber;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.EAGER)
+    @ManyToOne()
     @JoinColumn(name = "organisationNumber")
     private Organisation organisationUnit;
 
@@ -56,7 +57,8 @@ public class Claim {
 
     private String invoiceUri;
 
-    @OneToMany(cascade = CascadeType.REFRESH, mappedBy = "claim")
+    @OneToMany(mappedBy = "claim")
+    @JsonManagedReference
     private List<OrderItem> orderItems;
 
     private ClaimStatus claimStatus;
