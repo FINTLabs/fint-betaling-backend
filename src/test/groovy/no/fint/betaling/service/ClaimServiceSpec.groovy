@@ -39,7 +39,6 @@ class ClaimServiceSpec extends Specification {
         claimFetcherService = Mock()
 
         claimService = new ClaimService(restUtil, claimRepository, claimFactory, invoiceFactory, fintClient, claimFetcherService)
-
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -83,7 +82,6 @@ class ClaimServiceSpec extends Specification {
                 .verify()
     }
 
-    @Ignore
     def "Send claim as inovice returns status"() {
 //        given:
 //        def invoice = betalingObjectFactory.newFakturagrunnlag()
@@ -93,6 +91,9 @@ class ClaimServiceSpec extends Specification {
 //        def response = claimService.updateClaim(invoice)
 //
 //        then:
+//
+//
+//
 //        1* claimRepository.get(12345L)  >> betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
 //        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
 //        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
@@ -115,19 +116,20 @@ class ClaimServiceSpec extends Specification {
 //        1 * claimRepository.updateClaim(_ as Query, _ as Update)
     }
 
-    @Ignore
-    def "Get status given payment with valid location uri returns invoice"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
-//
-//        when:
-//        def invoice = claimService.getStatus(claim)
-//
-//
-//        then:
-//        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> betalingObjectFactory.newFakturagrunnlag()
-//        invoice.ordrenummer.identifikatorverdi == '12345'
+    def "Get claims by status returns list of claims"() {
+        given:
+        def claimStatuses = [ClaimStatus.SENT, ClaimStatus.ACCEPTED]
+        def expectedClaims = [
+                new Claim(orgId: 123, orderNumber: 12345, claimStatus: ClaimStatus.SENT),
+                new Claim(orgId: 456, orderNumber: 67890, claimStatus: ClaimStatus.ACCEPTED)
+        ]
+        claimFetcherService.getClaimsByStatus(claimStatuses as ClaimStatus[]) >> expectedClaims
 
+        when:
+        def actualClaims = claimFetcherService.getClaimsByStatus(claimStatuses as ClaimStatus[])
+
+        then:
+        actualClaims == expectedClaims
     }
 
 //    @Ignore("Must be rewritten from mongoDb to postgresql")
@@ -209,6 +211,7 @@ class ClaimServiceSpec extends Specification {
         1 * claimRepository.countByStatus(ClaimStatus.ERROR) >> 8
         claims == 8
     }
+
 
     def "Get count of claims by status and days"() {
 
