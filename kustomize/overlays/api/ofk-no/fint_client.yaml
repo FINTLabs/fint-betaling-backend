@@ -5,8 +5,12 @@ metadata:
   namespace: ofk-no
 spec:
   orgId: ofk.no
-  note: Client til fint-betaling-backend
+  note: Client til fint-betaling-backend for ofk
   components:
     - okonomi_faktura
     - okonomi_kodeverk
     - utdanning_elev
+    - administrasjon_personal
+    - utdanning_utdanningsprogram
+    - utdanning_timeplan
+    - administrasjon_organisasjon
