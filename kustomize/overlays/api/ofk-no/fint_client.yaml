@@ -1,0 +1,12 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: FintClient
+metadata:
+  name: fint-betaling-backend
+  namespace: ofk-no
+spec:
+  orgId: ofk.no
+  note: Client til fint-betaling-backend
+  components:
+    - okonomi_faktura
+    - okonomi_kodeverk
+    - utdanning_elev

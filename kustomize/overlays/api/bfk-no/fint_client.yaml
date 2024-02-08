@@ -1,0 +1,12 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: FintClient
+metadata:
+  name: fint-betaling-backend
+  namespace: bfk-no
+spec:
+  orgId: bfk.no
+  note: Client til fint-betaling-backend for bfk
+  components:
+    - okonomi_faktura
+    - okonomi_kodeverk
+    - utdanning_elev
