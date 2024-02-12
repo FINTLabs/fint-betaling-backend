@@ -49,7 +49,7 @@ spec:
     enabled: true
   resources:
     limits:
-      memory: "5Gi"
+      memory: "7Gi"
       cpu: "2"
     requests:
       memory: "512Mi"
