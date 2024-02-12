@@ -2,7 +2,7 @@ apiVersion: fintlabs.no/v1alpha1
 kind: Application
 metadata:
   name: fint-betaling-backend
-  namespace: default
+  namespace: fintlabs-no
 spec:
   port: 8080
   orgId: fintlabs.no
