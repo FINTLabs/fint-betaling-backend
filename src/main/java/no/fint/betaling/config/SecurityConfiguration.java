@@ -55,6 +55,15 @@ public class SecurityConfiguration {
 
     private Mono<AuthorizationDecision> hasRequiredOrgIdAndRole(Mono<Authentication> authentication, AuthorizationContext context) {
         return authentication.map(auth -> {
+
+            // TEMPORARY CODE: To test authentication and authorization
+            boolean isFintUser = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ORGID_fintlabs.no"));
+
+            if (isFintUser) {
+                return new AuthorizationDecision(true);
+            }
+            // END OF TEMPORARY CODE
+
             boolean hasOrgId = auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ORGID_" + orgId));
             boolean hasRole = auth.getAuthorities().stream()

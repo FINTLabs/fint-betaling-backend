@@ -24,7 +24,7 @@ public interface ClaimJpaRepository extends JpaRepository<Claim, Long> {
     @Query("SELECT COUNT(c) FROM Claim c WHERE FUNCTION('DATEDIFF', DAY, CURRENT_DATE, c.createdDate) < :days AND c.claimStatus IN :statuses")
     int countByStatusAndDays(@Param("days") long days, @Param("statuses") ClaimStatus[] statuses);
 
-    @Query("SELECT c FROM Claim c WHERE (cast(:date as timestamp) IS NULL OR c.createdDate >= :date) AND (:statuses IS NULL OR c.claimStatus IN :statuses) AND (:organisationNumber IS NULL OR c.organisationUnit.organisationNumber = :organisationNumber)")
+    @Query("SELECT c FROM Claim c WHERE (cast(:date as timestamp) IS NULL OR c.createdDate >= :date) AND (:statuses IS NULL OR c.claimStatus IN :statuses) AND (:organisationNumber IS NULL OR c.organisationUnit.organisationNumber = :organisationNumber) ORDER BY c.orderNumber DESC")
     List<Claim> getByDateAndSchoolAndStatus(@Param("date") LocalDateTime date, @Param("organisationNumber") String organisationNumber, @Param("statuses") List<ClaimStatus> statuses);
 
 
