@@ -15,6 +15,7 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -75,12 +76,11 @@ public class FintClient {
                 .collect(Collectors.toList());
     }
 
-    public List<FakturaResource> getFaktura(FakturagrunnlagResource invoice) {
-        return invoice.getFaktura()
-                .stream()
+    public Mono<List<FakturaResource>> getFaktura(FakturagrunnlagResource invoice) {
+        return Flux.fromIterable(invoice.getFaktura())
                 .map(Link::getHref)
-                .map(uri -> restUtil.get(FakturaResource.class, uri).block())
-                .toList();
+                .flatMap(uri -> restUtil.get(FakturaResource.class, uri))
+                .collectList();
     }
 
     public Set<String> getFakturanummere(List<FakturaResource> fakturaList) {
