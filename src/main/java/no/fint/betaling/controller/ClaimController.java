@@ -45,8 +45,12 @@ public class ClaimController {
     public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<Long> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
         Flux<Claim> flux = claimService.sendClaims(orderNumbers);
+
         // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:
-        if (flux == null) flux = Flux.empty();
+        if (flux == null) {
+            log.warn("In sendClaims, flux is null");
+            flux = Flux.empty();
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(flux
