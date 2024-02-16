@@ -44,7 +44,7 @@ spec:
     database: fint-core
   url:
     hostname: betaling.felleskomponent.no
-    basePath: /api/afk-no
+    basePath: /afk/api
   ingress:
     enabled: true
   resources:
