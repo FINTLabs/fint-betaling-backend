@@ -57,7 +57,8 @@ public class SecurityConfiguration {
         return authentication.map(auth -> {
 
             // TEMPORARY CODE: To test authentication and authorization
-            boolean isFintUser = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ORGID_vigo.no"));
+            boolean isFintUser = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ORGID_vigo.no")
+                    || a.getAuthority().equals("ORGID_fintlabs.no"));
 
             if (isFintUser) {
                 log.debug("Authorize as fint user");
