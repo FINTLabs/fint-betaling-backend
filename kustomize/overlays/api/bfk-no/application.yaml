@@ -47,6 +47,8 @@ spec:
     basePath: /bfk/api
   ingress:
     enabled: true
+    middlewares:
+      - fint-betaling-auth-forward-sso
   resources:
     limits:
       memory: "5Gi"
