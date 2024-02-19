@@ -47,7 +47,7 @@ public class UserController {
         String employeeId;
         boolean isAdminUser = false;
 
-        if (applicationProperties.getDemo()) {
+        if (applicationProperties.getDemo() != null && applicationProperties.getDemo()) {
             employeeId = applicationProperties.getDemoUserEmployeeId();
         } else {
             FintJwtEndUserPrincipal userPrincipal = FintJwtEndUserPrincipal.from(jwt);
