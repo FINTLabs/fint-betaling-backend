@@ -10,7 +10,8 @@ spec:
     - okonomi_faktura
     - okonomi_kodeverk
     - utdanning_elev
-    - administrasjon_personal
     - utdanning_utdanningsprogram
     - utdanning_timeplan
     - administrasjon_organisasjon
+    - administrasjon_personal
+    - administrasjon_organisasjonselement

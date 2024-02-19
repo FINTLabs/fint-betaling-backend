@@ -11,6 +11,7 @@ spec:
     - okonomi_kodeverk
     - utdanning_elev
     - administrasjon_personal
-    - utdanning_utdanningsprogram
     - utdanning_timeplan
+    - utdanning_utdanningsprogram
     - administrasjon_organisasjon
+    - administrasjon_organisasjonselement
