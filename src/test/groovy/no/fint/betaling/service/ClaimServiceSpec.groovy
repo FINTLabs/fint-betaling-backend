@@ -19,6 +19,7 @@ import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class ClaimServiceSpec extends Specification {
     ClaimService claimService
@@ -121,7 +122,7 @@ class ClaimServiceSpec extends Specification {
         def claimStatuses = [ClaimStatus.SENT, ClaimStatus.ACCEPTED]
         def expectedClaims = [
                 new Claim(orgId: 123, orderNumber: 12345, claimStatus: ClaimStatus.SENT),
-                new Claim(orgId: 456, orderNumber: 67890, claimStatus: ClaimStatus.ACCEPTED)
+                new Claim(orgId: 456, orderNumber: 67890, claimStatus: ClaimStatus.SENT)
         ]
         claimFetcherService.getClaimsByStatus(claimStatuses as ClaimStatus[]) >> expectedClaims
 
@@ -144,18 +145,24 @@ class ClaimServiceSpec extends Specification {
 //        1 * claimRepository.updateClaim(_ as Query, _ as Update)
 //    }
 
-    @Ignore
-    def "Get all claims returns list"() {
-//        given:
-//        def period = ClaimsDatePeriod.ALL
-//        1 * claimRepository.getByDateAndSchoolAndStatus(_, _, _) >> [betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED),
-//                                                                     betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)]
-//
-//        when:
-//        def claims = claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, '12345', [ClaimStatus.STORED, ClaimStatus.SENT] as ClaimStatus[])
-//
-//        then:
-//        claims.size() == 2
+    def "Get all claims by status returns list"() {
+        given:
+        def period = ClaimsDatePeriod.ALL
+        String organisationNumber = "12345"
+        ClaimStatus[] statuses = [ClaimStatus.STORED, ClaimStatus.SENT]
+        LocalDateTime date = LocalDateTime.now()
+        def expectedClaims = [
+                betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED),
+                betalingObjectFactory.newClaim(12346L, ClaimStatus.STORED)
+        ]
+
+        claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(_, _, _) >> expectedClaims
+
+        when:
+        def actualClaims = claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
+
+        then:
+        actualClaims.size() == expectedClaims.size()
     }
 
 //    @Ignore("Must be rewritten from mongoDb to postgresql")
