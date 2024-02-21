@@ -165,19 +165,19 @@ class ClaimServiceSpec extends Specification {
         actualClaims.size() == expectedClaims.size()
     }
 
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def "Get claims by customer name returns list of claims matching name"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-//
-//        when:
-//        def claims = claimService.getClaimsByCustomerName('Ola Testesen')
-//
-//        then:
-//        1 * claimRepository.getAll() >> [claim]
-//        claims.size() == 1
-//        claims.get(0).customerName == 'Ola Testesen'
-//    }
+    def "Get claims by customer name returns list of claims matching name"() {
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
+
+
+        when:
+        def claims = claimFetcherService.getClaimsByCustomerName('Ola Testesen')
+
+        then:
+        1 * claimFetcherService.getClaimsByCustomerName('Ola Testesen') >> [claim]
+        claims.size() == 1
+        claims.get(0).customerName == 'Ola Testesen'
+    }
 
 //    @Ignore("Must be rewritten from mongoDb to postgresql")
 //    def "Get claims given valid order number returns list of claims matching order number"() {
