@@ -205,13 +205,13 @@ public class ClaimService {
         boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
         boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
 
-        ClaimStatus newStatus = findNewClaimStatus(fakturaList, credited, paid, issued);
+        ClaimStatus newStatus = setNewClaimStatus(fakturaList, credited, paid, issued);
         claim.setClaimStatus(newStatus);
         claim.setStatusMessage(null);
         log.info("Claim {} updated", claim.getOrderNumber());
     }
 
-    private ClaimStatus findNewClaimStatus(List<FakturaResource> fakturaList, boolean credited, boolean paid, boolean issued) {
+    private ClaimStatus setNewClaimStatus(List<FakturaResource> fakturaList, boolean credited, boolean paid, boolean issued) {
         if (fakturaList.isEmpty()) {
             return ClaimStatus.ACCEPTED;
         } else if (credited || paid) {
