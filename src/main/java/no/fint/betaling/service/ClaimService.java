@@ -185,40 +185,42 @@ public class ClaimService {
      * @return New claim status
      */
     public void updateClaim(FakturagrunnlagResource invoice) {
-
         Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
         fintClient.setInvoiceUri(invoice).ifPresent(claim::setInvoiceUri);
 
         Mono<List<FakturaResource>> fakturaListMono = fintClient.getFaktura(invoice);
         fakturaListMono.subscribe(fakturaList -> {
-
-            claim.setInvoiceNumbers(fintClient.getFakturanummere(fakturaList));
-            fintClient.getInvoiceDate(fakturaList).ifPresent(claim::setInvoiceDate);
-            fintClient.getPaymentDueDate(fakturaList).ifPresent(claim::setPaymentDueDate);
-            fintClient.getAmountDue(fakturaList).ifPresent(claim::setAmountDue);
-
-            boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
-            boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
-            boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
-
-            ClaimStatus newStatus;
-
-            if (fakturaList.isEmpty()) {
-                newStatus = ClaimStatus.ACCEPTED;
-            } else if (credited || paid) {
-                newStatus = ClaimStatus.PAID;
-            } else if (issued) {
-                newStatus = ClaimStatus.ISSUED;
-            } else {
-                newStatus = ClaimStatus.ACCEPTED;
-            }
-
-            claim.setClaimStatus(newStatus);
-            claim.setStatusMessage(null);
-            log.info("Claim {} updated", claim.getOrderNumber());
-
+            updateClaimDetails(claim, fakturaList);
             updateClaimStatus(claim);
         });
+    }
+
+    private void updateClaimDetails(Claim claim, List<FakturaResource> fakturaList) {
+        claim.setInvoiceNumbers(fintClient.getFakturanummere(fakturaList));
+        fintClient.getInvoiceDate(fakturaList).ifPresent(claim::setInvoiceDate);
+        fintClient.getPaymentDueDate(fakturaList).ifPresent(claim::setPaymentDueDate);
+        fintClient.getAmountDue(fakturaList).ifPresent(claim::setAmountDue);
+
+        boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
+        boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
+        boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
+
+        ClaimStatus newStatus = findNewClaimStatus(fakturaList, credited, paid, issued);
+        claim.setClaimStatus(newStatus);
+        claim.setStatusMessage(null);
+        log.info("Claim {} updated", claim.getOrderNumber());
+    }
+
+    private ClaimStatus findNewClaimStatus(List<FakturaResource> fakturaList, boolean credited, boolean paid, boolean issued) {
+        if (fakturaList.isEmpty()) {
+            return ClaimStatus.ACCEPTED;
+        } else if (credited || paid) {
+            return ClaimStatus.PAID;
+        } else if (issued) {
+            return ClaimStatus.ISSUED;
+        } else {
+            return ClaimStatus.ACCEPTED;
+        }
     }
 
     private void updateClaimStatus(Claim claim) {
