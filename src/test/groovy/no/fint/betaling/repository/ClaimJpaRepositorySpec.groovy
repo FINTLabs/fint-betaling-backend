@@ -63,8 +63,8 @@ class ClaimJpaRepositorySpec extends Specification {
         count >= 0
     }
 
-//    @Ignore
-//    def "should count claims by status and days"() {
+    @Ignore
+    def "should count claims by status and days"() {
 //        given:
 //        def status = ClaimStatus.REJECTED
 //        def days = 30
@@ -74,7 +74,7 @@ class ClaimJpaRepositorySpec extends Specification {
 //
 //        then:
 //        count >= 0
-//    }
+    }
 
     def "should find claims by date, school, and status"() {
         given:
