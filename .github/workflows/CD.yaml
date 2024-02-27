@@ -1,8 +1,6 @@
 name: CD
 on:
   push:
-    branches:
-      - CT-1014-postgres
   repository_dispatch:
     types: [ trigger-cd ]
 env:
