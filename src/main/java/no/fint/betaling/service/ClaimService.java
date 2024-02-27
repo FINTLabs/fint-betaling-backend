@@ -88,14 +88,14 @@ public class ClaimService {
                         claim.setClaimStatus(ClaimStatus.SENT);
                         claim.setStatusMessage(null);
                         log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                        updateClaimStatus(claim);
+                        claimRepository.save(claim);
                     }
                 })
                 .doOnError(WebClientResponseException.class, ex -> {
                     claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                     claim.setStatusMessage(ex.getMessage());
                     log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
-                    updateClaimStatus(claim);
+                    claimRepository.save(claim);
                 })
                 .thenReturn(claim);
     }
@@ -112,14 +112,14 @@ public class ClaimService {
                             log.info("Claim {} not updated", claim.getOrderNumber());
                         }
                         claim.setStatusMessage(null);
-                        updateClaimStatus(claim);
+                        claimRepository.save(claim);
                     })
                     .doOnError(WebClientResponseException.class, e -> {
                         if (e.getStatusCode() == HttpStatus.GONE) {
                             log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
                             claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                             claim.setInvoiceUri(null);
-                            updateClaimStatus(claim);
+                            claimRepository.save(claim);
                         } else {
                             setClaimStatusFromFint(claim);
                         }
@@ -145,7 +145,7 @@ public class ClaimService {
                         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
                     }
                     claim.setStatusMessage(e2.getMessage());
-                    updateClaimStatus(claim);
+                    claimRepository.save(claim);
                     log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatusCode(), e2.getMessage());
                 })
                 .onErrorResume(e -> Mono.empty()) // Håndterer andre feil og fortsetter
@@ -157,14 +157,11 @@ public class ClaimService {
         claimFetcherService.getAcceptedClaims().forEach(claim -> {
 
             restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
-                    .doOnNext(fakturagrunnlagResource -> {
-                        updateClaim(fakturagrunnlagResource);
-                    })
+                    .doOnNext(this::updateClaim)
                     .doOnError(WebClientResponseException.class, e -> {
                         claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                         claim.setStatusMessage(e.getMessage());
                         log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
-                        updateClaimStatus(claim);
                     })
                     .doOnError(e -> {
                         log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
@@ -190,41 +187,33 @@ public class ClaimService {
 
         Mono<List<FakturaResource>> fakturaListMono = fintClient.getFaktura(invoice);
         fakturaListMono.subscribe(fakturaList -> {
-            updateClaimDetails(claim, fakturaList);
-            updateClaimStatus(claim);
+            updateClaimStatus(fakturaList, claim);
+            updateClaimDate(claim, fakturaList);
+            claimRepository.save(claim);
         });
+        log.info("Claim {} updated", claim.getOrderNumber());
     }
 
-    private void updateClaimDetails(Claim claim, List<FakturaResource> fakturaList) {
+    private void updateClaimDate(Claim claim, List<FakturaResource> fakturaList) {
         claim.setInvoiceNumbers(fintClient.getFakturanummere(fakturaList));
         fintClient.getInvoiceDate(fakturaList).ifPresent(claim::setInvoiceDate);
         fintClient.getPaymentDueDate(fakturaList).ifPresent(claim::setPaymentDueDate);
         fintClient.getAmountDue(fakturaList).ifPresent(claim::setAmountDue);
+    }
 
+    private void updateClaimStatus(List<FakturaResource> fakturaList, Claim claim) {
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
         boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
         boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
-
-        ClaimStatus newStatus = setNewClaimStatus(fakturaList, credited, paid, issued);
-        claim.setClaimStatus(newStatus);
-        claim.setStatusMessage(null);
-        log.info("Claim {} updated", claim.getOrderNumber());
-    }
-
-    private ClaimStatus setNewClaimStatus(List<FakturaResource> fakturaList, boolean credited, boolean paid, boolean issued) {
         if (fakturaList.isEmpty()) {
-            return ClaimStatus.ACCEPTED;
+            claim.setClaimStatus(ClaimStatus.ACCEPTED);
         } else if (credited || paid) {
-            return ClaimStatus.PAID;
+            claim.setClaimStatus(ClaimStatus.PAID);
         } else if (issued) {
-            return ClaimStatus.ISSUED;
+            claim.setClaimStatus(ClaimStatus.ISSUED);
         } else {
-            return ClaimStatus.ACCEPTED;
+            claim.setClaimStatus(ClaimStatus.ACCEPTED);
         }
-    }
-
-    private void updateClaimStatus(Claim claim) {
-        claimRepository.save(claim);
     }
 
     public int countClaimsByStatus(ClaimStatus[] statuses, String days) {
@@ -239,7 +228,7 @@ public class ClaimService {
 
         if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
             claim.setClaimStatus(ClaimStatus.CANCELLED);
-            updateClaimStatus(claim);
+            claimRepository.save(claim);
         } else {
             log.warn("cancel claim called, but claim was not in stored status (orderNumber: {}, status: {})", orderNumber, claim.getClaimStatus());
         }
