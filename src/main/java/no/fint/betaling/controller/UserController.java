@@ -22,7 +22,7 @@ import reactor.core.publisher.Mono;
 import java.net.URISyntaxException;
 
 @RestController
-@RequestMapping(value = "/api/me")
+@RequestMapping(value = "/me")
 @Slf4j
 public class UserController {
 
@@ -34,7 +34,7 @@ public class UserController {
 
     private final UserCacheService userCacheService;
 
-    private ApplicationProperties applicationProperties;
+    private final ApplicationProperties applicationProperties;
 
     public UserController(ApplicationProperties applicationProperties, UserCacheService userCacheService) {
         this.applicationProperties = applicationProperties;
@@ -47,7 +47,7 @@ public class UserController {
         String employeeId;
         boolean isAdminUser = false;
 
-        if (applicationProperties.getDemo()) {
+        if (applicationProperties.getDemo() != null && applicationProperties.getDemo()) {
             employeeId = applicationProperties.getDemoUserEmployeeId();
         } else {
             FintJwtEndUserPrincipal userPrincipal = FintJwtEndUserPrincipal.from(jwt);
@@ -77,13 +77,13 @@ public class UserController {
                 });
     }
 
-    @GetMapping("ping")
+    @GetMapping("/ping")
     public ResponseEntity<String> ping() throws URISyntaxException {
         return ResponseEntity.ok("Greetings from FINTLabs :)");
     }
 
     @ExceptionHandler({EmployeeIdException.class})
     public ResponseEntity handleEmployeeIdException(EmployeeIdException exception) {
-        return ResponseEntity.status(exception.getStatus()).body(exception.getMessage());
+        return ResponseEntity.status(exception.getStatusCode()).body(exception.getMessage());
     }
 }

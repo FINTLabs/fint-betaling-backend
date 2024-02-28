@@ -1,32 +1,85 @@
 package no.fint.betaling.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 @Data
+@Entity
+@Table(name = "claim")
 public class Claim {
     private String orgId;
-    private String orderNumber;
-    private Set<String> invoiceNumbers;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "claim_sequence_generator")
+    @SequenceGenerator(name = "claim_sequence_generator", sequenceName = "claim_seq", allocationSize = 1, initialValue = 10000)
+    private long orderNumber;
+
+    @Column(name = "invoiceNumbers")
+    private String invoiceNumbersCommaSeperated;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime lastModifiedDate;
+
+    @Temporal(TemporalType.DATE)
     private LocalDate invoiceDate;
+
+    @Temporal(TemporalType.DATE)
     private LocalDate paymentDueDate;
-    private LocalDate createdDate;
-    private LocalDate lastModifiedDate;
-    private List<CreditNote> creditNotes;
+
     private Long amountDue;
+
     private Long originalAmountDue;
+
     private String requestedNumberOfDaysToPaymentDeadline;
-    private Customer customer;
-    private User createdBy;
+
+    private String customerId;
+
+    private String customerName;
+
+    private String createdByEmployeeNumber;
+
+    @ManyToOne()
+    @JoinColumn(name = "organisationNumber")
     private Organisation organisationUnit;
-    private Principal principal;
+
+    private String principalCode;
+
+    private String principalUri;
+
     private String invoiceUri;
+
+    @OneToMany(mappedBy = "claim")
+    @JsonManagedReference
     private List<OrderItem> orderItems;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", columnDefinition = "VARCHAR(100)")
     private ClaimStatus claimStatus;
+
     private String statusMessage;
-    private Set<String> classes;
+
     private Long timestamp;
+
+    public Set<String> getInvoiceNumbers() {
+        if (invoiceNumbersCommaSeperated == null) {
+            return Set.of();
+        }
+
+        return Set.of(invoiceNumbersCommaSeperated.split(","));
+    }
+
+    public void setInvoiceNumbers(Set<String> invoiceNumbers) {
+        if (invoiceNumbers != null) {
+            invoiceNumbersCommaSeperated = String.join(",", invoiceNumbers);
+        }
+    }
 }

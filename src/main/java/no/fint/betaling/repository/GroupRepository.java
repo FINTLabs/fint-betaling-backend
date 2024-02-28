@@ -13,9 +13,7 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,10 +21,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 public class GroupRepository {
-
-    private final RestUtil restUtil;
-
-    private final Endpoints endpoints;
 
     private final ResourceCache<SkoleResource, SkoleResources> schools;
     private final ResourceCache<BasisgruppeResource, BasisgruppeResources> basisGroups;
@@ -37,8 +31,6 @@ public class GroupRepository {
     private final ResourceCache<SkoleressursResource, SkoleressursResources> schoolresources;
 
     public GroupRepository(RestUtil restUtil, Endpoints endpoints) {
-        this.restUtil = restUtil;
-        this.endpoints = endpoints;
         schools = new ResourceCache<>(restUtil, endpoints.getSchool(), SkoleResources.class);
         basisGroups = new ResourceCache<>(restUtil, endpoints.getBasisGroup(), BasisgruppeResources.class);
         teachingGroups = new ResourceCache<>(restUtil, endpoints.getTeachingGroup(), UndervisningsgruppeResources.class);
@@ -49,7 +41,7 @@ public class GroupRepository {
     }
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
-    public void init() {
+    public void updateAll() {
         schools.update();
         basisGroups.update();
         teachingGroups.update();

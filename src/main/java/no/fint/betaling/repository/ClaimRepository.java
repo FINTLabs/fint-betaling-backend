@@ -1,69 +1,81 @@
 package no.fint.betaling.repository;
 
-import no.fint.betaling.config.Endpoints;
+import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.Claim;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.util.StreamUtils;
+import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.OrderItem;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 @Repository
 public class ClaimRepository {
 
-    private final Endpoints endpoints;
+    private final ClaimJpaRepository claimJpaRepository;
 
-    private final MongoTemplate mongoTemplate;
+    private final OrganisationJpaRepository organisationJpaRepository;
 
-    private static final String ORG_ID = "orgId";
+    private final OrderItemJpaRepository orderItemJpaRepository;
 
-    @Value("${fint.betaling.org-id}")
-    private String orgId;
-
-    private final AtomicLong orderNumberCounter = new AtomicLong(100000L);
-
-    public ClaimRepository(Endpoints endpoints, MongoTemplate mongoTemplate) {
-        this.endpoints = endpoints;
-        this.mongoTemplate = mongoTemplate;
+    public ClaimRepository(ClaimJpaRepository claimJpaRepository, OrganisationJpaRepository organisationJpaRepository, OrderItemJpaRepository orderItemJpaRepository) {
+        this.claimJpaRepository = claimJpaRepository;
+        this.organisationJpaRepository = organisationJpaRepository;
+        this.orderItemJpaRepository = orderItemJpaRepository;
     }
 
-    public Claim storeClaim(Claim claim) {
-        claim.setOrderNumber(String.valueOf(orderNumberCounter.incrementAndGet()));
+    public Claim get(long orderNumber) {
+        return claimJpaRepository.findById(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Claim not found: " + orderNumber));
+    }
+
+    public List<Claim> get(ClaimStatus... statuses) {
+        return claimJpaRepository.findByClaimStatusIn(statuses);
+    }
+
+    public synchronized Claim storeClaim(Claim claim) {
+
+        if (claim.getOrganisationUnit() != null) {
+            organisationJpaRepository.save(claim.getOrganisationUnit());
+        }
+
         claim.setTimestamp(System.currentTimeMillis());
-        mongoTemplate.save(claim);
+        claim = claimJpaRepository.save(claim);
+
+        if (claim.getOrderItems() != null) {
+            for (OrderItem orderItem : claim.getOrderItems()) {
+                orderItem.setClaim(claim);
+            }
+
+            orderItemJpaRepository.saveAll(claim.getOrderItems());
+        }
+
         return claim;
     }
 
-    public List<Claim> getClaims(Query query) {
-        return mongoTemplate.find(query, Claim.class);
+    public List<Claim> getByCustomerName(String name) {
+        return claimJpaRepository.findByCustomerName(name);
     }
 
-    public int countClaims(Query query) {
-        return Math.toIntExact(mongoTemplate.count(query, Claim.class));
+    public int countByStatus(ClaimStatus... statuses) {
+        return claimJpaRepository.countByStatus(statuses);
     }
 
-    public void updateClaim(Query query, Update update) {
-        update.set("timestamp", System.currentTimeMillis());
-        mongoTemplate.upsert(query, update, Claim.class);
+    public int countByStatusAndDays(long days, ClaimStatus[] statuses) {
+        return claimJpaRepository.countByStatusAndDays(days, statuses);
     }
 
-    @PostConstruct
-    public void setHighestOrderNumber() {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_class").is(Claim.class.getName()));
-        query.addCriteria(Criteria.where(ORG_ID).is(orgId));
+    public List<Claim> getByDateAndSchoolAndStatus(LocalDateTime date, String organisationNumber, ClaimStatus[] statuses) {
+        String orgNumber = StringUtils.hasText(organisationNumber) ? organisationNumber : null;
+        List<ClaimStatus> statusList = (statuses != null && statuses.length > 0) ? Arrays.asList(statuses) : null;
+        return claimJpaRepository.getByDateAndSchoolAndStatus(date, orgNumber, statusList);
+    }
 
-        StreamUtils.createStreamFromIterator(mongoTemplate.stream(query, Claim.class))
-                .map(Claim::getOrderNumber)
-                .mapToLong(Long::parseLong)
-                .max()
-                .ifPresent(orderNumberCounter::set);
+    public void save(Claim claim) {
+        claim.setTimestamp(System.currentTimeMillis());
+        claimJpaRepository.save(claim);
     }
 }

@@ -8,6 +8,7 @@ import no.fint.model.resource.okonomi.faktura.FakturaResource
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.ThreadLocalRandom
 
 class BetalingObjectFactory {
@@ -29,8 +30,11 @@ class BetalingObjectFactory {
 
     static OrderItem newOrderItem() {
         return new OrderItem(
-                lineitem: newLineitem(),
                 description: 'Monkeyballs',
+                originalDescription: 'Monkeyballs Original',
+                originalItemPrice: 1000000,
+                itemCode: 'MBP',
+                itemUri: 'link.to.Item',
                 itemQuantity: 1
         )
     }
@@ -54,7 +58,7 @@ class BetalingObjectFactory {
         )
     }
 
-    static Claim newClaim(String orderNumber, ClaimStatus claimStatus) {
+    static Claim newClaim(long orderNumber, ClaimStatus claimStatus) {
         def order = newOrder()
         return new Claim(
                 orgId: '123',
@@ -62,16 +66,17 @@ class BetalingObjectFactory {
                 invoiceNumbers: ['456'],
                 invoiceDate: LocalDate.parse('2019-11-10'),
                 paymentDueDate: LocalDate.parse('2019-11-17'),
-                createdDate: LocalDate.parse('2019-11-01'),
-                lastModifiedDate: LocalDate.parse('2019-11-05'),
-                creditNotes: [newCreditNote()],
+                createdDate: LocalDateTime.parse('2019-11-01T00:00:00'),
+                lastModifiedDate: LocalDateTime.parse('2019-11-05T00:00:00'),
                 amountDue: 500000,
                 originalAmountDue: order.sum(),
                 requestedNumberOfDaysToPaymentDeadline: order.requestedNumberOfDaysToPaymentDeadline,
-                customer: newCustomer(),
-                createdBy: newUser(),
+                customerId: String,
+                customerName: 'Ola Testesen',
+                createdByEmployeeNumber: newUser().getEmployeeNumber(),
                 organisationUnit: newOrganisationUnit(),
-                principal: newPrincipal(),
+                principalCode: newPrincipal().getCode(),
+                principalUri: newPrincipal().getUri(),
                 invoiceUri: 'link.to.Invoice',
                 orderItems: order.orderItems,
                 claimStatus: claimStatus,
@@ -81,7 +86,7 @@ class BetalingObjectFactory {
     static CreditNote newCreditNote() {
         return new CreditNote(
                 id: '111',
-                date: LocalDate.parse('2019-11-12'),
+                date: LocalDateTime.parse('2019-12-11T00:00:00'),
                 amount: 500000,
                 comment: 'This is a comment'
         )
@@ -90,6 +95,7 @@ class BetalingObjectFactory {
     static User newUser() {
         return new User(
                 name: 'Frank Testesen',
+                employeeNumber: '2001',
                 organisation: newOrganisation(),
                 organisationUnits: [newOrganisationUnit()]
         )
@@ -125,6 +131,7 @@ class BetalingObjectFactory {
         faktura.setBelop(r.nextLong(50000, 100000))
         faktura.setRestbelop(r.nextLong(10000, 50000))
         faktura.setFakturanummer(new Identifikator(identifikatorverdi: r.nextLong(100000, 3000000)))
+        faktura.setDato(new Date(2024,1,3))
         use(TimeCategory) {
             def now = new Date()
             faktura.setDato(now - 12.days)

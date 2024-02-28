@@ -4,16 +4,23 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.config.Endpoints;
 import no.fint.betaling.exception.SkoleressursException;
 import no.fint.betaling.repository.GroupRepository;
+import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
 import no.fint.model.resource.felles.PersonResource;
+import no.fint.model.resource.okonomi.faktura.FakturaResource;
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -67,5 +74,52 @@ public class FintClient {
                 .map(groupRepository.getSchools()::get)
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
+    }
+
+    public Mono<List<FakturaResource>> getFaktura(FakturagrunnlagResource invoice) {
+        return Flux.fromIterable(invoice.getFaktura())
+                .map(Link::getHref)
+                .flatMap(uri -> restUtil.get(FakturaResource.class, uri))
+                .collectList();
+    }
+
+    public Set<String> getFakturanummere(List<FakturaResource> fakturaList) {
+        return fakturaList.stream()
+                .map(FakturaResource::getFakturanummer)
+                .map(Identifikator::getIdentifikatorverdi)
+                .collect(Collectors.toSet());
+    }
+
+    public Optional<LocalDate> getInvoiceDate(List<FakturaResource> fakturaList) {
+        return fakturaList.stream()
+                .map(FakturaResource::getDato)
+                .map(date -> date.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate())
+                .min(Comparator.naturalOrder());
+    }
+
+    public Optional<LocalDate> getPaymentDueDate(List<FakturaResource> fakturaList) {
+        return fakturaList.stream()
+                .map(FakturaResource::getForfallsdato)
+                .map(date -> date.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate())
+                .max(Comparator.naturalOrder());
+    }
+
+    public Optional<Long> getAmountDue(List<FakturaResource> fakturaList) {
+        return fakturaList.stream()
+                .map(FakturaResource::getRestbelop)
+                .filter(Objects::nonNull)
+                .reduce(Long::sum);
+
+    }
+
+    public Optional<String> setInvoiceUri(FakturagrunnlagResource invoice) {
+        return invoice.getSelfLinks()
+                .stream()
+                .map(Link::getHref)
+                .findAny();
     }
 }

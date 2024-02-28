@@ -10,3 +10,19 @@ spring:
         registration:
           fint:
             client-id: "pwf.no"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test
+    username: postgres
+    password: postgres
+    hikari:
+      schema: fintlabs_no
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        enable_lazy_load_no_trans: true
+    hibernate:
+      ddl-auto: validate

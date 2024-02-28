@@ -1,97 +1,56 @@
 package no.fint.betaling.repository
 
-import no.fint.betaling.config.Endpoints
-import no.fint.betaling.model.Claim
+
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.util.BetalingObjectFactory
-import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.query.Criteria
-import org.springframework.data.mongodb.core.query.Query
-import org.springframework.data.mongodb.core.query.Update
-import org.springframework.data.util.CloseableIterator
+import spock.lang.Ignore
 import spock.lang.Specification
 
 class ClaimRepositorySpec extends Specification {
 
-    private Endpoints endpoints
-    private MongoTemplate mongoTemplate
-    private ClaimRepository claimRepository
-    private BetalingObjectFactory betalingObjectFactory;
+    ClaimRepository claimRepository
+    BetalingObjectFactory betalingObjectFactory
+    ClaimJpaRepository claimJpaRepository
+    OrganisationJpaRepository organisationJpaRepository
+    OrderItemJpaRepository orderItemJpaRepository
 
     void setup() {
-        endpoints = Mock(Endpoints)
-        mongoTemplate = Mock(MongoTemplate)
-        claimRepository = new ClaimRepository(endpoints, mongoTemplate)
+        claimJpaRepository = Mock()
+        organisationJpaRepository = Mock()
+        orderItemJpaRepository = Mock()
+        claimRepository = new ClaimRepository(claimJpaRepository, organisationJpaRepository, orderItemJpaRepository)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
-    def "Set payment given valid data sends Betaling and orgId to mongotemplate"() {
+    def "Set payment given valid data sends Betaling and orgId to claimJpaRepository"() {
         given:
-        def claim = betalingObjectFactory.newClaim('123', ClaimStatus.STORED)
+        def claim = betalingObjectFactory.newClaim(123L, ClaimStatus.STORED)
 
         when:
         claimRepository.storeClaim(claim)
 
         then:
-        1 * mongoTemplate.save(_ as Claim)
-        claim.orderNumber == '100001'
+        1 * claimJpaRepository.save(claim) >> claim
     }
 
-    def "Get payment returns list"() {
-        given:
-        def query = new Query()
-        query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
-
-        when:
-        def claims = claimRepository.getClaims(query)
-
-        then:
-        1 * mongoTemplate.find(_ as Query, _ as Class<Claim>) >> [new Claim()]
-        claims.size() == 1
-    }
-
-    def "Update payment given valid org id, valid update and valid query"() {
-        given:
-        def query = new Query()
-        query.addCriteria(Criteria.where('someValue').is('someOtherValue'))
-
-        def update = new Update()
-        update.set('someValue','testValue')
-
-        when:
-        claimRepository.updateClaim(query, update)
-
-        then:
-        1 * mongoTemplate.upsert(_ as Query, _ as Update, _ as Class<Claim>)
-    }
-
+    @Ignore("Changed into using sequence")
     def "Get highest order number"() {
-        given:
-        def lowClaim = betalingObjectFactory.newClaim('1234', ClaimStatus.SENT)
-        def highClaim = betalingObjectFactory.newClaim('5678', ClaimStatus.STORED)
-        def claims = [highClaim, lowClaim].iterator()
-        def iter = new CloseableIterator() {
-            @Override
-            void close() {
-
-            }
-
-            @Override
-            boolean hasNext() {
-                return claims.hasNext()
-            }
-
-            @Override
-            Object next() {
-                return claims.next()
-            }
-        }
-
         when:
         claimRepository.setHighestOrderNumber()
 
         then:
-        1 * mongoTemplate.stream(_ as Query, _ as Class<Claim>) >> iter
+        1 * claimJpaRepository.findHighestOrderNumber() >> Optional.of(5678L);
         claimRepository.orderNumberCounter.get() == 5678
+    }
+
+    @Ignore("Changed into using sequence")
+    def "Get highest order number - use default value"(){
+            when:
+            claimRepository.setHighestOrderNumber()
+
+            then:
+            1 * claimJpaRepository.findHighestOrderNumber() >> Optional.empty();
+            claimRepository.orderNumberCounter.get() == 10000L
+
     }
 }

@@ -1,10 +1,11 @@
 package no.fint.betaling.config;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.CustomUserConverter;
+import no.fint.betaling.util.CustomUserConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -13,6 +14,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
 import reactor.core.publisher.Mono;
 
+@Configuration
 @Slf4j
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
@@ -32,11 +34,8 @@ public class SecurityConfiguration {
 
         log.warn("Starting WITHOUT security. SecurityWebFilterChain disabled.");
 
-        return http
-                .csrf()
-                .disable()
-                .httpBasic()
-                .disable()
+        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .build();
     }
 
@@ -50,8 +49,7 @@ public class SecurityConfiguration {
                         .anyExchange()
                         .authenticated())
                 .oauth2ResourceServer((resourceServer) -> resourceServer
-                        .jwt()
-                        .jwtAuthenticationConverter(new CustomUserConverter()));
+                        .jwt(jwtSpec -> jwtSpec.jwtAuthenticationConverter(new CustomUserConverter())));
         return http.build();
     }
 

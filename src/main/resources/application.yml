@@ -1,4 +1,7 @@
 spring:
+  profiles:
+    include:
+      - db
   cache:
     caffeine:
       spec: expireAfterWrite=2h
@@ -6,6 +9,8 @@ spring:
     type: CAFFEINE
   mvc:
     dispatch-options-request: true
+  webflux:
+    base-path: /api
   security:
     oauth2:
       resourceserver:
@@ -20,6 +25,8 @@ spring:
             authorization-grant-type: password
             provider: fint-idp
             scope: fint-client
+            client-id: ${fint.core.oauth2.client-id}
+            client-secret: ${fint.core.oauth2.client-secret}
 
 management:
   health:
@@ -34,10 +41,22 @@ management:
         include: info, health, metrics, prometheus
 
 fint:
+  client:
+    registration-id: fint
+    username: ${fint.core.oauth2.username}
+    password:  ${fint.core.oauth2.password}
+
+  oauth:
+    enabled: true
+    scope: fint-client
+    request-url: https://idp.felleskomponent.no/nidp/oauth/nam/userinfo
+
   betaling:
+    authorized-role: https://role-catalog.vigoiks.no/vigo/elevfakturering/user
+    authorized-role-admin: https://role-catalog.vigoiks.no/vigo/elevfakturering/admin
     date-range: "7, 14, 30"
     invoice-update-rate: "300000"
     invoice-update-cron: '0 30 16 ? * MON-FRI'
-    demo-user-employeeid: "100006"
+    demo-user-employee-id: "100006"
     demo: "false"
 
