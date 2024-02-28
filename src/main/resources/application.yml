@@ -50,12 +50,13 @@ fint:
     enabled: true
     scope: fint-client
     request-url: https://idp.felleskomponent.no/nidp/oauth/nam/userinfo
-    betaling:
-      authorized-role: https://role-catalog.vigoiks.no/vigo/elevfakturering/user
-      authorized-role-admin: https://role-catalog.vigoiks.no/vigo/elevfakturering/admin
+
+  betaling:
+    authorized-role: https://role-catalog.vigoiks.no/vigo/elevfakturering/user
+    authorized-role-admin: https://role-catalog.vigoiks.no/vigo/elevfakturering/admin
     date-range: "7, 14, 30"
     invoice-update-rate: "300000"
     invoice-update-cron: '0 30 16 ? * MON-FRI'
-    demo-user-employeeid: "100006"
+    demo-user-employee-id: "100006"
     demo: "false"
 
