@@ -75,6 +75,7 @@ public class ClaimRepository {
     }
 
     public void save(Claim claim) {
+        claim.setTimestamp(System.currentTimeMillis());
         claimJpaRepository.save(claim);
     }
 }

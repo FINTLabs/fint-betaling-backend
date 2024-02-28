@@ -27,10 +27,4 @@ public interface ClaimJpaRepository extends JpaRepository<Claim, Long> {
     @Query("SELECT c FROM Claim c WHERE (cast(:date as timestamp) IS NULL OR c.createdDate >= :date) AND (:statuses IS NULL OR c.claimStatus IN :statuses) AND (:organisationNumber IS NULL OR c.organisationUnit.organisationNumber = :organisationNumber) ORDER BY c.orderNumber DESC")
     List<Claim> getByDateAndSchoolAndStatus(@Param("date") LocalDateTime date, @Param("organisationNumber") String organisationNumber, @Param("statuses") List<ClaimStatus> statuses);
 
-
-// Todo: Finn ut hvordan vi alltid kan oppdatere denne
-//    public void updateClaim(Query query, Update update) {
-//        update.set("timestamp", System.currentTimeMillis());
-//        mongoTemplate.upsert(query, update, no.fint.betaling.model.Claim.class);
-//    }
 }
