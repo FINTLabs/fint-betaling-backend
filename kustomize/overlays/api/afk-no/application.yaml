@@ -18,7 +18,7 @@ spec:
     - name: fint.betaling.invoice-update-rate
       value: '3600000'
     - name: fint.betaling.principal-matching-strategy
-      value: 'byOrgnummer'
+      value: 'default'
     - name: fint.client.enabled
       value: 'true'
     - name: fint.client.base-url
