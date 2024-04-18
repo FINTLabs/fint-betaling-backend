@@ -92,7 +92,10 @@ public class RestUtil {
                 .retrieve()
                 .toBodilessEntity()
                 .filter(entity -> entity.getStatusCode().is2xxSuccessful())
-                .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()));
+                .flatMap(entity -> {
+                    log.debug("POST returned {}", entity.getStatusCode());
+                    return Mono.justOrEmpty(entity.getHeaders());
+                });
     }
 
     @Data

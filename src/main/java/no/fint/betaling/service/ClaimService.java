@@ -85,11 +85,12 @@ public class ClaimService {
                 .doOnNext(httpHeaders -> {
                     if (httpHeaders.getLocation() != null) {
                         claim.setInvoiceUri(httpHeaders.getLocation().toString());
-                        claim.setClaimStatus(ClaimStatus.SENT);
-                        claim.setStatusMessage(null);
-                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                        claimRepository.save(claim);
                     }
+
+                    claim.setClaimStatus(ClaimStatus.SENT);
+                    claim.setStatusMessage(null);
+                    log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                    claimRepository.save(claim);
                 })
                 .doOnError(WebClientResponseException.class, ex -> {
                     claim.setClaimStatus(ClaimStatus.SEND_ERROR);
