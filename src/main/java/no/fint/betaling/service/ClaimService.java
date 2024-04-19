@@ -81,7 +81,7 @@ public class ClaimService {
     private Mono<Claim> checkClaimStatus(Claim claim) {
         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
 
-        return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class, claim.getOrgId())
+        return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
                 .doOnNext(httpHeaders -> {
                     if (httpHeaders.getLocation() != null) {
                         claim.setInvoiceUri(httpHeaders.getLocation().toString());

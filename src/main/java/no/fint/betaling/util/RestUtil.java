@@ -22,6 +22,9 @@ public class RestUtil {
     @Value("${fint.client.base-url}")
     private String baseUrl;
 
+    @Value("${fint.betaling.org-id}")
+    private String orgId;
+
     private final WebClient webClient;
 
     private final Map<String, Long> sinceTimestamp = new ConcurrentHashMap<>();
@@ -34,6 +37,8 @@ public class RestUtil {
         final String url = checkUrl(uri);
         return webClient.get()
                 .uri(url.concat("/last-updated"))
+                .header("x-org-id", orgId)
+                .header("x-client", "betaling")
                 .retrieve()
                 .bodyToMono(LastUpdated.class)
                 .flatMap(lastUpdated -> webClient.get()
@@ -48,6 +53,8 @@ public class RestUtil {
         uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
+                .header("x-org-id", orgId)
+                .header("x-client", "betaling")
                 .retrieve()
                 .bodyToMono(clazz)
                 .retryWhen(
@@ -61,6 +68,8 @@ public class RestUtil {
         uri = checkUrl(uri);
         return webClient.get()
                 .uri(uri.replace(baseUrl, ""))
+                .header("x-org-id", orgId)
+                .header("x-client", "betaling")
                 .retrieve()
                 .bodyToMono(clazz);
     }
@@ -72,13 +81,15 @@ public class RestUtil {
         return webClient
                 .get()
                 .uri(uri)
+                .header("x-org-id", orgId)
+                .header("x-client", "betaling")
                 .retrieve()
                 .toBodilessEntity()
                 .filter(entity -> entity.getStatusCode().is2xxSuccessful())
                 .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()));
     }
 
-    public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz, String orgId) {
+    public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz) {
         uri = checkUrl(uri);
         // todo: what is x-client id ??
         log.info("POST {} {}", uri, content);
@@ -87,7 +98,7 @@ public class RestUtil {
                 .post()
                 .uri(uri)
                 .header("x-org-id", orgId)
-                .header("x-client", "pwf.no")
+                .header("x-client", "betaling")
                 .body(Mono.just(content), clazz)
                 .retrieve()
                 .toBodilessEntity()

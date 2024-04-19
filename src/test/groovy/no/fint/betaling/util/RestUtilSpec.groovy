@@ -54,7 +54,7 @@ class RestUtilSpec extends Specification {
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))
 
         when:
-        Mono<HttpHeaders> response = restUtil.post('/test', 'ping', String.class, 'test.no')
+        Mono<HttpHeaders> response = restUtil.post('/test', 'ping', String.class)
 
         then:
         StepVerifier.create(response)
@@ -88,7 +88,7 @@ class RestUtilSpec extends Specification {
         def elev = new ElevResource(elevnummer: new Identifikator(identifikatorverdi: '12348765'))
 
         when:
-        def response = restUtil.post('/test', elev, ElevResource.class, "test.no")
+        def response = restUtil.post('/test', elev, ElevResource.class)
 
         then:
         response.block().getLocation().toString() == "http://test.no/1234"
