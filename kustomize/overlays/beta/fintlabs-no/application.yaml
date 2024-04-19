@@ -11,7 +11,7 @@ spec:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M'
     - name: fint.betaling.invoice-update-rate
-      value: '3600000'
+      value: '60000'
     - name: fint.betaling.principal-matching-strategy
       value: 'byOrgnummer'
     - name: spring.security.oauth2.client.registration.fint.client-id
