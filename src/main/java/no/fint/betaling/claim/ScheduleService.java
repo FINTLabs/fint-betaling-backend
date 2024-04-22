@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ScheduleService {
 
-    private final ClaimService claimService;
+    private final ClaimRestService claimRestService;
 
-    public ScheduleService(ClaimService claimService) {
-        this.claimService = claimService;
+    public ScheduleService(ClaimRestService claimRestService) {
+        this.claimRestService = claimRestService;
     }
 
     /*
@@ -30,7 +30,7 @@ public class ScheduleService {
     public void updateRecentlySentClaims() {
         log.debug("Updating sent claims...");
         try {
-            claimService.updateSentClaims();
+            claimRestService.updateSentClaims();
         } catch (Exception e) {
             log.error("Error caught when updating sent claims!", e);
         }
@@ -40,7 +40,7 @@ public class ScheduleService {
     public void updateAcceptedClaims() {
         log.debug("Updating accepted claims...");
         try {
-            claimService.updateAcceptedClaims();
+            claimRestService.updateAcceptedClaims();
         } catch (Exception e) {
             log.error("Error caught when updating claims!", e);
         }

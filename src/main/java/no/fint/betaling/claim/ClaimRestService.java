@@ -1,15 +1,12 @@
 package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Claim;
-import no.fint.betaling.model.ClaimStatus;
-import no.fint.betaling.model.ClaimsDatePeriod;
-import no.fint.betaling.model.Order;
 import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.common.util.RestUtil;
+import no.fint.betaling.model.Claim;
+import no.fint.betaling.model.ClaimStatus;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,71 +14,52 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class ClaimService {
+public class ClaimRestService {
 
-    private static final String INVOICE_URI = "invoiceUri";
-    private static final String AMOUNT_DUE = "amountDue";
-    private static final String CLAIM_STATUS = "claimStatus";
-    private static final String STATUS_MESSAGE = "statusMessage";
+    private final RestUtil restUtil;
+
+    private final FintClient fintClient;
+
+    private final InvoiceFactory invoiceFactory;
+
+    private final ClaimRepository claimRepository;
+
+    private final ClaimDatabaseService claimDatabaseService;
 
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    private final RestUtil restUtil;
-    private final ClaimRepository claimRepository;
-    private final ClaimFactory claimFactory;
-    private final InvoiceFactory invoiceFactory;
-    private final FintClient fintClient;
-    private final ClaimFetcherService claimFetcherService;
-
-    public ClaimService(RestUtil restUtil,
-                        ClaimRepository claimRepository,
-                        ClaimFactory claimFactory,
-                        InvoiceFactory invoiceFactory,
-                        FintClient fintClient,
-                        ClaimFetcherService claimFetcherService) {
+    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService) {
         this.restUtil = restUtil;
-        this.claimRepository = claimRepository;
-        this.claimFactory = claimFactory;
-        this.invoiceFactory = invoiceFactory;
         this.fintClient = fintClient;
-        this.claimFetcherService = claimFetcherService;
-    }
-
-
-    public List<Claim> storeClaims(Order order) {
-        return claimFactory
-                .createClaims(order)
-                .stream()
-                .map(claimRepository::storeClaim)
-                .collect(Collectors.toList());
+        this.invoiceFactory = invoiceFactory;
+        this.claimRepository = claimRepository;
+        this.claimDatabaseService = claimDatabaseService;
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
-        return Flux.fromIterable(claimFetcherService.getUnsentClaims())
+        return Flux.fromIterable(claimDatabaseService.getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
-                .flatMap(this::checkClaimStatus)
+                .flatMap(this::sendClaim)
                 .onErrorResume(throwable -> {
                     log.error("Error occurred while sending claims", throwable);
                     return Flux.error(throwable);
                 });
     }
 
-    private Mono<Claim> checkClaimStatus(Claim claim) {
+    private Mono<Claim> sendClaim(Claim claim) {
         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
 
         return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
                 .doOnNext(httpHeaders -> {
                     if (httpHeaders.getLocation() != null) {
                         claim.setInvoiceUri(httpHeaders.getLocation().toString());
+                    } else {
+                        log.error("Successfull POST to FINT, but no location header in response");
                     }
 
                     claim.setClaimStatus(ClaimStatus.SENT);
@@ -99,7 +77,7 @@ public class ClaimService {
     }
 
     public void updateSentClaims() {
-        claimFetcherService.getSentClaims().forEach(claim -> {
+        claimDatabaseService.getSentClaims().forEach(claim -> {
             restUtil.head(claim.getInvoiceUri())
                     .doOnNext(headers -> {
                         if (headers.getLocation() != null) {
@@ -152,7 +130,7 @@ public class ClaimService {
 
     public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
-        claimFetcherService.getAcceptedClaims().forEach(claim -> {
+        claimDatabaseService.getAcceptedClaims().forEach(claim -> {
 
             restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                     .doOnNext(this::updateClaim)
@@ -179,7 +157,7 @@ public class ClaimService {
      *
      * @return New claim status
      */
-    public void updateClaim(FakturagrunnlagResource invoice) {
+    private void updateClaim(FakturagrunnlagResource invoice) {
         Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
         fintClient.setInvoiceUri(invoice).ifPresent(claim::setInvoiceUri);
 
@@ -214,45 +192,4 @@ public class ClaimService {
         }
     }
 
-    public int countClaimsByStatus(ClaimStatus[] statuses, String days) {
-        if (StringUtils.isNotBlank(days)) {
-            return claimRepository.countByStatusAndDays(Long.parseLong(days), statuses);
-        }
-        return claimRepository.countByStatus(statuses);
-    }
-
-    public void cancelClaim(long orderNumber) {
-        Claim claim = claimFetcherService.getClaimByOrderNumber(orderNumber);
-
-        if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
-            claim.setClaimStatus(ClaimStatus.CANCELLED);
-            claimRepository.save(claim);
-        } else {
-            log.warn("cancel claim called, but claim was not in stored status (orderNumber: {}, status: {})", orderNumber, claim.getClaimStatus());
-        }
-    }
-
-    public static LocalDateTime claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.clear(Calendar.MINUTE);
-        calendar.clear(Calendar.SECOND);
-        calendar.clear(Calendar.MILLISECOND);
-
-        switch (period) {
-            case ALL:
-                break;
-            case WEEK:
-                calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
-                break;
-            case MONTH:
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                break;
-            case YEAR:
-                calendar.set(Calendar.DAY_OF_YEAR, 1);
-                break;
-        }
-
-        return period == ClaimsDatePeriod.ALL ? null : LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
-    }
 }

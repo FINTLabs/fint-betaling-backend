@@ -20,28 +20,28 @@ import java.util.List;
 @RequestMapping(value = "/claim")
 public class ClaimController {
 
-    private final ClaimService claimService;
+    private final ClaimDatabaseService claimDatabaseService;
+
+    private final ClaimRestService claimRestService;
 
     private final ScheduleService scheduleService;
 
-    private final ClaimFetcherService claimFetcherService;
-
-    public ClaimController(ClaimService claimService, ScheduleService scheduleService, ClaimFetcherService claimFetcherService) {
-        this.claimService = claimService;
+    public ClaimController(ClaimDatabaseService claimDatabaseService, ClaimRestService claimRestService, ScheduleService scheduleService) {
+        this.claimDatabaseService = claimDatabaseService;
+        this.claimRestService = claimRestService;
         this.scheduleService = scheduleService;
-        this.claimFetcherService = claimFetcherService;
     }
 
     @PostMapping
     public ResponseEntity<List<Claim>> storeClaim(@RequestBody Order order) {
         log.info("Received order: {}", order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.storeClaims(order));
+        return ResponseEntity.status(HttpStatus.CREATED).body(claimDatabaseService.storeClaims(order));
     }
 
     @PostMapping("/send")
     public ResponseEntity<Flux<Claim>> sendClaims(@RequestBody List<Long> orderNumbers) {
         log.info("Send claims for order number: {}", orderNumbers);
-        Flux<Claim> flux = claimService.sendClaims(orderNumbers);
+        Flux<Claim> flux = claimRestService.sendClaims(orderNumbers);
 
         // TODO: 02/05/2023 CT-688 Denne nullsjekken bør være undøvendig. Trolig årsak til at det ikke fungerer:
         if (flux == null) {
@@ -67,28 +67,28 @@ public class ClaimController {
 
         if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
         ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-        return ResponseEntity.ok(claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, schoolSelection, toClaimStatus(status)));
+        return ResponseEntity.ok(claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, schoolSelection, toClaimStatus(status)));
     }
 
     @GetMapping("/name/{name}")
     public ResponseEntity<List<Claim>> getClaimsByCustomerName(@PathVariable String name) {
-        return ResponseEntity.ok(claimFetcherService.getClaimsByCustomerName(name));
+        return ResponseEntity.ok(claimDatabaseService.getClaimsByCustomerName(name));
     }
 
     @GetMapping("/order-number/{order-number}")
     public ResponseEntity<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
-        return ResponseEntity.ok(claimFetcherService.getClaimByOrderNumber(orderNumber));
+        return ResponseEntity.ok(claimDatabaseService.getClaimByOrderNumber(orderNumber));
     }
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Claim>> getClaimsByStatus(@PathVariable String[] status) {
-        return ResponseEntity.ok(claimFetcherService.getClaimsByStatus(toClaimStatus(status)));
+        return ResponseEntity.ok(claimDatabaseService.getClaimsByStatus(toClaimStatus(status)));
     }
 
     @GetMapping("/count/status/{status}")
     public ResponseEntity<Integer> getCountByStatus(@PathVariable String[] status,
                                                     @RequestParam(required = false) String days) {
-        return ResponseEntity.ok(claimService.countClaimsByStatus(toClaimStatus(status), days));
+        return ResponseEntity.ok(claimDatabaseService.countClaimsByStatus(toClaimStatus(status), days));
     }
 
     /**
@@ -98,12 +98,12 @@ public class ClaimController {
     @GetMapping("/count/by-status/{status}")
     public ResponseEntity<Integer> getCountByStatusOld(@PathVariable String[] status,
                                                        @RequestParam(required = false) String days) {
-        return ResponseEntity.ok(claimService.countClaimsByStatus(toClaimStatus(status), days));
+        return ResponseEntity.ok(claimDatabaseService.countClaimsByStatus(toClaimStatus(status), days));
     }
 
     @DeleteMapping("/order-number/{order-number}")
     public ResponseEntity cancelClaimsByID(@PathVariable("order-number") long orderNumber) {
-        claimService.cancelClaim(orderNumber);
+        claimDatabaseService.cancelClaim(orderNumber);
         return ResponseEntity.noContent().build();
     }
 

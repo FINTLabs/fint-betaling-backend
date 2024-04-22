@@ -1,8 +1,8 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.claim.ClaimFactory
-import no.fint.betaling.claim.ClaimFetcherService
-import no.fint.betaling.claim.ClaimService
+
+import no.fint.betaling.claim.ClaimDatabaseService
 import no.fint.betaling.claim.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
@@ -12,23 +12,18 @@ import no.fint.betaling.claim.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.betaling.common.util.FintClient
 import no.fint.betaling.common.util.RestUtil
-import org.springframework.http.HttpHeaders
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.time.LocalDateTime
 
-class ClaimServiceSpec extends Specification {
-    ClaimService claimService
+class ClaimDatabaseServiceSpec extends Specification {
+    ClaimDatabaseService claimDatabaseService
     RestUtil restUtil
     ClaimRepository claimRepository
     ClaimFactory claimFactory
     InvoiceFactory invoiceFactory
     FintClient fintClient
     BetalingObjectFactory betalingObjectFactory
-    ClaimFetcherService claimFetcherService
 
     void setup() {
         restUtil = Mock()
@@ -36,9 +31,8 @@ class ClaimServiceSpec extends Specification {
         claimFactory = Mock()
         invoiceFactory = Mock()
         fintClient = Mock()
-        claimFetcherService = Mock()
 
-        claimService = new ClaimService(restUtil, claimRepository, claimFactory, invoiceFactory, fintClient, claimFetcherService)
+        claimDatabaseService = new ClaimDatabaseService(claimRepository, claimFactory)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -48,7 +42,7 @@ class ClaimServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
 
         when:
-        def claims = claimService.storeClaims(order)
+        def claims = claimDatabaseService.storeClaims(order)
 
         then:
         1 * claimFactory.createClaims(_ as Order) >> [claim]
@@ -59,63 +53,6 @@ class ClaimServiceSpec extends Specification {
         claims.every { it.customerName == 'Ola Testesen' }
     }
 
-    def "Given valid claims, send invoices and update claims"() {
-        given:
-        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-        def header = new HttpHeaders();
-        header.setLocation(new URI('link.to.Location'))
-
-        claimFetcherService.getUnsentClaims() >> [claim]
-        restUtil.post(*_) >> Mono.just(header)
-
-        when:
-        def claims = claimService.sendClaims([12345L])
-
-        then:
-        StepVerifier
-                .create(claims)
-                .assertNext({ c ->
-                    assert c.claimStatus == ClaimStatus.SENT
-                    assert c.invoiceUri == 'link.to.Location'
-                })
-                .expectComplete()
-                .verify()
-    }
-
-    def "Send claim as inovice returns status"() {
-//        given:
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//        def thisIsTheInvoice = betalingObjectFactory.newFaktura()
-//
-//        when:
-//        def response = claimService.updateClaim(invoice)
-//
-//        then:
-//
-//
-//
-//        1* claimRepository.get(12345L)  >> betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-//        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
-//        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
-//        1 * fintClient.setInvoiceUri(_) >> Optional.of('link.to.Location')
-//        response.claimStatus == ClaimStatus.ACCEPTED.toString()
-    }
-
-    @Ignore
-    def "Update claims fetches invoices and updates claims"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//
-//        when:
-//        claimService.updateClaims()
-//
-//        then:
-//        1 * claimRepository.getAll(_ as Query) >> [claim]
-//        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> invoice
-//        1 * claimRepository.updateClaim(_ as Query, _ as Update)
-    }
-
     def "Get claims by status returns list of claims"() {
         given:
         def claimStatuses = [ClaimStatus.SENT, ClaimStatus.ACCEPTED]
@@ -123,10 +60,10 @@ class ClaimServiceSpec extends Specification {
                 new Claim(orgId: 123, orderNumber: 12345, claimStatus: ClaimStatus.SENT),
                 new Claim(orgId: 456, orderNumber: 67890, claimStatus: ClaimStatus.SENT)
         ]
-        claimFetcherService.getClaimsByStatus(claimStatuses as ClaimStatus[]) >> expectedClaims
+        claimRepository.get(claimStatuses as ClaimStatus[]) >> expectedClaims
 
         when:
-        def actualClaims = claimFetcherService.getClaimsByStatus(claimStatuses as ClaimStatus[])
+        def actualClaims = claimDatabaseService.getClaimsByStatus(claimStatuses as ClaimStatus[])
 
         then:
         actualClaims == expectedClaims
@@ -155,10 +92,10 @@ class ClaimServiceSpec extends Specification {
                 betalingObjectFactory.newClaim(12346L, ClaimStatus.STORED)
         ]
 
-        claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(_, _, _) >> expectedClaims
+        claimRepository.getByDateAndSchoolAndStatus(_, _, _) >> expectedClaims
 
         when:
-        def actualClaims = claimFetcherService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
+        def actualClaims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
 
         then:
         actualClaims.size() == expectedClaims.size()
@@ -170,10 +107,10 @@ class ClaimServiceSpec extends Specification {
 
 
         when:
-        def claims = claimFetcherService.getClaimsByCustomerName('Ola Testesen')
+        def claims = claimDatabaseService.getClaimsByCustomerName('Ola Testesen')
 
         then:
-        1 * claimFetcherService.getClaimsByCustomerName('Ola Testesen') >> [claim]
+        1 * claimRepository.getByCustomerName('Ola Testesen') >> [claim]
         claims.size() == 1
         claims.get(0).customerName == 'Ola Testesen'
     }
@@ -211,7 +148,7 @@ class ClaimServiceSpec extends Specification {
     def "Get count of claims by status"() {
 
         when:
-        def claims = claimService.countClaimsByStatus([ClaimStatus.ERROR] as ClaimStatus[], '')
+        def claims = claimDatabaseService.countClaimsByStatus([ClaimStatus.ERROR] as ClaimStatus[], '')
 
         then:
         1 * claimRepository.countByStatus(ClaimStatus.ERROR) >> 8
@@ -222,7 +159,7 @@ class ClaimServiceSpec extends Specification {
     def "Get count of claims by status and days"() {
 
         when:
-        def claims = claimService.countClaimsByStatus([ClaimStatus.SENT] as ClaimStatus[], '14')
+        def claims = claimDatabaseService.countClaimsByStatus([ClaimStatus.SENT] as ClaimStatus[], '14')
 
         then:
         1 * claimRepository.countByStatusAndDays(14, ClaimStatus.SENT) >> 143
