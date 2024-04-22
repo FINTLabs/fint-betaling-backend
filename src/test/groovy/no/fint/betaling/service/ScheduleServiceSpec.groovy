@@ -1,6 +1,7 @@
 package no.fint.betaling.service
 
-import spock.lang.Ignore
+import no.fint.betaling.claim.ClaimService
+import no.fint.betaling.claim.ScheduleService
 import spock.lang.Specification
 
 class ScheduleServiceSpec extends Specification {

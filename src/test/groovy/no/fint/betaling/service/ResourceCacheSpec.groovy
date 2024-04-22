@@ -1,7 +1,7 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.repository.ResourceCache
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.common.ResourceCache
+import no.fint.betaling.common.util.RestUtil
 import no.fint.model.resource.Link
 import no.fint.model.resource.utdanning.vurdering.ElevfravarResource
 import no.fint.model.resource.utdanning.vurdering.ElevfravarResources

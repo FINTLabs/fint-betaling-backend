@@ -1,13 +1,6 @@
 package no.fint.betaling.controller
 
-import no.fint.betaling.model.Claim
-import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.Customer
-import no.fint.betaling.model.Order
-import no.fint.betaling.service.ClaimService
-import no.fint.betaling.service.ScheduleService
-import org.spockframework.spring.SpringBean
-import org.springframework.http.HttpStatus
+
 import spock.lang.Ignore
 import spock.lang.Specification
 

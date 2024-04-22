@@ -1,6 +1,6 @@
 package no.fint.betaling.util
 
-
+import no.fint.betaling.common.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.administrasjon.personal.PersonalressursResources
 import no.fint.model.resource.utdanning.elev.ElevResource

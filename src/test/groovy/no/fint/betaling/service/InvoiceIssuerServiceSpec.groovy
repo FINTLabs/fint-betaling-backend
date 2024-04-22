@@ -1,10 +1,12 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.exception.PrincipalNotFoundException
+import no.fint.betaling.common.exception.PrincipalNotFoundException
 import no.fint.betaling.model.Organisation
 import no.fint.betaling.model.Principal
-import no.fint.betaling.repository.InvoiceIssuerRepository
-import no.fint.betaling.repository.UserRepository
+import no.fint.betaling.invoiceissuer.InvoiceIssuerRepository
+import no.fint.betaling.invoiceissuer.InvoiceIssuerService
+import no.fint.betaling.organisation.OrganisationService
+import no.fint.betaling.user.UserRepository
 import reactor.core.publisher.Mono
 import spock.lang.Specification
 import spock.lang.Unroll

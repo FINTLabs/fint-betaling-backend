@@ -1,5 +1,6 @@
 package no.fint.betaling.repository
 
+import no.fint.betaling.claim.ClaimJpaRepository
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import org.junit.Ignore

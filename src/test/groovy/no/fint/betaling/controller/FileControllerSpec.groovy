@@ -1,10 +1,11 @@
 package no.fint.betaling.controller
 
+import no.fint.betaling.file.FileController
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.CustomerGroup
-import no.fint.betaling.service.FileService
-import no.fint.betaling.service.GroupService
-import no.fint.betaling.util.CustomerFileGroup
+import no.fint.betaling.file.FileService
+import no.fint.betaling.group.GroupService
+import no.fint.betaling.common.util.CustomerFileGroup
 import org.apache.poi.ss.usermodel.Sheet
 import org.spockframework.spring.SpringBean
 import org.springframework.http.HttpStatus

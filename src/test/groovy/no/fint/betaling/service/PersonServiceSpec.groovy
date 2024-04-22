@@ -1,6 +1,7 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.repository.GroupRepository
+import no.fint.betaling.group.GroupRepository
+import no.fint.betaling.organisation.PersonService
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource

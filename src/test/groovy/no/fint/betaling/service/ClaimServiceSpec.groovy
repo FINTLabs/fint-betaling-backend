@@ -1,24 +1,23 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.factory.ClaimFactory
-import no.fint.betaling.factory.InvoiceFactory
+import no.fint.betaling.claim.ClaimFactory
+import no.fint.betaling.claim.ClaimFetcherService
+import no.fint.betaling.claim.ClaimService
+import no.fint.betaling.claim.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.model.Order
-import no.fint.betaling.repository.ClaimRepository
+import no.fint.betaling.claim.ClaimRepository
 import no.fint.betaling.util.BetalingObjectFactory
-import no.fint.betaling.util.FintClient
-import no.fint.betaling.util.RestUtil
-import no.fint.model.felles.kompleksedatatyper.Periode
-import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
+import no.fint.betaling.common.util.FintClient
+import no.fint.betaling.common.util.RestUtil
 import org.springframework.http.HttpHeaders
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import spock.lang.Ignore
 import spock.lang.Specification
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 class ClaimServiceSpec extends Specification {

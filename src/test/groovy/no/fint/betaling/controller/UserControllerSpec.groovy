@@ -1,9 +1,10 @@
 package no.fint.betaling.controller
 
-import no.fint.betaling.config.ApplicationProperties
-import no.fint.betaling.exception.EmployeeIdException
+import no.fint.betaling.common.config.ApplicationProperties
+import no.fint.betaling.common.exception.EmployeeIdException
 import no.fint.betaling.model.User
-import no.fint.betaling.service.UserCacheService
+import no.fint.betaling.user.UserCacheService
+import no.fint.betaling.user.UserController
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.jwt.Jwt
 import reactor.test.StepVerifier

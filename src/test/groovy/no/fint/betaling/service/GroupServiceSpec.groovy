@@ -1,12 +1,9 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.repository.GroupRepository
+import no.fint.betaling.group.GroupRepository
+import no.fint.betaling.group.GroupService
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
-import no.fint.model.resource.utdanning.elev.ElevforholdResource
-import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource
-import no.fint.model.utdanning.utdanningsprogram.Skole
 import spock.lang.Specification
 
 class GroupServiceSpec extends Specification {

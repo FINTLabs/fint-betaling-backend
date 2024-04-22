@@ -1,8 +1,9 @@
 package no.fint.betaling.controller
 
+import no.fint.betaling.group.GroupController
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.CustomerGroup
-import no.fint.betaling.service.GroupService
+import no.fint.betaling.group.GroupService
 import org.spockframework.spring.SpringBean
 import org.springframework.http.HttpStatus
 import spock.lang.Specification

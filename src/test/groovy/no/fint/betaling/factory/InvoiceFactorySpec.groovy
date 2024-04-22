@@ -1,9 +1,9 @@
 package no.fint.betaling.factory
 
+import no.fint.betaling.claim.InvoiceFactory
 import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.service.PersonService
+import no.fint.betaling.organisation.PersonService
 import no.fint.betaling.util.BetalingObjectFactory
-import no.fint.model.resource.Link
 import spock.lang.Specification
 
 import java.time.LocalDate

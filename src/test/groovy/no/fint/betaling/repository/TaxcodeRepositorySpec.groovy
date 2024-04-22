@@ -1,7 +1,8 @@
 package no.fint.betaling.repository
 
-import no.fint.betaling.config.Endpoints
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.common.config.Endpoints
+import no.fint.betaling.common.util.RestUtil
+import no.fint.betaling.taxcode.TaxcodeRepository
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource

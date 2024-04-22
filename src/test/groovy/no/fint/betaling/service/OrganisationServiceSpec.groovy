@@ -1,8 +1,8 @@
 package no.fint.betaling.service
 
-
+import no.fint.betaling.organisation.OrganisationService
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.common.util.RestUtil
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import spock.lang.Specification

@@ -2,7 +2,8 @@ package no.fint.betaling.controller
 
 
 import no.fint.betaling.model.Principal
-import no.fint.betaling.service.InvoiceIssuerService
+import no.fint.betaling.invoiceissuer.InvoiceIssuerController
+import no.fint.betaling.invoiceissuer.InvoiceIssuerService
 import org.spockframework.spring.SpringBean
 import reactor.core.publisher.Mono
 import spock.lang.Specification

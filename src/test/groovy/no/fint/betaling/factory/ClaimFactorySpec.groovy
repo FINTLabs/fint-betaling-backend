@@ -1,5 +1,6 @@
 package no.fint.betaling.factory
 
+import no.fint.betaling.claim.ClaimFactory
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.util.BetalingObjectFactory
 import spock.lang.Specification

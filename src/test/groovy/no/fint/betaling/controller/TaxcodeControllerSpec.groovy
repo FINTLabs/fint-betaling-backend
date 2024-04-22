@@ -1,13 +1,10 @@
 package no.fint.betaling.controller
 
 import no.fint.betaling.model.Taxcode
-import no.fint.betaling.repository.TaxcodeRepository
+import no.fint.betaling.taxcode.TaxcodeRepository
+import no.fint.betaling.taxcode.TaxcodeController
 import org.spockframework.spring.SpringBean
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.context.ApplicationContext
 import org.springframework.http.HttpStatus
-import org.springframework.test.web.reactive.server.WebTestClient
 import spock.lang.Specification
 
 class TaxcodeControllerSpec extends Specification {

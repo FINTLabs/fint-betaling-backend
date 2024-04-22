@@ -1,9 +1,10 @@
 package no.fint.betaling.service
 
 
-import no.fint.betaling.exception.InsufficientDataException
-import no.fint.betaling.exception.NoVISIDColumnException
-import no.fint.betaling.exception.UnsupportedMediaTypeException
+import no.fint.betaling.common.exception.InsufficientDataException
+import no.fint.betaling.common.exception.NoVISIDColumnException
+import no.fint.betaling.common.exception.UnsupportedMediaTypeException
+import no.fint.betaling.file.FileService
 import no.fint.betaling.model.Customer
 import no.fint.betaling.util.FintObjectFactory
 import org.apache.commons.io.FileUtils

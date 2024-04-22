@@ -1,8 +1,11 @@
 package no.fint.betaling.repository
 
-import no.fint.betaling.config.Endpoints
+import no.fint.betaling.claim.LineitemRepository
+import no.fint.betaling.common.config.Endpoints
 import no.fint.betaling.model.Lineitem
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.common.util.RestUtil
+import no.fint.betaling.invoiceissuer.InvoiceIssuerRepository
+import no.fint.betaling.organisation.OrganisationRepository
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.faktura.FakturautstederResource

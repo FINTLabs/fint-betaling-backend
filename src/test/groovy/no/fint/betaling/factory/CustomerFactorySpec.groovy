@@ -1,7 +1,8 @@
 package no.fint.betaling.factory
 
+import no.fint.betaling.organisation.CustomerFactory
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.betaling.util.RestUtil
+import no.fint.betaling.common.util.RestUtil
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.felles.PersonResource
