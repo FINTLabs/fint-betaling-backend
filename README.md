@@ -42,15 +42,15 @@
 
 ### Invoice status
 
-| Status       | Message                                  | Description                                                      |
-|--------------|------------------------------------------|------------------------------------------------------------------|
-| STORED       | Lagret, ikke fakturert                   | Lagret i backend, men ikke overført til FINT.                    |
-| SENT         | Sendt til økonomisystem                  | POST'et til FINT med retur 202 Accepted.                         |
-| ACCEPTED     | Klar til fakturering                     | Async overføring vellykket. Vellykket retur med location-header. |
-| ISSUED       | Fakturert                                | Fakturagrunnlag er fakturert i økonomisystem.                    |
-| PAID         | Betalt                                   | Finnes faktura som er betalt eller kreditert.                    |
-| ERROR        | Ukjent feil                              | Ubrukt.                                                          |
-| SEND_ERROR   | Feil ved innsendelse                     | Overføring til FINT har feilet.                                  |
-| ACCEPT_ERROR | Feil ved oversending til økonomisystemet | FINT returnerer 4'**'-feil på overføring.                        |
-| UPDATE_ERROR | Feil ved oppdatering                     | Oppdatering av fakturastatus returnerte feil.                    |
-| CANCELLED    | Kansellert før fakturering               | Brukeren har slett ordren før den ble sendt til regnskap.        |
+| Status       | Icon                     | Description                                                      |
+|--------------|--------------------------|------------------------------------------------------------------|
+| STORED       | Ikke sendt               | Lagret i backend, men ikke overført til FINT.                    |
+| SENT         | Sendt                    | POST'et til FINT med retur 202 Accepted.                         |
+| ACCEPTED     | Klar                     | Async overføring vellykket. Vellykket retur med location-header. |
+| ISSUED       | Fakturert                | Fakturagrunnlag er fakturert i økonomisystem.                    |
+| PAID         | Betalt                   | Finnes faktura som er betalt eller kreditert.                    |
+| ERROR        | Generell feil            | Ubrukt.                                                          |
+| SEND_ERROR   | Feil ved sending         | Overføring til FINT har feilet.                                  |
+| ACCEPT_ERROR | Feil fra økonomisystemet | FINT returnerer 4'**'-feil på overføring.                        |
+| UPDATE_ERROR | Oppdateringsfeil         | Oppdatering av fakturastatus returnerte feil.                    |
+| CANCELLED    | Kansellerte              | Brukeren har slett ordren før den ble sendt til regnskap.        |

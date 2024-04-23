@@ -20,7 +20,8 @@ import java.time.Duration;
 @Slf4j
 @Service
 public class ClaimRestStatusService {
-    private static final Duration INITIAL_DELAY = Duration.ofSeconds(10);
+    private static final Duration INITAL_DELAY = Duration.ofSeconds(3);
+    private static final Duration DELAY = Duration.ofSeconds(10);
     private static final int MAX_ATTEMPTS = 120;
     private static final Duration MAX_TOTAL_DURATION = Duration.ofMinutes(20);
 
@@ -41,11 +42,13 @@ public class ClaimRestStatusService {
             return;
         }
 
+        wait(INITAL_DELAY);
+
         restClient.bodyless(url)
                 .flatMap(response -> evaluateResponse(response, claim))
-                .repeatWhenEmpty(repeat -> repeat.delayElements(INITIAL_DELAY).take(MAX_ATTEMPTS))
+                .repeatWhenEmpty(repeat -> repeat.delayElements(DELAY).take(MAX_ATTEMPTS))
                 .retryWhen(Retry
-                        .backoff(MAX_ATTEMPTS, INITIAL_DELAY)
+                        .backoff(MAX_ATTEMPTS, DELAY)
                         .maxBackoff(MAX_TOTAL_DURATION)
                         .filter(this::isRetryableException))
                 .subscribe(
@@ -111,5 +114,13 @@ public class ClaimRestStatusService {
     private boolean isValidStatusUri(String url) {
         if (!StringUtils.hasText(url)) return false;
         return url.contains("status");
+    }
+
+    private void wait(Duration duration) {
+        try {
+            Thread.sleep(duration.toMillis());
+        } catch (InterruptedException e) {
+            log.error("Error waiting", e);
+        }
     }
 }

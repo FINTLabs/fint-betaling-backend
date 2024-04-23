@@ -1,6 +1,5 @@
 package no.fint.betaling.claim;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.common.util.RestUtil;
@@ -9,16 +8,12 @@ import no.fint.betaling.model.ClaimStatus;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
 import java.util.List;
-import java.time.Duration;
 
 @Slf4j
 @Service
@@ -79,57 +74,58 @@ public class ClaimRestService {
                 .thenReturn(claim);
     }
 
-    public void updateSentClaims() {
-        claimDatabaseService.getSentClaims().forEach(claim -> {
-            restUtil.head(claim.getInvoiceUri())
-                    .doOnNext(headers -> {
-                        if (headers.getLocation() != null) {
-                            claim.setInvoiceUri(headers.getLocation().toString());
-                            claim.setClaimStatus(ClaimStatus.ACCEPTED);
-                            log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                        } else {
-                            log.info("Claim {} not updated", claim.getOrderNumber());
-                        }
-                        claim.setStatusMessage(null);
-                        claimRepository.save(claim);
-                    })
-                    .doOnError(WebClientResponseException.class, e -> {
-                        if (e.getStatusCode() == HttpStatus.GONE) {
-                            log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
-                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                            claim.setInvoiceUri(null);
-                            claimRepository.save(claim);
-                        } else {
-                            setClaimStatusFromFint(claim);
-                        }
-                    })
-                    .doOnError(e -> {
-                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-                        log.error("Exception: " + e.getMessage(), e);
-                    })
-                    .subscribe();
-        });
-    }
-
-    private void setClaimStatusFromFint(Claim claim) {
-        restUtil.get(String.class, claim.getInvoiceUri())
-                .flatMap(result -> {
-                    log.error("Unexpected result! {}", result);
-                    return Mono.empty(); // Brukes når det ikke er behov for å returnere en verdi fra flatMap
-                })
-                .doOnError(WebClientResponseException.class, e2 -> {
-                    if (e2.getStatusCode().is4xxClientError()) {
-                        claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
-                    } else if (e2.getStatusCode().is5xxServerError()) {
-                        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                    }
-                    claim.setStatusMessage(e2.getMessage());
-                    claimRepository.save(claim);
-                    log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatusCode(), e2.getMessage());
-                })
-                .onErrorResume(e -> Mono.empty()) // Håndterer andre feil og fortsetter
-                .subscribe();
-    }
+    // Replaced by ClaimRestStatusService:
+//    public void updateSentClaims() {
+//        claimDatabaseService.getSentClaims().forEach(claim -> {
+//            restUtil.head(claim.getInvoiceUri())
+//                    .doOnNext(headers -> {
+//                        if (headers.getLocation() != null) {
+//                            claim.setInvoiceUri(headers.getLocation().toString());
+//                            claim.setClaimStatus(ClaimStatus.ACCEPTED);
+//                            log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+//                        } else {
+//                            log.info("Claim {} not updated", claim.getOrderNumber());
+//                        }
+//                        claim.setStatusMessage(null);
+//                        claimRepository.save(claim);
+//                    })
+//                    .doOnError(WebClientResponseException.class, e -> {
+//                        if (e.getStatusCode() == HttpStatus.GONE) {
+//                            log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
+//                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+//                            claim.setInvoiceUri(null);
+//                            claimRepository.save(claim);
+//                        } else {
+//                            setClaimStatusFromFint(claim);
+//                        }
+//                    })
+//                    .doOnError(e -> {
+//                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+//                        log.error("Exception: " + e.getMessage(), e);
+//                    })
+//                    .subscribe();
+//        });
+//    }
+//
+//    private void setClaimStatusFromFint(Claim claim) {
+//        restUtil.get(String.class, claim.getInvoiceUri())
+//                .flatMap(result -> {
+//                    log.error("Unexpected result! {}", result);
+//                    return Mono.empty(); // Brukes når det ikke er behov for å returnere en verdi fra flatMap
+//                })
+//                .doOnError(WebClientResponseException.class, e2 -> {
+//                    if (e2.getStatusCode().is4xxClientError()) {
+//                        claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
+//                    } else if (e2.getStatusCode().is5xxServerError()) {
+//                        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+//                    }
+//                    claim.setStatusMessage(e2.getMessage());
+//                    claimRepository.save(claim);
+//                    log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatusCode(), e2.getMessage());
+//                })
+//                .onErrorResume(e -> Mono.empty()) // Håndterer andre feil og fortsetter
+//                .subscribe();
+//    }
 
     public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
