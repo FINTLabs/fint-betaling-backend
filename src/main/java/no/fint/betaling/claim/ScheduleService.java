@@ -28,12 +28,13 @@ public class ScheduleService {
 
     @Scheduled(initialDelay = 60000, fixedRateString = "${fint.betaling.invoice-update-rate}")
     public void updateRecentlySentClaims() {
-        log.debug("Updating sent claims...");
-        try {
-            claimRestService.updateSentClaims();
-        } catch (Exception e) {
-            log.error("Error caught when updating sent claims!", e);
-        }
+        // Deactivated, try trigger based on event instead (see ClaimRestStatusService)
+//        log.debug("Updating sent claims...");
+//        try {
+//            claimRestService.updateSentClaims();
+//        } catch (Exception e) {
+//            log.error("Error caught when updating sent claims!", e);
+//        }
     }
 
     @Scheduled(cron = "${fint.betaling.invoice-update-cron}")

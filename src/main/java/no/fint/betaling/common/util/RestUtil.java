@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -87,6 +88,19 @@ public class RestUtil {
                 .toBodilessEntity()
                 .filter(entity -> entity.getStatusCode().is2xxSuccessful())
                 .flatMap(entity -> Mono.justOrEmpty(entity.getHeaders()));
+    }
+
+    public Mono<ResponseEntity<Void>> bodyless(String uri) {
+        uri = checkUrl(uri);
+        log.info("GET {}", uri);
+
+        return webClient
+                .get()
+                .uri(uri)
+                .header("x-org-id", orgId)
+                .header("x-client", "betaling")
+                .retrieve()
+                .toBodilessEntity();
     }
 
     public <T> Mono<HttpHeaders> post(String uri, T content, Class<T> clazz) {

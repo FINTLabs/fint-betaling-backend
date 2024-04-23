@@ -1,5 +1,6 @@
 package no.fint.betaling.claim;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.common.util.RestUtil;
@@ -9,36 +10,37 @@ import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.util.List;
+import java.time.Duration;
 
 @Slf4j
 @Service
 public class ClaimRestService {
 
     private final RestUtil restUtil;
-
     private final FintClient fintClient;
-
     private final InvoiceFactory invoiceFactory;
-
     private final ClaimRepository claimRepository;
-
     private final ClaimDatabaseService claimDatabaseService;
+    private final ClaimRestStatusService claimRestStatusService;
 
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService) {
+    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {
         this.restUtil = restUtil;
         this.fintClient = fintClient;
         this.invoiceFactory = invoiceFactory;
         this.claimRepository = claimRepository;
         this.claimDatabaseService = claimDatabaseService;
+        this.claimRestStatusService = claimRestStatusService;
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
@@ -73,6 +75,7 @@ public class ClaimRestService {
                     log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
                     claimRepository.save(claim);
                 })
+                .doOnSuccess(httpHeaders -> claimRestStatusService.processRequest(claim))
                 .thenReturn(claim);
     }
 
@@ -130,7 +133,7 @@ public class ClaimRestService {
 
     public void updateAcceptedClaims() {
         // TODO Accepted claims should be checked less often
-        claimDatabaseService.getAcceptedClaims().forEach(claim -> {
+        claimDatabaseService.getClaimsToRecheckStatus().forEach(claim -> {
 
             restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                     .doOnNext(this::updateClaim)

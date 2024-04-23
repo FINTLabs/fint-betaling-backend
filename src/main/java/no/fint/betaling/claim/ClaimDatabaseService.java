@@ -1,13 +1,11 @@
 package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -67,7 +65,7 @@ public class ClaimDatabaseService {
                 statuses);
     }
 
-    public List<Claim> getAcceptedClaims() {
+    public List<Claim> getClaimsToRecheckStatus() {
         return claimRepository.get(
                 ClaimStatus.ACCEPTED,
                 ClaimStatus.ISSUED,
