@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -74,76 +76,29 @@ public class ClaimRestService {
                 .thenReturn(claim);
     }
 
-    // Replaced by ClaimRestStatusService:
-//    public void updateSentClaims() {
-//        claimDatabaseService.getSentClaims().forEach(claim -> {
-//            restUtil.head(claim.getInvoiceUri())
-//                    .doOnNext(headers -> {
-//                        if (headers.getLocation() != null) {
-//                            claim.setInvoiceUri(headers.getLocation().toString());
-//                            claim.setClaimStatus(ClaimStatus.ACCEPTED);
-//                            log.info("Claim {} accepted, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-//                        } else {
-//                            log.info("Claim {} not updated", claim.getOrderNumber());
-//                        }
-//                        claim.setStatusMessage(null);
-//                        claimRepository.save(claim);
-//                    })
-//                    .doOnError(WebClientResponseException.class, e -> {
-//                        if (e.getStatusCode() == HttpStatus.GONE) {
-//                            log.info("Claim {} gone from consumer -- retry sending!", claim.getOrderNumber());
-//                            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-//                            claim.setInvoiceUri(null);
-//                            claimRepository.save(claim);
-//                        } else {
-//                            setClaimStatusFromFint(claim);
-//                        }
-//                    })
-//                    .doOnError(e -> {
-//                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-//                        log.error("Exception: " + e.getMessage(), e);
-//                    })
-//                    .subscribe();
-//        });
-//    }
-//
-//    private void setClaimStatusFromFint(Claim claim) {
-//        restUtil.get(String.class, claim.getInvoiceUri())
-//                .flatMap(result -> {
-//                    log.error("Unexpected result! {}", result);
-//                    return Mono.empty(); // Brukes når det ikke er behov for å returnere en verdi fra flatMap
-//                })
-//                .doOnError(WebClientResponseException.class, e2 -> {
-//                    if (e2.getStatusCode().is4xxClientError()) {
-//                        claim.setClaimStatus(ClaimStatus.ACCEPT_ERROR);
-//                    } else if (e2.getStatusCode().is5xxServerError()) {
-//                        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-//                    }
-//                    claim.setStatusMessage(e2.getMessage());
-//                    claimRepository.save(claim);
-//                    log.warn("Error accepting claim {} [{}]: [{}] {}", claim.getOrderNumber(), claim.getClaimStatus(), e2.getStatusCode(), e2.getMessage());
-//                })
-//                .onErrorResume(e -> Mono.empty()) // Håndterer andre feil og fortsetter
-//                .subscribe();
-//    }
-
-    public void updateAcceptedClaims() {
-        // TODO Accepted claims should be checked less often
-        claimDatabaseService.getClaimsToRecheckStatus().forEach(claim -> {
-
-            restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
-                    .doOnNext(this::updateClaim)
-                    .doOnError(WebClientResponseException.class, e -> {
-                        claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
-                        claim.setStatusMessage(e.getMessage());
-                        log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
-                    })
-                    .doOnError(e -> {
-                        log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-                        log.error("Exception: " + e.getMessage(), e);
-                    })
-                    .subscribe();
+    public void updateClaims(ClaimStatus claimStatus, Duration maxAge) {
+        claimDatabaseService.getClaimsByStatus(claimStatus).forEach(claim -> {
+            if (maxAge == null || isNewerThan(claim, maxAge)) {
+                updateClaim(claim);
+            } else {
+                log.debug("Claim {} not updated, older than {}", claim.getOrderNumber(), maxAge);
+            }
         });
+    }
+
+    private void updateClaim(Claim claim) {
+        restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+                .doOnNext(this::updateClaim)
+                .doOnError(WebClientResponseException.class, e -> {
+                    claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
+                    claim.setStatusMessage(e.getMessage());
+                    log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
+                })
+                .doOnError(e -> {
+                    log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
+                    log.error("Exception: " + e.getMessage(), e);
+                })
+                .subscribe();
     }
 
     /**
@@ -191,4 +146,7 @@ public class ClaimRestService {
         }
     }
 
+    private boolean isNewerThan(Claim claim, Duration maxAge) {
+        return maxAge == null || Duration.between(claim.getCreatedDate(), LocalDateTime.now()).compareTo(maxAge) > 0;
+    }
 }

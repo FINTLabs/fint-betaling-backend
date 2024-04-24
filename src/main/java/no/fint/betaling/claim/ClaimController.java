@@ -109,8 +109,9 @@ public class ClaimController {
 
     @GetMapping("/update/all")
     public void updateAll() {
-        scheduleService.updateRecentlySentClaims();
         scheduleService.updateAcceptedClaims();
+        scheduleService.updateIssuedClaims();
+        scheduleService.updateUpdateErrorClaims();
     }
 
     private ClaimStatus[] toClaimStatus(String[] status) {

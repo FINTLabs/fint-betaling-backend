@@ -1,8 +1,11 @@
 package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.model.ClaimStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Slf4j
 @Service
@@ -14,34 +17,25 @@ public class ScheduleService {
         this.claimRestService = claimRestService;
     }
 
-    /*
-    @Scheduled(initialDelay = 10000, fixedRateString = "${fint.betaling.invoice-send-rate}")
-    public void sendClaims(){
-        log.info("Sending claims...");
-        try {
-            claimService.sendClaims();
-        } catch (Exception e) {
-            log.error("Error caught when sending claims!", e);
-        }
-    }
-    */
-
-    @Scheduled(initialDelay = 60000, fixedRateString = "${fint.betaling.invoice-update-rate}")
-    public void updateRecentlySentClaims() {
-        // Deactivated, try trigger based on event instead (see ClaimRestStatusService)
-//        log.debug("Updating sent claims...");
-//        try {
-//            claimRestService.updateSentClaims();
-//        } catch (Exception e) {
-//            log.error("Error caught when updating sent claims!", e);
-//        }
-    }
-
-    @Scheduled(cron = "${fint.betaling.invoice-update-cron}")
+    @Scheduled(cron = "0 48 6-16 * * MON-FRI")
     public void updateAcceptedClaims() {
-        log.debug("Updating accepted claims...");
+        updateClaims(ClaimStatus.ACCEPTED, Duration.ofDays(30));
+    }
+
+    @Scheduled(cron = "0 30 16 ? * MON-FRI")
+    public void updateIssuedClaims() {
+        updateClaims(ClaimStatus.ISSUED, Duration.ofDays(100));
+    }
+
+    @Scheduled(cron = "0 38 8,10,12,14 * * MON-FRI")
+    public void updateUpdateErrorClaims() {
+        updateClaims(ClaimStatus.UPDATE_ERROR, Duration.ofDays(30));
+    }
+
+    private void updateClaims(ClaimStatus claimStatus, Duration maxAge) {
+        log.debug("Updating claims " + claimStatus);
         try {
-            claimRestService.updateAcceptedClaims();
+            claimRestService.updateClaims(claimStatus, maxAge);
         } catch (Exception e) {
             log.error("Error caught when updating claims!", e);
         }

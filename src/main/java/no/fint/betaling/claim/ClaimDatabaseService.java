@@ -73,7 +73,7 @@ public class ClaimDatabaseService {
                 ClaimStatus.UPDATE_ERROR);
     }
 
-    public List<Claim> getClaimsByStatus(ClaimStatus[] statuses) {
+    public List<Claim> getClaimsByStatus(ClaimStatus... statuses) {
         return claimRepository.get(statuses);
     }
 
