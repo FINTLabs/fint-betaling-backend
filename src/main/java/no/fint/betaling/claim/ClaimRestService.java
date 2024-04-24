@@ -5,6 +5,7 @@ import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,19 +77,29 @@ public class ClaimRestService {
                 .thenReturn(claim);
     }
 
-    public void updateClaims(ClaimStatus claimStatus, Duration maxAge) {
-        claimDatabaseService.getClaimsByStatus(claimStatus).forEach(claim -> {
-            if (maxAge == null || isNewerThan(claim, maxAge)) {
-                updateClaim(claim);
-            } else {
-                log.debug("Claim {} not updated, older than {}", claim.getOrderNumber(), maxAge);
-            }
-        });
+    public void updateClaimsStatuses(ClaimStatus status, Duration maxAge) {
+        List<Claim> claims = claimDatabaseService.getClaimsByStatus(status)
+                .stream()
+                .filter(claim -> maxAge == null || isNewerThan(claim, maxAge))
+                .toList();
+
+        log.info("Updating status for {} claims with status {} and max age {}", claims.size(), status, maxAge);
+        claims.forEach(claim -> updateClaimStatus(claim, false));
     }
 
-    private void updateClaim(Claim claim) {
-        restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
-                .doOnNext(this::updateClaim)
+    public void updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+        List<Claim> claims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
+                .stream()
+                .filter(claim -> claim.getClaimStatus() == ClaimStatus.ACCEPTED || claim.getClaimStatus() == ClaimStatus.ISSUED || claim.getClaimStatus() == ClaimStatus.UPDATE_ERROR)
+                .toList();
+
+        log.info("Updating status for {} claims", claims.size());
+        claims.forEach(claim -> updateClaimStatus(claim, true));
+    }
+
+    public void updateClaimStatus(Claim claim, boolean isBlocking) {
+        Mono<FakturagrunnlagResource> mono = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+                .doOnNext(this::updateClaimStatus)
                 .doOnError(WebClientResponseException.class, e -> {
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                     claim.setStatusMessage(e.getMessage());
@@ -97,8 +108,13 @@ public class ClaimRestService {
                 .doOnError(e -> {
                     log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
                     log.error("Exception: " + e.getMessage(), e);
-                })
-                .subscribe();
+                });
+
+        if (isBlocking) {
+            mono.block();
+        } else {
+            mono.subscribe();
+        }
     }
 
     /**
@@ -111,7 +127,7 @@ public class ClaimRestService {
      *
      * @return New claim status
      */
-    private void updateClaim(FakturagrunnlagResource invoice) {
+    private void updateClaimStatus(FakturagrunnlagResource invoice) {
         Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
         fintClient.setInvoiceUri(invoice).ifPresent(claim::setInvoiceUri);
 

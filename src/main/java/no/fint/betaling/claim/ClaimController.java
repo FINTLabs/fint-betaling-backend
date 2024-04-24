@@ -65,9 +65,10 @@ public class ClaimController {
                                                     @RequestParam(required = false) String schoolSelection,
                                                     @RequestParam(required = false) String[] status) {
 
-        if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
-        ClaimsDatePeriod period = ClaimsDatePeriod.valueOf(periodSelection);
-        return ResponseEntity.ok(claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, schoolSelection, toClaimStatus(status)));
+        return ResponseEntity.ok(
+                claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(
+                        toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
+        );
     }
 
     @GetMapping("/name/{name}")
@@ -114,10 +115,25 @@ public class ClaimController {
         scheduleService.updateUpdateErrorClaims();
     }
 
+    @PostMapping(("update/status"))
+    public ResponseEntity<List<Claim>> updateClaimsStatus(@RequestParam(required = false) String periodSelection,
+                                                          @RequestParam(required = false) String schoolSelection,
+                                                          @RequestParam(required = false) String[] status) {
+
+        claimRestService.updateClaimStatus(toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status));
+        return ResponseEntity.ok().build();
+    }
+
     private ClaimStatus[] toClaimStatus(String[] status) {
-        if (status != null && status.length > 0)
+        if (status != null && status.length > 0) {
             return Arrays.stream(status).map(ClaimStatus::valueOf).toArray(ClaimStatus[]::new);
-        else
+        } else {
             return null;
+        }
+    }
+
+    private ClaimsDatePeriod toDatePeriod(String periodSelection) {
+        if (StringUtils.isBlank(periodSelection)) periodSelection = ClaimsDatePeriod.ALL.name();
+        return ClaimsDatePeriod.valueOf(periodSelection);
     }
 }

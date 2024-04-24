@@ -35,7 +35,7 @@ public class ScheduleService {
     private void updateClaims(ClaimStatus claimStatus, Duration maxAge) {
         log.debug("Updating claims " + claimStatus);
         try {
-            claimRestService.updateClaims(claimStatus, maxAge);
+            claimRestService.updateClaimsStatuses(claimStatus, maxAge);
         } catch (Exception e) {
             log.error("Error caught when updating claims!", e);
         }
