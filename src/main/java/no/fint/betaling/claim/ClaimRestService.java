@@ -84,21 +84,26 @@ public class ClaimRestService {
                 .toList();
 
         log.info("Updating status for {} claims with status {} and max age {}", claims.size(), status, maxAge);
-        claims.forEach(claim -> updateClaimStatus(claim, false));
+        claims.forEach(claim -> updateClaimStatus(claim));
+        Flux.fromIterable(claims)
+                .flatMap(this::updateClaimStatus)
+                .doOnError(error -> log.error("Failed to update claim status", error))
+                .doOnComplete(() -> log.info("Completed updating claims - triggered by schedule"))
+                .subscribe();
     }
 
-    public void updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
-        List<Claim> claims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
-                .stream()
-                .filter(claim -> claim.getClaimStatus() == ClaimStatus.ACCEPTED || claim.getClaimStatus() == ClaimStatus.ISSUED || claim.getClaimStatus() == ClaimStatus.UPDATE_ERROR)
-                .toList();
+    public Flux<FakturagrunnlagResource> updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+        List<Claim> claims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses);
+        log.info("Start updating status for {} claims", claims.size());
 
-        log.info("Updating status for {} claims", claims.size());
-        claims.forEach(claim -> updateClaimStatus(claim, true));
+        return Flux.fromIterable(claims)
+                .flatMap(this::updateClaimStatus)
+                .doOnError(error -> log.error("Failed to update claim status", error))
+                .doOnComplete(() -> log.info("Completed updating claims - triggered by user"));
     }
 
-    public void updateClaimStatus(Claim claim, boolean isBlocking) {
-        Mono<FakturagrunnlagResource> mono = restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+    public Mono<FakturagrunnlagResource> updateClaimStatus(Claim claim) {
+        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                 .doOnNext(this::updateClaimStatus)
                 .doOnError(WebClientResponseException.class, e -> {
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
@@ -109,12 +114,6 @@ public class ClaimRestService {
                     log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
                     log.error("Exception: " + e.getMessage(), e);
                 });
-
-        if (isBlocking) {
-            mono.block();
-        } else {
-            mono.subscribe();
-        }
     }
 
     /**

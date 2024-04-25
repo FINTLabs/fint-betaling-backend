@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
@@ -116,12 +117,13 @@ public class ClaimController {
     }
 
     @PostMapping(("update/status"))
-    public ResponseEntity<List<Claim>> updateClaimsStatus(@RequestParam(required = false) String periodSelection,
+    public Mono<ResponseEntity<Void>> updateClaimsStatus(@RequestParam(required = false) String periodSelection,
                                                           @RequestParam(required = false) String schoolSelection,
                                                           @RequestParam(required = false) String[] status) {
 
-        claimRestService.updateClaimStatus(toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status));
-        return ResponseEntity.ok().build();
+        return claimRestService
+                .updateClaimStatus(toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
+                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)));
     }
 
     private ClaimStatus[] toClaimStatus(String[] status) {

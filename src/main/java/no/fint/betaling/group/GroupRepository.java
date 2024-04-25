@@ -1,9 +1,9 @@
 package no.fint.betaling.group;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.common.ResourceCache;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.betaling.common.ResourceCache;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
@@ -43,13 +43,14 @@ public class GroupRepository {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
     public void updateAll() {
-        schools.update();
-        basisGroups.update();
-        teachingGroups.update();
-        contactTeacherGroups.update();
-        studentRelations.update();
-        students.update();
-        schoolresources.update();
+        int schoolsUpdated = schools.update();
+        int basisGroupsUpdated = basisGroups.update();
+        int teachingGroupsUpdated = teachingGroups.update();
+        int contactTeachersUpdated = contactTeacherGroups.update();
+        int studentRelationsUpdated = studentRelations.update();
+        int studentsUpdated = students.update();
+        int schoolResourceUpdated = schoolresources.update();
+        log.info("Updates completed, skole ({}), basisgruppe ({}), undervisningsgruppe ({}), kontaktlarergruppe ({}), elevforhold ({}), elev ({}), skoleressurs ({})", schoolsUpdated, basisGroupsUpdated, teachingGroupsUpdated, contactTeachersUpdated, studentRelationsUpdated, studentsUpdated, schoolResourceUpdated);
     }
 
     public Map<Link, SkoleResource> getSchools() {

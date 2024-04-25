@@ -32,8 +32,8 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
         this.linkProvider = linkProvider;
     }
 
-    public void update() {
-        log.info("Updating ressurs from {} ...", endpoint);
+    public int update() {
+        log.debug("Updating ressurs from {} ...", endpoint);
 
         U updatedResources;
 
@@ -41,15 +41,16 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
             updatedResources = restUtil.getWithRetry(clazz, endpoint).block();
         } catch (WebClientResponseException ex) {
             log.error(ex.getMessage());
-            return;
+            return 0;
         }
 
-        if (updatedResources == null || updatedResources.getTotalItems() == 0) return;
+        if (updatedResources == null || updatedResources.getTotalItems() == 0) return 0;
 
         Map<Link, T> newResources = new HashMap<>();
         updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> newResources.put(link, resource)));
         resources = newResources;
-        log.info("Update completed, {} resources.", resources.size());
+        log.debug("Update completed, {} resources.", resources.size());
+        return resources.size();
     }
 
     public Map<Link, T> get() {
