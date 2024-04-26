@@ -94,7 +94,13 @@ public class ClaimRestService {
     }
 
     public Flux<FakturagrunnlagResource> updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
-        List<Claim> claims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses);
+        List<Claim> claims = claimDatabaseService
+                .getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
+                .stream()
+                .filter(claim -> claim.getClaimStatus() == ClaimStatus.ACCEPTED ||
+                        claim.getClaimStatus() == ClaimStatus.ISSUED ||
+                        claim.getClaimStatus() == ClaimStatus.UPDATE_ERROR)
+                .toList();
         log.info("Start updating status for {} claims", claims.size());
 
         return Flux.fromIterable(claims)
