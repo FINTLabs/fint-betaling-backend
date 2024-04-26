@@ -10,6 +10,7 @@ import no.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -103,6 +104,12 @@ public class ClaimRestService {
     }
 
     public Mono<FakturagrunnlagResource> updateClaimStatus(Claim claim) {
+
+        if (!StringUtils.hasText(claim.getInvoiceUri())) {
+            log.warn("Claim {} has no invoice URI", claim.getOrderNumber());
+            return Mono.empty();
+        }
+
         return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                 .doOnNext(this::updateClaimStatus)
                 .doOnError(WebClientResponseException.class, e -> {
