@@ -16,8 +16,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -93,7 +96,7 @@ public class ClaimRestService {
                 .subscribe();
     }
 
-    public Flux<FakturagrunnlagResource> updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+    public Flux<Claim> updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
         List<Claim> claims = claimDatabaseService
                 .getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
                 .stream()
@@ -109,7 +112,7 @@ public class ClaimRestService {
                 .doOnComplete(() -> log.info("Completed updating claims - triggered by user"));
     }
 
-    public Mono<FakturagrunnlagResource> updateClaimStatus(Claim claim) {
+    public Mono<Claim> updateClaimStatus(Claim claim) {
 
         if (!StringUtils.hasText(claim.getInvoiceUri())) {
             log.warn("Claim {} has no invoice URI", claim.getOrderNumber());
@@ -117,15 +120,17 @@ public class ClaimRestService {
         }
 
         return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
-                .doOnNext(this::updateClaimStatus)
-                .doOnError(WebClientResponseException.class, e -> {
+                .flatMap(this::updateClaimStatus)
+                .onErrorResume(WebClientResponseException.class, e -> {
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                     claim.setStatusMessage(e.getMessage());
                     log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
+                    return Mono.empty();
                 })
-                .doOnError(e -> {
+                .onErrorResume(e -> {
                     log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
                     log.error("Exception: " + e.getMessage(), e);
+                    return Mono.empty();
                 });
     }
 
@@ -139,30 +144,49 @@ public class ClaimRestService {
      *
      * @return New claim status
      */
-    private void updateClaimStatus(FakturagrunnlagResource invoice) {
+    private Mono<Claim> updateClaimStatus(FakturagrunnlagResource invoice) {
         Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
         fintClient.setInvoiceUri(invoice).ifPresent(claim::setInvoiceUri);
 
-        Mono<List<FakturaResource>> fakturaListMono = fintClient.getFaktura(invoice);
-        fakturaListMono.subscribe(fakturaList -> {
-            updateClaimStatus(fakturaList, claim);
-            updateClaimDate(claim, fakturaList);
-            claimRepository.save(claim);
-        });
-        log.info("Claim {} updated", claim.getOrderNumber());
+        return fintClient.getFaktura(invoice)
+                .flatMap(fakturaList -> {
+                    boolean hasStatusChanged = updateClaimStatus(fakturaList, claim);
+                    boolean hasDateChanged = updateClaimDate(claim, fakturaList);
+
+                    if (hasStatusChanged || hasDateChanged) {
+                        claimRepository.save(claim);
+                        log.info("Claim {} updated", claim.getOrderNumber());
+                    } else {
+                        log.debug("Claim {} has no update", claim.getOrderNumber());
+                    }
+
+                    return Mono.just(claim);
+                });
     }
 
-    private void updateClaimDate(Claim claim, List<FakturaResource> fakturaList) {
+    private boolean updateClaimDate(Claim claim, List<FakturaResource> fakturaList) {
+        Set<String> originalInvoiceNumer = claim.getInvoiceNumbers();
+        LocalDate originalInvoiceDate = claim.getInvoiceDate();
+        LocalDate originalPaymentDueDate = claim.getPaymentDueDate();
+        Long originalAmountDue = claim.getAmountDue();
+
         claim.setInvoiceNumbers(fintClient.getFakturanummere(fakturaList));
         fintClient.getInvoiceDate(fakturaList).ifPresent(claim::setInvoiceDate);
         fintClient.getPaymentDueDate(fakturaList).ifPresent(claim::setPaymentDueDate);
         fintClient.getAmountDue(fakturaList).ifPresent(claim::setAmountDue);
+
+        return !Objects.equals(originalInvoiceNumer, claim.getInvoiceNumbers()) ||
+                !Objects.equals(originalInvoiceDate, claim.getInvoiceDate()) ||
+                !Objects.equals(originalPaymentDueDate, claim.getPaymentDueDate()) ||
+                !Objects.equals(originalAmountDue, claim.getAmountDue());
     }
 
-    private void updateClaimStatus(List<FakturaResource> fakturaList, Claim claim) {
+    private boolean updateClaimStatus(List<FakturaResource> fakturaList, Claim claim) {
+        ClaimStatus originalStatus = claim.getClaimStatus();
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
         boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
         boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
+
         if (fakturaList.isEmpty()) {
             claim.setClaimStatus(ClaimStatus.ACCEPTED);
         } else if (credited || paid) {
@@ -172,6 +196,8 @@ public class ClaimRestService {
         } else {
             claim.setClaimStatus(ClaimStatus.ACCEPTED);
         }
+
+        return originalStatus != claim.getClaimStatus();
     }
 
     private boolean isNewerThan(Claim claim, Duration maxAge) {
