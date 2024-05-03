@@ -93,6 +93,7 @@ public class FintClient {
     public Optional<LocalDate> getInvoiceDate(List<FakturaResource> fakturaList) {
         return fakturaList.stream()
                 .map(FakturaResource::getDato)
+                .filter(Objects::nonNull)
                 .map(date -> date.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate())
@@ -102,6 +103,7 @@ public class FintClient {
     public Optional<LocalDate> getPaymentDueDate(List<FakturaResource> fakturaList) {
         return fakturaList.stream()
                 .map(FakturaResource::getForfallsdato)
+                .filter(Objects::nonNull)
                 .map(date -> date.toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate())
