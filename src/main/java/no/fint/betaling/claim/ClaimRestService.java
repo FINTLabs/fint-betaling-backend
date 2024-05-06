@@ -87,7 +87,7 @@ public class ClaimRestService {
                 .filter(claim -> maxAge == null || isNewerThan(claim, maxAge))
                 .toList();
 
-        log.info("Updating status for {} claims with status {} and max age {}", claims.size(), status, maxAge);
+        log.info("Updating status for {} claims with status {} and max age {} days", claims.size(), status, maxAge.toDays());
         claims.forEach(claim -> updateClaimStatus(claim));
         Flux.fromIterable(claims)
                 .flatMap(this::updateClaimStatus)
@@ -201,6 +201,6 @@ public class ClaimRestService {
     }
 
     private boolean isNewerThan(Claim claim, Duration maxAge) {
-        return maxAge == null || Duration.between(claim.getCreatedDate(), LocalDateTime.now()).compareTo(maxAge) > 0;
+        return maxAge == null || Duration.between(claim.getCreatedDate(), LocalDateTime.now()).compareTo(maxAge) <= 0;
     }
 }
