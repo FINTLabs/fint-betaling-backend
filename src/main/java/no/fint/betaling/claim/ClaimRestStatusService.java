@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -55,6 +56,28 @@ public class ClaimRestStatusService {
                         response -> updateClaimOnSuccess(claim, response),
                         error -> updateClaimOnFailure(claim, error)
                 );
+    }
+
+    public void setStatusMessages(List<Claim> claims) {
+        claims.stream()
+                .filter(claim -> !StringUtils.hasText(claim.getStatusMessage()))
+                .forEach(claim -> claim.setStatusMessage(getStatusMessage(claim.getClaimStatus())));
+    }
+
+    private String getStatusMessage(ClaimStatus status) {
+        return switch (status) {
+            case STORED -> "Ikke oversendt";
+            case SENT -> "Overføring pågår";
+            case ACCEPTED -> "Overført til økonomisystem";
+            case ISSUED -> "Faktura utstedt";
+            case PAID -> "Fakturert, betalt eller kreditert";
+            case ERROR -> "Feilet (ukjent årsak)";
+            case SEND_ERROR -> "Overføring via FINT har feilet";
+            case ACCEPT_ERROR -> "Overføring avslått av økonomisystem";
+            case UPDATE_ERROR -> "Oppdatering av fakturastatus har feilet";
+            case CANCELLED -> "Slettet av bruker";
+            default -> "Ukjent status";
+        };
     }
 
     private void updateClaimOnSuccess(Claim claim, ResponseEntity<Void> response) {

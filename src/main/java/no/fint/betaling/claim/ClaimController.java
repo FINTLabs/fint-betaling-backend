@@ -26,11 +26,13 @@ public class ClaimController {
     private final ClaimRestService claimRestService;
 
     private final ScheduleService scheduleService;
+    private final ClaimRestStatusService claimRestStatusService;
 
-    public ClaimController(ClaimDatabaseService claimDatabaseService, ClaimRestService claimRestService, ScheduleService scheduleService) {
+    public ClaimController(ClaimDatabaseService claimDatabaseService, ClaimRestService claimRestService, ScheduleService scheduleService, ClaimRestStatusService claimRestStatusService) {
         this.claimDatabaseService = claimDatabaseService;
         this.claimRestService = claimRestService;
         this.scheduleService = scheduleService;
+        this.claimRestStatusService = claimRestStatusService;
     }
 
     @PostMapping
@@ -66,10 +68,12 @@ public class ClaimController {
                                                     @RequestParam(required = false) String schoolSelection,
                                                     @RequestParam(required = false) String[] status) {
 
-        return ResponseEntity.ok(
-                claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(
-                        toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
-        );
+        List<Claim> claims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(
+                toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status));
+
+        claimRestStatusService.setStatusMessages(claims);
+
+        return ResponseEntity.ok(claims);
     }
 
     @GetMapping("/name/{name}")
@@ -118,8 +122,8 @@ public class ClaimController {
 
     @PostMapping(("update/status"))
     public Mono<ResponseEntity<Void>> updateClaimsStatus(@RequestParam(required = false) String periodSelection,
-                                                          @RequestParam(required = false) String schoolSelection,
-                                                          @RequestParam(required = false) String[] status) {
+                                                         @RequestParam(required = false) String schoolSelection,
+                                                         @RequestParam(required = false) String[] status) {
 
         return claimRestService
                 .updateClaimStatus(toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
