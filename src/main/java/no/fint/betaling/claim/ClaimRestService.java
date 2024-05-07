@@ -150,6 +150,8 @@ public class ClaimRestService {
 
         return fintClient.getFaktura(invoice)
                 .flatMap(fakturaList -> {
+                    log.debug("Claim {} has {} invoices", claim.getOrderNumber(), fakturaList.size());
+
                     boolean hasStatusChanged = updateClaimStatus(fakturaList, claim);
                     boolean hasDateChanged = updateClaimDate(claim, fakturaList);
 
@@ -186,6 +188,7 @@ public class ClaimRestService {
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
         boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
         boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
+        log.debug("Claim {} has status: credited: {}, paid: {}, issued: {}", claim.getOrderNumber(), credited, paid, issued);
 
         if (fakturaList.isEmpty()) {
             claim.setClaimStatus(ClaimStatus.ACCEPTED);

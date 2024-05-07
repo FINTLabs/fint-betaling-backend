@@ -31,7 +31,7 @@ spec:
             - configMapRef:
                 name: fint-environment
           env:
-            - {name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G'}
+            - { name: JAVA_TOOL_OPTIONS, value: '-XX:+ExitOnOutOfMemoryError -Xmx5G' }
             - { name: fint.betaling.principal-matching-strategy, value: 'byOrgnummer' }
             - { name: fint.oauth.enabled, value: 'true' }
             - { name: fint.client.enabled, value: 'true' }
@@ -41,3 +41,4 @@ spec:
             - { name: fint.betaling.invoice-update-cron, value: "0 30 16 ? * MON-FRI" }
             - { name: fint.betaling.endpoints.environment, value: "api" }
             - { name: fint.betaling.demo, value: "false" }
+            - { name: logging.level.no.fint.betaling.claim, value: "DEBUG" }
