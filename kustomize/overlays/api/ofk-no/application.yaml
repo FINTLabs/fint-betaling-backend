@@ -37,6 +37,8 @@ spec:
       value: 'api'
     - name: logging.level.root
       value: 'INFO'
+    - name: logging.level.no.fint.betaling.claim
+      value: "DEBUG"
   envFrom:
     - secretRef:
         name: fint-betaling-backend

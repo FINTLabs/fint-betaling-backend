@@ -41,4 +41,3 @@ spec:
             - { name: fint.betaling.invoice-update-cron, value: "0 30 16 ? * MON-FRI" }
             - { name: fint.betaling.endpoints.environment, value: "api" }
             - { name: fint.betaling.demo, value: "false" }
-            - { name: logging.level.no.fint.betaling.claim, value: "DEBUG" }
