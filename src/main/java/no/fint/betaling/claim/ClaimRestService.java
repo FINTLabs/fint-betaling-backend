@@ -187,7 +187,9 @@ public class ClaimRestService {
         ClaimStatus originalStatus = claim.getClaimStatus();
         boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
         boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
-        boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
+        // Tidligere logikk (setter fakturert ift utsending, endret til å være om ordregrunnlag er fakturert)
+        // boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
+        boolean issued = !fakturaList.isEmpty();
         log.debug("Claim {} has status: credited: {}, paid: {}, issued: {}", claim.getOrderNumber(), credited, paid, issued);
 
         if (fakturaList.isEmpty()) {
