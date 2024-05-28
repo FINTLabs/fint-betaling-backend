@@ -22,6 +22,11 @@ public class ScheduleService {
         updateClaims(ClaimStatus.ACCEPTED, Duration.ofDays(30));
     }
 
+    @Scheduled(cron = "0 52 6-16 * * MON-FRI")
+    public void updatePaidClaims() {
+        updateClaims(ClaimStatus.PAID, Duration.ofDays(1));
+    }
+
     @Scheduled(cron = "0 30 16 ? * MON-FRI")
     public void updateIssuedClaims() {
         updateClaims(ClaimStatus.ISSUED, Duration.ofDays(100));
@@ -35,7 +40,7 @@ public class ScheduleService {
     private void updateClaims(ClaimStatus claimStatus, Duration maxAge) {
         log.debug("Updating claims " + claimStatus);
         try {
-            claimRestService.updateClaimsStatuses(claimStatus, maxAge);
+            claimRestService.updateClaimsByStatusAndAge(claimStatus, maxAge);
         } catch (Exception e) {
             log.error("Error caught when updating claims!", e);
         }

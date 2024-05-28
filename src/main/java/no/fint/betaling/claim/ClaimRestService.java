@@ -81,14 +81,13 @@ public class ClaimRestService {
                 .thenReturn(claim);
     }
 
-    public void updateClaimsStatuses(ClaimStatus status, Duration maxAge) {
+    public void updateClaimsByStatusAndAge(ClaimStatus status, Duration maxAge) {
         List<Claim> claims = claimDatabaseService.getClaimsByStatus(status)
                 .stream()
                 .filter(claim -> maxAge == null || isNewerThan(claim, maxAge))
                 .toList();
 
         log.info("Updating status for {} claims with status {} and max age {} days", claims.size(), status, maxAge.toDays());
-        claims.forEach(claim -> updateClaimStatus(claim));
         Flux.fromIterable(claims)
                 .flatMap(this::updateClaimStatus)
                 .doOnError(error -> log.error("Failed to update claim status", error))
@@ -96,7 +95,7 @@ public class ClaimRestService {
                 .subscribe();
     }
 
-    public Flux<Claim> updateClaimStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+    public Flux<Claim> updateClaimsForPeriodAndOrganisation(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
         List<Claim> claims = claimDatabaseService
                 .getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
                 .stream()
@@ -120,7 +119,7 @@ public class ClaimRestService {
         }
 
         return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
-                .flatMap(this::updateClaimStatus)
+                .flatMap(this::updateClaimStatusAndDates)
                 .onErrorResume(WebClientResponseException.class, e -> {
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                     claim.setStatusMessage(e.getMessage());
@@ -134,19 +133,9 @@ public class ClaimRestService {
                 });
     }
 
-    /**
-     * TODO Needs to update with both {@link FakturagrunnlagResource} and {@link FakturaResource}
-     * "invoiceNumbers": ?
-     * "invoiceDate": ?
-     * "paymentDueDate": ?
-     * "creditNotes": ?
-     * - Check if claim is paid and set status accordingly to remove from update loop
-     *
-     * @return New claim status
-     */
-    private Mono<Claim> updateClaimStatus(FakturagrunnlagResource invoice) {
+    private Mono<Claim> updateClaimStatusAndDates(FakturagrunnlagResource invoice) {
         Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
-        fintClient.setInvoiceUri(invoice).ifPresent(claim::setInvoiceUri);
+        fintClient.getSelfLink(invoice).ifPresent(claim::setInvoiceUri);
 
         return fintClient.getFaktura(invoice)
                 .flatMap(fakturaList -> {

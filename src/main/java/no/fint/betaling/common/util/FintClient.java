@@ -118,7 +118,7 @@ public class FintClient {
 
     }
 
-    public Optional<String> setInvoiceUri(FakturagrunnlagResource invoice) {
+    public Optional<String> getSelfLink(FakturagrunnlagResource invoice) {
         return invoice.getSelfLinks()
                 .stream()
                 .map(Link::getHref)

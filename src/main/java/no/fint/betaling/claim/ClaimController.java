@@ -126,7 +126,7 @@ public class ClaimController {
                                                          @RequestParam(required = false) String[] status) {
 
         return claimRestService
-                .updateClaimStatus(toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
+                .updateClaimsForPeriodAndOrganisation(toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
                 .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)));
     }
 
