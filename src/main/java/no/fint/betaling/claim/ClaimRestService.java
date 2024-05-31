@@ -174,24 +174,24 @@ public class ClaimRestService {
 
     private boolean updateClaimStatus(List<FakturaResource> fakturaList, Claim claim) {
         ClaimStatus originalStatus = claim.getClaimStatus();
-        boolean credited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
-        boolean paid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
-        // Tidligere logikk (setter fakturert ift utsending, endret til å være om ordregrunnlag er fakturert)
-        // boolean issued = fakturaList.stream().allMatch(FakturaResource::getFakturert);
-        boolean issued = !fakturaList.isEmpty();
-        log.debug("Claim {} has status: credited: {}, paid: {}, issued: {}", claim.getOrderNumber(), credited, paid, issued);
+        boolean allCredited = fakturaList.stream().allMatch(FakturaResource::getKreditert);
+        boolean allPaid = fakturaList.stream().allMatch(FakturaResource::getBetalt);
+        boolean anyIssued = !fakturaList.isEmpty();
 
-        if (fakturaList.isEmpty()) {
-            claim.setClaimStatus(ClaimStatus.ACCEPTED);
-        } else if (credited || paid) {
-            claim.setClaimStatus(ClaimStatus.PAID);
-        } else if (issued) {
-            claim.setClaimStatus(ClaimStatus.ISSUED);
-        } else {
-            claim.setClaimStatus(ClaimStatus.ACCEPTED);
+        log.debug("Claim {} has status: credited: {}, paid: {}, issued: {}", claim.getOrderNumber(), allCredited, allPaid, anyIssued);
+
+        ClaimStatus newStatus = ClaimStatus.ACCEPTED;
+
+        if (allCredited) {
+            newStatus = ClaimStatus.CREDITED;
+        } else if (allPaid) {
+            newStatus = ClaimStatus.PAID;
+        } else if (anyIssued) {
+            newStatus = ClaimStatus.ISSUED;
         }
 
-        return originalStatus != claim.getClaimStatus();
+        claim.setClaimStatus(newStatus);
+        return originalStatus != newStatus;
     }
 
     private boolean isNewerThan(Claim claim, Duration maxAge) {

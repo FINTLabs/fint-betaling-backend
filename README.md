@@ -49,6 +49,7 @@
 | ACCEPTED     | Klar                     | Async overføring vellykket. Vellykket retur med location-header. |
 | ISSUED       | Fakturert                | Fakturagrunnlag er fakturert i økonomisystem.                    |
 | PAID         | Betalt                   | Finnes faktura som er betalt eller kreditert.                    |
+| CREDITED     | Kreditert                | Kreditert faktura.                                               |
 | ERROR        | Generell feil            | Ubrukt.                                                          |
 | SEND_ERROR   | Feil ved sending         | Overføring til FINT har feilet.                                  |
 | ACCEPT_ERROR | Feil fra økonomisystemet | FINT returnerer 4'**'-feil på overføring.                        |

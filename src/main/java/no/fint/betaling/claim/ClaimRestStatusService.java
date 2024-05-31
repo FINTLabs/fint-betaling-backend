@@ -71,6 +71,7 @@ public class ClaimRestStatusService {
             case ACCEPTED -> "Overført til økonomisystem";
             case ISSUED -> "Faktura utstedt";
             case PAID -> "Fakturert, betalt eller kreditert";
+            case CREDITED -> "Kreditert";
             case ERROR -> "Feilet (ukjent årsak)";
             case SEND_ERROR -> "Overføring via FINT har feilet";
             case ACCEPT_ERROR -> "Overføring avslått av økonomisystem";

@@ -6,6 +6,7 @@ public enum ClaimStatus {
     ACCEPTED("accepted"),
     ISSUED("issued"),
     PAID("paid"),
+    CREDITED("credited"),
     ERROR("error"),
     SEND_ERROR("send error"),
     ACCEPT_ERROR("accept error"),
