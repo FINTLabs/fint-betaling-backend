@@ -101,6 +101,8 @@ public class ClaimRestService {
                 .stream()
                 .filter(claim -> claim.getClaimStatus() == ClaimStatus.ACCEPTED ||
                         claim.getClaimStatus() == ClaimStatus.ISSUED ||
+                        claim.getClaimStatus() == ClaimStatus.PAID ||
+                        claim.getClaimStatus() == ClaimStatus.CREDITED ||
                         claim.getClaimStatus() == ClaimStatus.UPDATE_ERROR)
                 .toList();
         log.info("Start updating status for {} claims", claims.size());
