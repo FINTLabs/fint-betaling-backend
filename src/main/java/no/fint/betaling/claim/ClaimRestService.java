@@ -182,7 +182,9 @@ public class ClaimRestService {
 
         ClaimStatus newStatus = ClaimStatus.ACCEPTED;
 
-        if (allCredited) {
+        if (fakturaList.isEmpty()) {
+            newStatus = ClaimStatus.ACCEPTED;
+        } else if (allCredited) {
             newStatus = ClaimStatus.CREDITED;
         } else if (allPaid) {
             newStatus = ClaimStatus.PAID;
