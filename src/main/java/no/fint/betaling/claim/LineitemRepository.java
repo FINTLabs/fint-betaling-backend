@@ -10,7 +10,9 @@ import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.kodeverk.VareResources;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -53,7 +55,10 @@ public class LineitemRepository {
     public void updateLineitems() {
         log.info("Updating vare from {} ...", endpoints.getVare());
         try {
-            restUtil.getUpdates(VareResources.class, endpoints.getVare())
+            restUtil.getUpdates(VareResources.class, endpoints.getVare()).retryWhen(
+							Retry.backoff(5, Duration.ofSeconds(10))
+									.maxBackoff(Duration.ofSeconds(60))
+					)
                     .block()
                     .getContent()
                     .forEach(v -> {
