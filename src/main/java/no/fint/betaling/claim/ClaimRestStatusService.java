@@ -103,6 +103,7 @@ public class ClaimRestStatusService {
     private void updateClaimOnFailure(Claim claim, Throwable error) {
         log.warn("Error updating claim {} {} with invoiceUri {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getInvoiceUri());
         log.error("Error in checking claim status: " + error.getMessage(), error);
+		log.warn(String.valueOf(error.getCause())); //I wonder if this will log out the body of the response, not only the error code
 
         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
         claim.setStatusMessage(error.getMessage());
