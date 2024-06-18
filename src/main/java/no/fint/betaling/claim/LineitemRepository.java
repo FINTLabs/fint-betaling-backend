@@ -55,10 +55,10 @@ public class LineitemRepository {
     public void updateLineitems() {
         log.info("Updating vare from {} ...", endpoints.getVare());
         try {
-            restUtil.getUpdates(VareResources.class, endpoints.getVare()).retryWhen(
+            restUtil.getUpdates(VareResources.class, endpoints.getVare())
+					.retryWhen(
 							Retry.backoff(5, Duration.ofSeconds(10))
-									.maxBackoff(Duration.ofSeconds(60))
-					)
+									.maxBackoff(Duration.ofSeconds(60)))
                     .block()
                     .getContent()
                     .forEach(v -> {

@@ -55,11 +55,11 @@ jobs:
       matrix:
         org:
           - fintlabs-no
-#          - ofk-no
-#          - bfk-no
-#          - afk-no
+          - ofk-no
+          - bfk-no
+          - afk-no
         cluster:
-#          - aks-api-fint-2022-02-08
+          - aks-api-fint-2022-02-08
           - aks-beta-fint-2021-11-23
         include:
           - org: fintlabs-no
