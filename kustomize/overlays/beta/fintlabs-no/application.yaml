@@ -48,7 +48,7 @@ spec:
     database: fint-core
   url:
     hostname: betaling-demo.felleskomponent.no
-    basePath: /api
+    basePath: /demo/api
   ingress:
     enabled: true
     middlewares:
