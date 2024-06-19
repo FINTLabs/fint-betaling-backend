@@ -51,7 +51,8 @@ spec:
     basePath: /api
   ingress:
     enabled: true
-    basePath: /api
+    middlewares:
+      - fint-betaling-auth-forward-sso
   resources:
     limits:
       memory: "5Gi"
