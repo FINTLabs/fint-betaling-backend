@@ -52,6 +52,7 @@ spec:
     enabled: true
     middlewares:
       - fint-betaling-auth-forward-sso
+    basepath: /api
   resources:
     limits:
       memory: "5Gi"
