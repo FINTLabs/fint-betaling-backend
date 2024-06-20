@@ -2,17 +2,15 @@ package no.fint.betaling.invoiceissuer;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.PrincipalNotFoundException;
+import no.fint.betaling.common.util.CloneUtil;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.organisation.OrganisationService;
 import no.fint.betaling.user.UserRepository;
-import no.fint.betaling.common.util.CloneUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.util.function.BiPredicate;
 
 @Slf4j
 @Service
@@ -43,22 +41,27 @@ public class InvoiceIssuerService {
     }
 
     private Principal getPrincipalByName(String organizationNumber, Organisation organisation) {
-        return getInvoiceIssuer(organizationNumber, organisation, (p, orgNum) -> StringUtils.startsWithIgnoreCase(organisation.getName(), p.getDescription()));
+        return invoiceIssuerRepository.getInvoiceIssuers()
+                .stream()
+                .filter(p -> StringUtils.startsWithIgnoreCase(organisation.getName(), p.getDescription()))
+                .map(CloneUtil::cloneObject)
+                .peek(p1 -> p1.setOrganisation(organisation))
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.error("Fakturautsteder with matching name not found! Organisation: {}, Organization Number: {}", organisation.getName(), organizationNumber);
+                    return new PrincipalNotFoundException(organizationNumber);
+                });
     }
 
     private Principal getPrincipalFromOrgnummer(String organizationNumber, Organisation organisation) {
-        return getInvoiceIssuer(organizationNumber, organisation, (p, orgNum) -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), orgNum));
-    }
-
-    private Principal getInvoiceIssuer(String organizationNumber, Organisation organisation, BiPredicate<Principal, String> filterCondition) {
         return invoiceIssuerRepository.getInvoiceIssuers()
                 .stream()
-                .filter(p -> filterCondition.test(p, organizationNumber))
+                .filter(p -> StringUtils.equalsIgnoreCase(p.getOrganisation().getOrganisationNumber(), organizationNumber))
                 .map(CloneUtil::cloneObject)
-                .peek(p -> p.setOrganisation(organisation))
+                .peek(p1 -> p1.setOrganisation(organisation))
                 .findFirst()
                 .orElseThrow(() -> {
-                    log.error("Fakturautsteder with {} not found!", organizationNumber);
+                    log.error("Fakturautsteder with matching organizationNumber not found! OrgNumber: {}", organizationNumber);
                     return new PrincipalNotFoundException(organizationNumber);
                 });
     }
