@@ -2,10 +2,11 @@ package no.fint.betaling.group;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.SchoolNotFoundException;
-import no.fint.betaling.organisation.CustomerFactory;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
+import no.fint.betaling.organisation.CustomerFactory;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.fint.model.felles.kompleksedatatyper.Periode;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
@@ -112,10 +113,12 @@ public class GroupService {
         }
         Map<Link, ElevforholdResource> studentRelations = groupRepository.getStudentRelations();
         Map<Link, PersonResource> students = groupRepository.getStudents();
+        final Date today = new Date();
 
         return studentRelationLinks.stream()
                 .map(studentRelations::get)
                 .filter(Objects::nonNull)
+                .filter(studentRelation -> isActive(studentRelation, today))
                 .map(this::getStudentLink)
                 .filter(Objects::nonNull)
                 .map(students::get)
@@ -123,6 +126,13 @@ public class GroupService {
                 .map(CustomerFactory::toCustomer)
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private boolean isActive(ElevforholdResource studentRelation, Date today) {
+        Periode gyldighetsperiode = studentRelation.getGyldighetsperiode();
+        if (gyldighetsperiode == null) return true;
+        if (gyldighetsperiode.getSlutt() == null) return true;
+        return gyldighetsperiode.getSlutt().after(today);
     }
 
     private Link getStudentLink(ElevforholdResource resource) {
