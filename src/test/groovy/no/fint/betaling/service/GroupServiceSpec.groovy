@@ -121,7 +121,7 @@ class GroupServiceSpec extends Specification {
         def school = fintObjectFactory.newSchool()
         def studentRelation = fintObjectFactory.newStudentRelation()
         def calender = Calendar.getInstance()
-        calender.add(Calendar.DATE, - 1)
+        calender.add(Calendar.DATE, -1)
         def periode = new Periode(start: calender.getTime(), slutt: calender.getTime())
 
         studentRelation.setGyldighetsperiode(periode)
