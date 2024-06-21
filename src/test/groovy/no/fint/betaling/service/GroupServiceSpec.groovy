@@ -3,6 +3,7 @@ package no.fint.betaling.service
 import no.fint.betaling.group.GroupRepository
 import no.fint.betaling.group.GroupService
 import no.fint.betaling.util.FintObjectFactory
+import no.fint.model.felles.kompleksedatatyper.Periode
 import no.fint.model.resource.Link
 import spock.lang.Specification
 
@@ -114,4 +115,28 @@ class GroupServiceSpec extends Specification {
         noExceptionThrown()
         !result.isEmpty()
     }
+
+    def "Given valid schoolId get only active students"() {
+        given:
+        def school = fintObjectFactory.newSchool()
+        def studentRelation = fintObjectFactory.newStudentRelation()
+        def calender = Calendar.getInstance()
+        calender.add(Calendar.DATE, - 1)
+        def periode = new Periode(start: calender.getTime(), slutt: calender.getTime())
+
+        studentRelation.setGyldighetsperiode(periode)
+        def student = fintObjectFactory.newStudent()
+
+        when:
+        def customerGroup = groupService.getCustomerGroupBySchool('NO123456789')
+
+        then:
+        1 * groupRepository.getSchools() >> [(new Link(verdi: 'link.to.School')): school]
+        1 * groupRepository.getStudentRelations() >> [(new Link(verdi: 'link.to.StudentRelation')): studentRelation]
+        1 * groupRepository.getStudents() >> [(new Link(verdi: 'link.to.Student')): student]
+
+        customerGroup.name == 'HVS'
+        customerGroup.customers.isEmpty()
+    }
+
 }
