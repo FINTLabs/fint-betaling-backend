@@ -2,6 +2,8 @@ package no.fint.betaling.group;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.SchoolNotFoundException;
+import no.fint.betaling.fintdata.SchoolRepository;
+import no.fint.betaling.fintdata.TeachingGroupRepository;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
 import no.fint.betaling.organisation.CustomerFactory;
@@ -24,13 +26,17 @@ import java.util.stream.Collectors;
 public class GroupService {
 
     private final GroupRepository groupRepository;
+    private final SchoolRepository schoolRepository;
+    private final TeachingGroupRepository teachingGroupRepository;
 
-    public GroupService(GroupRepository groupRepository) {
+    public GroupService(GroupRepository groupRepository, SchoolRepository schoolRepository, TeachingGroupRepository teachingGroupRepository) {
         this.groupRepository = groupRepository;
+        this.schoolRepository = schoolRepository;
+        this.teachingGroupRepository = teachingGroupRepository;
     }
 
     private SkoleResource getSchool(String schoolId) {
-        return groupRepository.getSchools().values().stream()
+        return schoolRepository.getSchools().values().stream()
                 .filter(hasOrganisationNumber(schoolId))
                 .findFirst()
                 .orElseThrow(() -> new SchoolNotFoundException(String.format("x-school-org-id: %s", schoolId)));
@@ -75,7 +81,7 @@ public class GroupService {
         SkoleResource school = getSchool(schoolId);
 
         return school.getUndervisningsgruppe().stream()
-                .map(group -> groupRepository.getTeachingGroups().get(group))
+                .map(group -> teachingGroupRepository.getTeachingGroups().get(group))
                 .filter(Objects::nonNull)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());

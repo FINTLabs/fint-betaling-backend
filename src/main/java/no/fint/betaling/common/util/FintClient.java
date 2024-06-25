@@ -3,6 +3,7 @@ package no.fint.betaling.common.util;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.exception.SkoleressursException;
+import no.fint.betaling.fintdata.SchoolRepository;
 import no.fint.betaling.group.GroupRepository;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
@@ -33,11 +34,13 @@ public class FintClient {
     private final RestUtil restUtil;
 
     public final GroupRepository groupRepository;
+    private final SchoolRepository schoolRepository;
 
-    public FintClient(RestUtil restUtil, GroupRepository groupRepository, Endpoints endpoints) {
+    public FintClient(RestUtil restUtil, GroupRepository groupRepository, Endpoints endpoints, SchoolRepository schoolRepository) {
         this.restUtil = restUtil;
         this.groupRepository = groupRepository;
         this.endpoints = endpoints;
+        this.schoolRepository = schoolRepository;
     }
 
     public Mono<PersonalressursResource> getPersonalressurs(String ansattnummer) {
@@ -58,8 +61,8 @@ public class FintClient {
     public Mono<SkoleressursResource> getSkoleressurs(PersonalressursResource personalressurs) {
         AtomicReference<SkoleressursResource> result = new AtomicReference<>();
         personalressurs.getSelfLinks().forEach(selflink -> {
-            if (groupRepository.getSchoolresources().containsKey(selflink)) {
-                result.set(groupRepository.getSchoolresources().get(selflink));
+            if (schoolRepository.getSchoolresources().containsKey(selflink)) {
+                result.set(schoolRepository.getSchoolresources().get(selflink));
             }
         });
 
@@ -71,7 +74,7 @@ public class FintClient {
         return skoleressurs
                 .getSkole()
                 .stream()
-                .map(groupRepository.getSchools()::get)
+                .map(schoolRepository.getSchools()::get)
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
     }

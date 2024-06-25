@@ -3,6 +3,7 @@ package no.fint.betaling.user;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.PersonNotFoundException;
 import no.fint.betaling.common.exception.PersonalressursException;
+import no.fint.betaling.fintdata.SchoolRepository;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.common.util.FintClient;
@@ -33,11 +34,13 @@ public class UserRepository {
     private final GroupRepository groupRepository;
 
     private final FintClient fintClient;
+    private final SchoolRepository schoolRepository;
 
-    public UserRepository(OrganisationRepository organisationRepository, GroupRepository groupRepository, FintClient fintClient) {
+    public UserRepository(OrganisationRepository organisationRepository, GroupRepository groupRepository, FintClient fintClient, SchoolRepository schoolRepository) {
         this.organisationRepository = organisationRepository;
         this.groupRepository = groupRepository;
         this.fintClient = fintClient;
+        this.schoolRepository = schoolRepository;
     }
 
     public Mono<User> mapUserFromResources(String employeeId, boolean isAdminUser) {
@@ -89,7 +92,7 @@ public class UserRepository {
 
     private List<SkoleResource> getAllSchools() {
         log.debug("Fetching all distinct schools");
-        return groupRepository.getDistinctSchools();
+        return schoolRepository.getDistinctSchools();
     }
 
     private String getName(PersonResource person) {

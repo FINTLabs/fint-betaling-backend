@@ -1,4 +1,4 @@
-package no.fint.betaling.common;
+package no.fint.betaling.fintdata;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.util.RestUtil;
