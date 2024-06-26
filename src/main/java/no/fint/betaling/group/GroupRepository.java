@@ -8,8 +8,6 @@ import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.felles.PersonResources;
 import no.fint.model.resource.utdanning.elev.*;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
@@ -43,7 +41,6 @@ public class GroupRepository {
     public Map<Link, BasisgruppeResource> getBasisGroups() {
         return basisGroups.get();
     }
-
 
     public Map<Link, KontaktlarergruppeResource> getContactTeacherGroups() {
         return contactTeacherGroups.get();
