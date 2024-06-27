@@ -2,6 +2,7 @@ package no.fint.betaling.fintdata;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.util.RestUtil;
+import no.fint.betaling.model.Taxcode;
 import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
@@ -18,7 +19,7 @@ public class FintResourceRepository<T extends FintLinks, U extends AbstractColle
 
     private final RestUtil restUtil;
     private final String endpoint;
-    private Map<Link, T> resources = new HashMap<>();
+    protected Map<Link, T> resources = new HashMap<>();
     private final Class<U> resourcesClass;
     private final Function<T, List<Link>> linkProvider;
 
@@ -51,6 +52,7 @@ public class FintResourceRepository<T extends FintLinks, U extends AbstractColle
         updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> newResources.put(link, resource)));
         resources = newResources;
         log.debug("Update completed, {} resources.", resources.size());
+        onResourcesUpdated();
         return resources.size();
     }
 
@@ -76,6 +78,9 @@ public class FintResourceRepository<T extends FintLinks, U extends AbstractColle
 
     public boolean isEmpty() {
         return resources.isEmpty();
+    }
+
+    protected void onResourcesUpdated() {
     }
 
 }

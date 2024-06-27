@@ -2,10 +2,10 @@ package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.config.Endpoints;
+import no.fint.betaling.common.util.RestUtil;
+import no.fint.betaling.fintdata.TaxCodeRepository;
 import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Taxcode;
-import no.fint.betaling.common.util.RestUtil;
-import no.fint.betaling.taxcode.TaxcodeRepository;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.kodeverk.VareResources;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,11 +27,11 @@ public class LineitemRepository {
 
     private final RestUtil restUtil;
 
-    private final TaxcodeRepository taxcodeRepository;
+    private final TaxCodeRepository taxcodeRepository;
 
     private final ConcurrentMap<String, Lineitem> lineitems = new ConcurrentSkipListMap<>();
 
-    public LineitemRepository(Endpoints endpoints, RestUtil restUtil, TaxcodeRepository taxcodeRepository) {
+    public LineitemRepository(Endpoints endpoints, RestUtil restUtil, TaxCodeRepository taxcodeRepository) {
         this.endpoints = endpoints;
         this.restUtil = restUtil;
         this.taxcodeRepository = taxcodeRepository;
@@ -56,9 +56,9 @@ public class LineitemRepository {
         log.info("Updating vare from {} ...", endpoints.getVare());
         try {
             restUtil.getUpdates(VareResources.class, endpoints.getVare())
-					.retryWhen(
-							Retry.backoff(5, Duration.ofSeconds(10))
-									.maxBackoff(Duration.ofSeconds(60)))
+                    .retryWhen(
+                            Retry.backoff(5, Duration.ofSeconds(10))
+                                    .maxBackoff(Duration.ofSeconds(60)))
                     .block()
                     .getContent()
                     .forEach(v -> {

@@ -1,7 +1,7 @@
 package no.fint.betaling.controller
 
+import no.fint.betaling.fintdata.TaxCodeRepository
 import no.fint.betaling.model.Taxcode
-import no.fint.betaling.taxcode.TaxcodeRepository
 import no.fint.betaling.taxcode.TaxcodeController
 import org.spockframework.spring.SpringBean
 import org.springframework.http.HttpStatus
@@ -12,7 +12,7 @@ class TaxcodeControllerSpec extends Specification {
     private TaxcodeController controller
 
     @SpringBean
-    private TaxcodeRepository repository = Mock(TaxcodeRepository.class)
+    private TaxCodeRepository repository = Mock(TaxCodeRepository.class)
 
     void setup() {
         controller = new TaxcodeController(repository)

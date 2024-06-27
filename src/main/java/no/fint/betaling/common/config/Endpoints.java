@@ -42,7 +42,7 @@ public class Endpoints {
     private String vare;
 
     @Value("${fint.betaling.endpoints.mva-code:/okonomi/kodeverk/merverdiavgift}")
-    private String taxcode;
+    private String taxCode;
 
     @Value("${fint.betaling.endpoints.skoleressurs:/utdanning/elev/skoleressurs}")
     private String schoolResource;
@@ -59,7 +59,7 @@ public class Endpoints {
         endpointsMap.put("person", person);
         endpointsMap.put("organisationselement", organisationselement);
         endpointsMap.put("vare", vare);
-        endpointsMap.put("taxcode", taxcode);
+        endpointsMap.put("taxcode", taxCode);
         endpointsMap.put("schoolResource", schoolResource);
         return endpointsMap;
     }

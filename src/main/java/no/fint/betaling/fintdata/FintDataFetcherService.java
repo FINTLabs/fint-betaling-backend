@@ -19,6 +19,10 @@ public class FintDataFetcherService {
 
         // fra schools:
 //        log.info("Updates completed, schools ({}), schoolresource ({})", schoolsUpdated, schoolResourceUpdated);
+
+
+        //@Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
+        //public void updateTaxcodes() {
     }
 
 }
