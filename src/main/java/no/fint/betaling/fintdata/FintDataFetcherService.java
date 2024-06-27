@@ -1,0 +1,24 @@
+package no.fint.betaling.fintdata;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+public class FintDataFetcherService {
+
+    @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
+    public void updateAll() {
+        // TODO: Implement this method
+//        int basisGroupsUpdated = basisGroups.update();
+//        int contactTeachersUpdated = contactTeacherGroups.update();
+//        int studentRelationsUpdated = studentRelations.update();
+//        int studentsUpdated = students.update();
+//        log.info("Updates completed, basisgruppe ({}), undervisningsgruppe ({}), elevforhold ({}), elev ({})", basisGroupsUpdated, contactTeachersUpdated, studentRelationsUpdated, studentsUpdated);
+
+        // fra schools:
+//        log.info("Updates completed, schools ({}), schoolresource ({})", schoolsUpdated, schoolResourceUpdated);
+    }
+
+}

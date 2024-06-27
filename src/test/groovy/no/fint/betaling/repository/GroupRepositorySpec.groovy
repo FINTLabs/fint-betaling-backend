@@ -1,25 +1,27 @@
 package no.fint.betaling.repository
 
 import no.fint.betaling.common.config.Endpoints
-import no.fint.betaling.group.GroupRepository
+
 import no.fint.betaling.util.FintObjectFactory
 import no.fint.betaling.common.util.RestUtil
 import no.fint.model.resource.Link
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources
 import reactor.core.publisher.Mono
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore("Replaced with fintdata.*repository")
 class GroupRepositorySpec extends Specification {
     private Endpoints endpoints
     private RestUtil restUtil
-    private GroupRepository groupRepository
+    //private GroupRepository groupRepository
     private FintObjectFactory fintObjectFactory
 
     void setup() {
         endpoints = new Endpoints()
         restUtil = Mock()
         fintObjectFactory = new FintObjectFactory()
-        groupRepository = new GroupRepository(restUtil, endpoints)
+      //  groupRepository = new GroupRepository(restUtil, endpoints)
     }
 
     def "Update schools on update all"() {

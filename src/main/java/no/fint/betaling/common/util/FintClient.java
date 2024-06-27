@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.exception.SkoleressursException;
 import no.fint.betaling.fintdata.SchoolRepository;
-import no.fint.betaling.group.GroupRepository;
+import no.fint.betaling.fintdata.SchoolResourceRepository;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
@@ -33,14 +33,15 @@ public class FintClient {
 
     private final RestUtil restUtil;
 
-    public final GroupRepository groupRepository;
     private final SchoolRepository schoolRepository;
 
-    public FintClient(RestUtil restUtil, GroupRepository groupRepository, Endpoints endpoints, SchoolRepository schoolRepository) {
+    private final SchoolResourceRepository schoolResourceRepository;
+
+    public FintClient(RestUtil restUtil, Endpoints endpoints, SchoolRepository schoolRepository, SchoolResourceRepository schoolResourceRepository) {
         this.restUtil = restUtil;
-        this.groupRepository = groupRepository;
         this.endpoints = endpoints;
         this.schoolRepository = schoolRepository;
+        this.schoolResourceRepository = schoolResourceRepository;
     }
 
     public Mono<PersonalressursResource> getPersonalressurs(String ansattnummer) {
@@ -60,11 +61,11 @@ public class FintClient {
 
     public Mono<SkoleressursResource> getSkoleressurs(PersonalressursResource personalressurs) {
         AtomicReference<SkoleressursResource> result = new AtomicReference<>();
-        personalressurs.getSelfLinks().forEach(selflink -> {
-            if (schoolRepository.getSchoolresources().containsKey(selflink)) {
-                result.set(schoolRepository.getSchoolresources().get(selflink));
-            }
-        });
+        personalressurs.getSelfLinks()
+                .stream()
+                .map(schoolResourceRepository::getResourceByLink)
+                .filter(Objects::nonNull)
+                .forEach(result::set);
 
         if (result.get() != null) return Mono.just(result.get());
         throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
@@ -74,7 +75,7 @@ public class FintClient {
         return skoleressurs
                 .getSkole()
                 .stream()
-                .map(schoolRepository.getSchools()::get)
+                .map(schoolRepository::getResourceByLink)
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
     }

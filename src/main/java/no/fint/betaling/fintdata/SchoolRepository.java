@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.model.resource.Link;
+import no.fint.model.resource.utdanning.elev.BasisgruppeResource;
+import no.fint.model.resource.utdanning.elev.BasisgruppeResources;
 import no.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.fint.model.resource.utdanning.elev.SkoleressursResources;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
@@ -16,33 +18,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
-public class SchoolRepository {
-
-    private final ResourceCache<SkoleResource, SkoleResources> schools;
-    private final ResourceCache<SkoleressursResource, SkoleressursResources> schoolresources;
+public class SchoolRepository extends FintResourceRepository<SkoleResource, SkoleResources> {
 
     public SchoolRepository(RestUtil restUtil, Endpoints endpoints) {
-        schools = new ResourceCache<>(restUtil, endpoints.getSchool(), SkoleResources.class);
-        schoolresources = new ResourceCache<>(restUtil, endpoints.getSchoolResource(), SkoleressursResources.class, SkoleressursResource::getPersonalressurs);
-    }
-
-
-    public void updateSchool() {
-        int schoolsUpdated = schools.update();
-        int schoolResourceUpdated = schoolresources.update();
-        log.info("Updates completed, schools ({}), schoolresource ({})", schoolsUpdated, schoolResourceUpdated);
-    }
-
-    public Map<Link, SkoleResource> getSchools() {
-        return schools.get();
+        super(restUtil, endpoints.getSchool(), SkoleResources.class);
     }
 
     public List<SkoleResource> getDistinctSchools() {
-        return getSchools().values().stream().distinct().collect(Collectors.toList());
-    }
-
-    public Map<Link, SkoleressursResource> getSchoolresources() {
-        return schoolresources.get();
+        return get().stream().distinct().collect(Collectors.toList());
     }
 
 }

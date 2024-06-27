@@ -7,28 +7,29 @@ import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 @Slf4j
-public class ResourceCache<T extends FintLinks, U extends AbstractCollectionResources<T>> {
+public class FintResourceRepository<T extends FintLinks, U extends AbstractCollectionResources<T>> {
 
     private final RestUtil restUtil;
     private final String endpoint;
     private Map<Link, T> resources = new HashMap<>();
-    private final Class<U> clazz;
+    private final Class<U> resourcesClass;
     private final Function<T, List<Link>> linkProvider;
 
-    public ResourceCache(RestUtil restUtil, String endpoint, Class<U> clazz) {
-        this(restUtil, endpoint, clazz, FintLinks::getSelfLinks);
+    public FintResourceRepository(RestUtil restUtil, String endpoint, Class<U> resourcesClass) {
+        this(restUtil, endpoint, resourcesClass, FintLinks::getSelfLinks);
     }
 
-    public ResourceCache(RestUtil restUtil, String endpoint, Class<U> clazz, Function<T, List<Link>> linkProvider) {
+    public FintResourceRepository(RestUtil restUtil, String endpoint, Class<U> resourcesClass, Function<T, List<Link>> linkProvider) {
         this.restUtil = restUtil;
         this.endpoint = endpoint;
-        this.clazz = clazz;
+        this.resourcesClass = resourcesClass;
         this.linkProvider = linkProvider;
     }
 
@@ -38,7 +39,7 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
         U updatedResources;
 
         try {
-            updatedResources = restUtil.getWithRetry(clazz, endpoint).block();
+            updatedResources = restUtil.getWithRetry(resourcesClass, endpoint).block();
         } catch (WebClientResponseException ex) {
             log.error(ex.getMessage());
             return 0;
@@ -53,12 +54,24 @@ public class ResourceCache<T extends FintLinks, U extends AbstractCollectionReso
         return resources.size();
     }
 
-    public Map<Link, T> get() {
+    public Collection<T> get() {
+        if (resources.isEmpty()) {
+            update();
+        }
+
+        return resources.values();
+    }
+
+    public Map<Link, T> getMap() {
         if (resources.isEmpty()) {
             update();
         }
 
         return resources;
+    }
+
+    public T getResourceByLink(Link link) {
+        return resources.get(link);
     }
 
     public boolean isEmpty() {

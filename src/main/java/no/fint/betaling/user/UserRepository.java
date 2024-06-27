@@ -7,7 +7,6 @@ import no.fint.betaling.fintdata.SchoolRepository;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.common.util.FintClient;
-import no.fint.betaling.group.GroupRepository;
 import no.fint.betaling.organisation.OrganisationRepository;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
@@ -31,14 +30,11 @@ public class UserRepository {
 
     private final OrganisationRepository organisationRepository;
 
-    private final GroupRepository groupRepository;
-
     private final FintClient fintClient;
     private final SchoolRepository schoolRepository;
 
-    public UserRepository(OrganisationRepository organisationRepository, GroupRepository groupRepository, FintClient fintClient, SchoolRepository schoolRepository) {
+    public UserRepository(OrganisationRepository organisationRepository, FintClient fintClient, SchoolRepository schoolRepository) {
         this.organisationRepository = organisationRepository;
-        this.groupRepository = groupRepository;
         this.fintClient = fintClient;
         this.schoolRepository = schoolRepository;
     }
