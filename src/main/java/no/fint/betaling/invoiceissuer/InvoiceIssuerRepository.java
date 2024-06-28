@@ -1,7 +1,7 @@
 package no.fint.betaling.invoiceissuer;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.claim.LineitemRepository;
+import no.fint.betaling.fintdata.LineItemRepository;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.common.util.RestUtil;
@@ -27,13 +27,13 @@ public class InvoiceIssuerRepository {
 
     private final RestUtil restUtil;
 
-    private final LineitemRepository lineitemRepository;
+    private final LineItemRepository lineitemRepository;
 
     private final OrganisationRepository organisationRepository;
 
     private final ConcurrentMap<String, Principal> invoiceIssuers = new ConcurrentSkipListMap<>();
 
-    public InvoiceIssuerRepository(RestUtil restUtil, LineitemRepository lineitemRepository, OrganisationRepository organisationRepository, Endpoints endpoints) {
+    public InvoiceIssuerRepository(RestUtil restUtil, LineItemRepository lineitemRepository, OrganisationRepository organisationRepository, Endpoints endpoints) {
         this.restUtil = restUtil;
         this.lineitemRepository = lineitemRepository;
         this.organisationRepository = organisationRepository;
@@ -62,7 +62,7 @@ public class InvoiceIssuerRepository {
                     principal.setLineitems(fakturautsteder.getVare()
                             .stream()
                             .map(Link::getHref)
-                            .map(lineitemRepository::getLineitemByUri)
+                            .map(lineitemRepository::getLineItemByUri)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toSet()));
                     fakturautsteder.getSelfLinks()

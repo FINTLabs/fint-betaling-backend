@@ -1,6 +1,6 @@
 package no.fint.betaling.repository
 
-import no.fint.betaling.claim.LineitemRepository
+import no.fint.betaling.fintdata.LineItemRepository
 import no.fint.betaling.common.config.Endpoints
 import no.fint.betaling.model.Lineitem
 import no.fint.betaling.common.util.RestUtil
@@ -20,7 +20,7 @@ class InvoiceIssuerRepositorySpec extends Specification {
     def endpoints = Mock(Endpoints) {
         getInvoiceIssuer() >> endpoint
     }
-    def lineitemRepository = Mock(LineitemRepository)
+    def lineitemRepository = Mock(LineItemRepository)
     def organisationRepository = Mock(OrganisationRepository)
 
     def repository = new InvoiceIssuerRepository(
@@ -47,7 +47,7 @@ class InvoiceIssuerRepositorySpec extends Specification {
 
         then:
         1 * restUtil.getUpdates(FakturautstederResources, endpoint) >> Mono.just(fakturautstederResources)
-        1 * lineitemRepository.getLineitemByUri(_ as String) >> new Lineitem(itemCode: 'abc')
+        1 * lineitemRepository.getLineItemByUri(_ as String) >> new Lineitem(itemCode: 'abc')
         result.size() == 1
     }
 }

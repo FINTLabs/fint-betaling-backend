@@ -1,8 +1,12 @@
 package no.fint.betaling.fintdata;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.model.resource.okonomi.kodeverk.VareResources;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 @Slf4j
 @Service
@@ -23,6 +27,15 @@ public class FintDataFetcherService {
 
         //@Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
         //public void updateTaxcodes() {
+
+        //@Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
+        //public void updateLineitems() {
+
+        // I FintResourceRepository må vi se på retry:
+//        restUtil.getUpdates(VareResources.class, endpoints.getVare())
+//                .retryWhen(
+//                        Retry.backoff(5, Duration.ofSeconds(10))
+//                                .maxBackoff(Duration.ofSeconds(60)))
     }
 
 }
