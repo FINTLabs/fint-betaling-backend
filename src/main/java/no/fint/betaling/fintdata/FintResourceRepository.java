@@ -5,6 +5,7 @@ import no.fint.betaling.common.util.RestUtil;
 import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Collection;
@@ -16,8 +17,8 @@ import java.util.function.Function;
 @Slf4j
 public class FintResourceRepository<T extends FintLinks, U extends AbstractCollectionResources<T>> {
 
-    private final RestUtil restUtil;
-    private final String endpoint;
+    protected final RestUtil restUtil;
+    protected final String endpoint;
     protected Map<Link, T> resources = new HashMap<>();
     private final Class<U> resourcesClass;
     private final Function<T, List<Link>> linkProvider;

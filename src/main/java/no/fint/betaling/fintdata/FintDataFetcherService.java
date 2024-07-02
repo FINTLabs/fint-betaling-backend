@@ -1,6 +1,7 @@
 package no.fint.betaling.fintdata;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.model.resource.okonomi.faktura.FakturautstederResources;
 import no.fint.model.resource.okonomi.kodeverk.VareResources;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,14 @@ public class FintDataFetcherService {
 //                .retryWhen(
 //                        Retry.backoff(5, Duration.ofSeconds(10))
 //                                .maxBackoff(Duration.ofSeconds(60)))
+
+
+//        @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:1200000}")
+//        public void updateInvoiceIssuers() {
+//            log.info("Updating invoice issuer from {} ...", endpoints.getInvoiceIssuer());
+//            restUtil.getUpdates(FakturautstederResources.class, endpoints.getInvoiceIssuer())
+
+
     }
 
 }

@@ -6,6 +6,7 @@ import no.fint.betaling.model.Taxcode;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource;
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources;
+import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+@Repository
 public class TaxCodeRepository extends FintResourceRepository<MerverdiavgiftResource, MerverdiavgiftResources> {
 
     private ConcurrentMap<String, Taxcode> taxcodes = new ConcurrentHashMap<>();
