@@ -4,9 +4,6 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Data
 @Configuration
 public class Endpoints {
@@ -46,22 +43,5 @@ public class Endpoints {
 
     @Value("${fint.betaling.endpoints.skoleressurs:/utdanning/elev/skoleressurs}")
     private String schoolResource;
-
-    public Map<String, String> getAllEndpoints() {
-        Map<String, String> endpointsMap = new HashMap<>();
-        endpointsMap.put("invoiceIssuer", invoiceIssuer);
-        endpointsMap.put("employee", employee);
-        endpointsMap.put("school", school);
-        endpointsMap.put("basisGroup", basisGroup);
-        endpointsMap.put("teachingGroup", teachingGroup);
-        endpointsMap.put("contactTeacherGroup", contactTeacherGroup);
-        endpointsMap.put("studentRelation", studentRelation);
-        endpointsMap.put("person", person);
-        endpointsMap.put("organisationselement", organisationselement);
-        endpointsMap.put("vare", vare);
-        endpointsMap.put("taxcode", taxCode);
-        endpointsMap.put("schoolResource", schoolResource);
-        return endpointsMap;
-    }
 
 }
