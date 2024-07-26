@@ -3,17 +3,13 @@ package no.fint.betaling.fintdata;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Principal;
-import no.fint.betaling.organisation.OrganisationRepository;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResource;
 import no.fint.model.resource.okonomi.faktura.FakturautstederResources;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
 @Slf4j

@@ -7,7 +7,7 @@ import no.fint.betaling.fintdata.SchoolRepository;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
 import no.fint.betaling.common.util.FintClient;
-import no.fint.betaling.organisation.OrganisationRepository;
+import no.fint.betaling.fintdata.OrganisationRepository;
 import no.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;

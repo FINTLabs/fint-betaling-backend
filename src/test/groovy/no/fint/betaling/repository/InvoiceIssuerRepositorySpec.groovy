@@ -5,12 +5,7 @@ import no.fint.betaling.fintdata.LineItemRepository
 import no.fint.betaling.common.config.Endpoints
 import no.fint.betaling.model.Lineitem
 import no.fint.betaling.common.util.RestUtil
-import no.fint.betaling.organisation.OrganisationRepository
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.resource.Link
-import no.fint.model.resource.okonomi.faktura.FakturautstederResource
-import no.fint.model.resource.okonomi.faktura.FakturautstederResources
-import reactor.core.publisher.Mono
+import no.fint.betaling.fintdata.OrganisationRepository
 import spock.lang.Specification
 
 class InvoiceIssuerRepositorySpec extends Specification {
