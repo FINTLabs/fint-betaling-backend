@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 @Slf4j
 @Repository
-public abstract class TeachingGroupRepository extends FintResourceRepository<UndervisningsgruppeResource, UndervisningsgruppeResources> {
+public class TeachingGroupRepository extends FintResourceRepository<UndervisningsgruppeResource, UndervisningsgruppeResources> {
 
     public TeachingGroupRepository(RestUtil restUtil, Endpoints endpoints) {
         super(restUtil, endpoints.getTeachingGroup(), UndervisningsgruppeResources.class);
