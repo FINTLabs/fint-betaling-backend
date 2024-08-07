@@ -3,6 +3,7 @@ package no.fint.betaling.invoiceissuer;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.PrincipalNotFoundException;
 import no.fint.betaling.common.util.CloneUtil;
+import no.fint.betaling.fintdata.InvoiceIssuerRepository;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.Principal;
 import no.fint.betaling.organisation.OrganisationService;
@@ -66,3 +67,4 @@ public class InvoiceIssuerService {
                 });
     }
 }
+

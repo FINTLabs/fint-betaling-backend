@@ -2,7 +2,7 @@ package no.fint.betaling.repository
 
 import no.fint.betaling.common.config.Endpoints
 import no.fint.betaling.common.util.RestUtil
-import no.fint.betaling.taxcode.TaxcodeRepository
+import no.fint.betaling.fintdata.TaxCodeRepository
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
 import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource
@@ -14,10 +14,10 @@ class TaxcodeRepositorySpec extends Specification {
 
     def restUtil = Mock(RestUtil)
     def endpoint = 'http://localhost/mvakode'
-    def endpoints = Mock(Endpoints){
-        getTaxcode() >> endpoint
+    def endpoints = Mock(Endpoints) {
+        getTaxCode() >> endpoint
     }
-    def repository = new TaxcodeRepository(endpoints, restUtil)
+    def repository = new TaxCodeRepository(restUtil, endpoints)
 
     def 'Fetching tax codes should update first'() {
         given:
@@ -31,6 +31,6 @@ class TaxcodeRepositorySpec extends Specification {
 
         then:
         result.size() == 1
-        1 * restUtil.getUpdates(MerverdiavgiftResources, endpoint) >> Mono.just(mvaCodes)
+        1 * restUtil.getWithRetry(MerverdiavgiftResources, endpoint) >> Mono.just(mvaCodes)
     }
 }

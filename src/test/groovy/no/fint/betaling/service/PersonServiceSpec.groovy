@@ -1,6 +1,6 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.group.GroupRepository
+import no.fint.betaling.fintdata.StudentRepository
 import no.fint.betaling.organisation.PersonService
 import no.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.model.resource.Link
@@ -11,15 +11,15 @@ class PersonServiceSpec extends Specification {
 
     def 'Get Person Link by ID'() {
         given:
-        def groupRepository = Mock(GroupRepository)
-        def personService = new PersonService(groupRepository)
+        def studentRepository = Mock(StudentRepository)
+        def personService = new PersonService(studentRepository)
 
         when:
         def result = personService.getPersonLinkById('21i3v9')
 
         then:
         result.href == 'link.to.Person'
-        1 * groupRepository.getStudents() >> Collections.singletonMap(Link.with('foo'), createPerson())
+        1 * studentRepository.get() >> Collections.singletonList(createPerson())
     }
 
     PersonResource createPerson() {

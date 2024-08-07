@@ -2,6 +2,7 @@ package no.fint.betaling.group;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.SchoolNotFoundException;
+import no.fint.betaling.fintdata.*;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
 import no.fint.betaling.organisation.CustomerFactory;
@@ -9,7 +10,6 @@ import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.felles.kompleksedatatyper.Periode;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
-import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.utdanning.basisklasser.GruppeResource;
 import no.fint.model.resource.utdanning.elev.ElevforholdResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
@@ -23,14 +23,24 @@ import java.util.stream.Collectors;
 @Service
 public class GroupService {
 
-    private final GroupRepository groupRepository;
+    private final SchoolRepository schoolRepository;
+    private final TeachingGroupRepository teachingGroupRepository;
+    private final StudentRelationRepository studentRelationRepository;
+    private final StudentRepository studentRepository;
+    private final BasisGroupRepository basisGroupRepository;
+    private final ContactTeacherGroupRepository contactTeacherGroupRepository;
 
-    public GroupService(GroupRepository groupRepository) {
-        this.groupRepository = groupRepository;
+    public GroupService(SchoolRepository schoolRepository, TeachingGroupRepository teachingGroupRepository, StudentRelationRepository studentRelationRepository, StudentRepository studentRepository, BasisGroupRepository basisGroupRepository, ContactTeacherGroupRepository contactTeacherGroupRepository) {
+        this.schoolRepository = schoolRepository;
+        this.teachingGroupRepository = teachingGroupRepository;
+        this.studentRelationRepository = studentRelationRepository;
+        this.studentRepository = studentRepository;
+        this.basisGroupRepository = basisGroupRepository;
+        this.contactTeacherGroupRepository = contactTeacherGroupRepository;
     }
 
     private SkoleResource getSchool(String schoolId) {
-        return groupRepository.getSchools().values().stream()
+        return schoolRepository.get().stream()
                 .filter(hasOrganisationNumber(schoolId))
                 .findFirst()
                 .orElseThrow(() -> new SchoolNotFoundException(String.format("x-school-org-id: %s", schoolId)));
@@ -46,14 +56,18 @@ public class GroupService {
         return getSchool(schoolId)
                 .getElevforhold()
                 .stream()
-                .map(groupRepository.getStudentRelations()::get)
-                .filter(e -> e != null && e.getSystemId() != null && e.getSystemId().getIdentifikatorverdi() != null)
+                .map(studentRelationRepository::getResourceByLink)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(e -> e.getSystemId() != null && e.getSystemId().getIdentifikatorverdi() != null)
                 .collect(Collectors.toMap(
                         e -> e.getSystemId().getIdentifikatorverdi(),
                         e -> e.getElev()
                                 .stream()
                                 .filter(Objects::nonNull)
-                                .map(groupRepository.getStudents()::get)
+                                .map(studentRepository::getResourceByLink)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
                                 .map(CustomerFactory::toCustomer)
                                 .distinct()
                                 .findFirst()
@@ -65,8 +79,9 @@ public class GroupService {
         SkoleResource school = getSchool(schoolId);
 
         return school.getBasisgruppe().stream()
-                .map(group -> groupRepository.getBasisGroups().get(group))
-                .filter(Objects::nonNull)
+                .map(basisGroupRepository::getResourceByLink)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -75,8 +90,9 @@ public class GroupService {
         SkoleResource school = getSchool(schoolId);
 
         return school.getUndervisningsgruppe().stream()
-                .map(group -> groupRepository.getTeachingGroups().get(group))
-                .filter(Objects::nonNull)
+                .map(group -> teachingGroupRepository.getResourceByLink(group))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -85,8 +101,9 @@ public class GroupService {
         SkoleResource school = getSchool(schoolId);
 
         return school.getKontaktlarergruppe().stream()
-                .map(group -> groupRepository.getContactTeacherGroups().get(group))
-                .filter(Objects::nonNull)
+                .map(contactTeacherGroupRepository::getResourceByLink)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -111,18 +128,18 @@ public class GroupService {
         if (studentRelationLinks == null) {
             return Collections.emptyList();
         }
-        Map<Link, ElevforholdResource> studentRelations = groupRepository.getStudentRelations();
-        Map<Link, PersonResource> students = groupRepository.getStudents();
         final Date today = new Date();
 
         return studentRelationLinks.stream()
-                .map(studentRelations::get)
-                .filter(Objects::nonNull)
+                .map(studentRelationRepository::getResourceByLink)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .filter(studentRelation -> isActive(studentRelation, today))
                 .map(this::getStudentLink)
                 .filter(Objects::nonNull)
-                .map(students::get)
-                .filter(Objects::nonNull)
+                .map(studentRepository::getResourceByLink)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(CustomerFactory::toCustomer)
                 .distinct()
                 .collect(Collectors.toList());

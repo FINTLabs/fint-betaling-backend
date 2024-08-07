@@ -2,7 +2,7 @@ package no.fint.betaling.organisation;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.PersonNotFoundException;
-import no.fint.betaling.group.GroupRepository;
+import no.fint.betaling.fintdata.StudentRepository;
 import no.fint.model.resource.Link;
 import no.fint.model.resource.felles.PersonResource;
 import no.fint.model.resource.okonomi.faktura.FakturamottakerResource;
@@ -14,17 +14,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class PersonService {
 
-    private final GroupRepository groupRepository;
+    private final StudentRepository studentRepository;
 
-    public PersonService(GroupRepository groupRepository) {
-        this.groupRepository = groupRepository;
+    public PersonService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
     }
 
     @Cacheable("persons")
     public PersonResource getPersonById(String id) {
-        return groupRepository
-                .getStudents()
-                .values()
+        return studentRepository
+                .get()
                 .parallelStream()
                 .filter(p -> StringUtils.equals(id, CustomerFactory.getCustomerId(p)))
                 .findAny()

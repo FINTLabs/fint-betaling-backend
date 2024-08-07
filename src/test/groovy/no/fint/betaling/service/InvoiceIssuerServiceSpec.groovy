@@ -1,9 +1,9 @@
 package no.fint.betaling.service
 
 import no.fint.betaling.common.exception.PrincipalNotFoundException
+import no.fint.betaling.fintdata.InvoiceIssuerRepository
 import no.fint.betaling.model.Organisation
 import no.fint.betaling.model.Principal
-import no.fint.betaling.invoiceissuer.InvoiceIssuerRepository
 import no.fint.betaling.invoiceissuer.InvoiceIssuerService
 import no.fint.betaling.organisation.OrganisationService
 import no.fint.betaling.user.UserRepository

@@ -1,6 +1,6 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.common.ResourceCache
+import no.fint.betaling.fintdata.FintResourceRepository
 import no.fint.betaling.common.util.RestUtil
 import no.fint.model.resource.Link
 import no.fint.model.resource.utdanning.vurdering.ElevfravarResource
@@ -11,7 +11,7 @@ import spock.lang.Specification
 
 import java.util.function.Function
 
-class ResourceCacheSpec extends Specification {
+class FintResourceRepositorySpec extends Specification {
 
     private RestUtil restUtil
 
@@ -22,7 +22,7 @@ class ResourceCacheSpec extends Specification {
     def "update with self link - success"() {
         given:
         String endpoint = "https://example.com/resources"
-        ResourceCache<ElevfravarResource, ElevfravarResources> resourceCache = new ResourceCache<>(restUtil, endpoint, ElevfravarResource.class)
+        FintResourceRepository<ElevfravarResource, ElevfravarResources> resourceCache = new FintResourceRepository<>(restUtil, endpoint, ElevfravarResource.class)
 
         ElevfravarResources elevfravarResources = new ElevfravarResources()
         elevfravarResources.addResource(createResource("test-url-1"))
@@ -33,7 +33,7 @@ class ResourceCacheSpec extends Specification {
         resourceCache.update()
 
         then:
-        Map<Link, ElevfravarResource> resources = resourceCache.get()
+        Map<Link, ElevfravarResource> resources = resourceCache.getMap()
         resources.size() == 2
         resources.containsKey(new Link("test-url-1"))
         resources.containsKey(new Link("test-url-2"))
@@ -43,7 +43,7 @@ class ResourceCacheSpec extends Specification {
         given:
         String endpoint = "https://example.com/resources"
         Function<ElevfravarResource, List<Link>> linkProvider = { resource -> resource.getElevforhold() }
-        ResourceCache<ElevfravarResource, ElevfravarResources> resourceCache = new ResourceCache<>(restUtil, endpoint, ElevfravarResource.class, linkProvider)
+        FintResourceRepository<ElevfravarResource, ElevfravarResources> resourceCache = new FintResourceRepository<>(restUtil, endpoint, ElevfravarResource.class, linkProvider)
 
         ElevfravarResources elevfravarResources = new ElevfravarResources()
         elevfravarResources.addResource(createResource("test-url-1", "Test1"))
@@ -54,7 +54,7 @@ class ResourceCacheSpec extends Specification {
         resourceCache.update()
 
         then:
-        Map<Link, ElevfravarResource> resources = resourceCache.get()
+        Map<Link, ElevfravarResource> resources = resourceCache.getMap()
         resources.size() == 2
         resources.containsKey(new Link("Test1"))
         resources.containsKey(new Link("Test2"))
@@ -76,7 +76,7 @@ class ResourceCacheSpec extends Specification {
     def "update - no items"() {
         given:
         String endpoint = "https://example.com/resources"
-        ResourceCache<ElevfravarResource, ElevfravarResources> resourceCache = new ResourceCache<>(restUtil, endpoint, ElevfravarResource.class)
+        FintResourceRepository<ElevfravarResource, ElevfravarResources> resourceCache = new FintResourceRepository<>(restUtil, endpoint, ElevfravarResource.class)
 
         restUtil.getWithRetry(_, _) >> Mono.just(new ElevfravarResources())
 
@@ -84,14 +84,14 @@ class ResourceCacheSpec extends Specification {
         resourceCache.update()
 
         then:
-        Map<Link, ElevfravarResource> resources = resourceCache.get()
+        Collection<ElevfravarResource> resources = resourceCache.get()
         resources.isEmpty()
     }
 
     def "update - error"() {
         given:
         String endpoint = "https://example.com/resources"
-        ResourceCache<ElevfravarResource, ElevfravarResources> resourceCache = new ResourceCache<>(restUtil, endpoint, ElevfravarResource.class)
+        FintResourceRepository<ElevfravarResource, ElevfravarResources> resourceCache = new FintResourceRepository<>(restUtil, endpoint, ElevfravarResource.class)
 
         WebClientResponseException exception = Mock(WebClientResponseException)
         restUtil.getWithRetry(_, _) >> { throw exception }
@@ -100,7 +100,7 @@ class ResourceCacheSpec extends Specification {
         resourceCache.update()
 
         then:
-        Map<Link, ElevfravarResource> resources = resourceCache.get()
+        Collection<ElevfravarResource> resources = resourceCache.get()
         resources.isEmpty()
     }
 }
