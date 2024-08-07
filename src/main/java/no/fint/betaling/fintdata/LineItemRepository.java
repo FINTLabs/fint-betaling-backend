@@ -24,7 +24,7 @@ public class LineItemRepository extends FintResourceRepository<VareResource, Var
     private ConcurrentMap<String, Lineitem> lineItems = new ConcurrentHashMap<>();
 
     public LineItemRepository(Endpoints endpoints, RestUtil restUtil, TaxCodeRepository taxcodeRepository) {
-        super(restUtil, endpoints.getTaxCode(), VareResources.class);
+        super(restUtil, endpoints.getVare(), VareResources.class);
         this.taxcodeRepository = taxcodeRepository;
     }
 
@@ -49,7 +49,7 @@ public class LineItemRepository extends FintResourceRepository<VareResource, Var
                 .values()
                 .stream()
                 .map(this::createLineItem)
-                .collect(Collectors.toConcurrentMap(Lineitem::getUri, taxcode -> taxcode));
+                .collect(Collectors.toConcurrentMap(Lineitem::getUri, lineitem -> lineitem));
 
         if (!updatedMap.isEmpty()) {
             lineItems = updatedMap;
