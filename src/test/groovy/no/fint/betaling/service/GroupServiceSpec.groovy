@@ -45,8 +45,8 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * schoolRepository.get() >> [school]
-        1 * studentRelationRepository.getResourceByLink(_) >> studentRelation
-        1 * studentRepository.getResourceByLink(_) >> student
+        1 * studentRelationRepository.getResourceByLink(_) >> Optional.of(studentRelation)
+        1 * studentRepository.getResourceByLink(_) >> Optional.of(student)
 
         customerGroup.name == 'HVS'
         customerGroup.customers.get(0).id == '21i3v9'
@@ -64,9 +64,9 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * schoolRepository.get() >> [school]
-        1 * contactTeacherGroupRepository.getResourceByLink(new Link(verdi: 'link.to.ContactTeacherGroup')) >> contactTeacherGroup
-        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> studentRelation
-        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> student
+        1 * contactTeacherGroupRepository.getResourceByLink(new Link(verdi: 'link.to.ContactTeacherGroup')) >> Optional.of(contactTeacherGroup)
+        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> Optional.of(studentRelation)
+        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> Optional.of(student)
 
         customerGroups.size() == 1
         customerGroups.get(0).name == '3T13DX'
@@ -85,9 +85,9 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * schoolRepository.get() >> [school]
-        1 * teachingGroupRepository.getResourceByLink(new Link(verdi: 'link.to.TeachingGroup')) >> teachingGroup
-        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> studentRelation
-        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> student
+        1 * teachingGroupRepository.getResourceByLink(new Link(verdi: 'link.to.TeachingGroup')) >> Optional.of(teachingGroup)
+        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> Optional.of(studentRelation)
+        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> Optional.of(student)
 
         customerList.size() == 1
         customerList.get(0).name == 'YFF4106'
@@ -106,9 +106,9 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * schoolRepository.get() >> [school]
-        1 * basisGroupRepository.getResourceByLink(new Link(verdi: 'link.to.BasisGroup')) >> basisGroup
-        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> studentRelation
-        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> student
+        1 * basisGroupRepository.getResourceByLink(new Link(verdi: 'link.to.BasisGroup')) >> Optional.of(basisGroup)
+        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> Optional.of(studentRelation)
+        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> Optional.of(student)
 
         customerList.size() == 1
         customerList.get(0).name == '1TIA'
@@ -125,8 +125,8 @@ class GroupServiceSpec extends Specification {
         def result = groupService.getCustomersForSchoolWithVisIdKey('NO123456789')
         then:
         1 * schoolRepository.get() >> [school]
-        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> studentRelation
-        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> student
+        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> Optional.of(studentRelation)
+        1 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> Optional.of(student)
         noExceptionThrown()
         !result.isEmpty()
     }
@@ -147,8 +147,8 @@ class GroupServiceSpec extends Specification {
 
         then:
         1 * schoolRepository.get() >> [school]
-        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> studentRelation
-        0 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> student
+        1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> Optional.of(studentRelation)
+        0 * studentRepository.getResourceByLink(new Link(verdi: 'link.to.Student')) >> Optional.of(student)
 
         customerGroup.name == 'HVS'
         customerGroup.customers.isEmpty()

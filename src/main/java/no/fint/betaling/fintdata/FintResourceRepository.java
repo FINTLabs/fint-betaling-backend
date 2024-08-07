@@ -5,13 +5,10 @@ import no.fint.betaling.common.util.RestUtil;
 import no.fint.model.resource.AbstractCollectionResources;
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.Link;
-import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Slf4j
@@ -72,8 +69,12 @@ public class FintResourceRepository<T extends FintLinks, U extends AbstractColle
         return resources;
     }
 
-    public T getResourceByLink(Link link) {
-        return resources.get(link);
+    public Optional<T> getResourceByLink(Link link) {
+        if (link == null || !StringUtils.hasText(link.getHref())) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(resources.get(link));
     }
 
     public boolean isEmpty() {

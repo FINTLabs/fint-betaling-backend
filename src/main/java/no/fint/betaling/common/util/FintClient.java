@@ -64,7 +64,8 @@ public class FintClient {
         personalressurs.getSelfLinks()
                 .stream()
                 .map(schoolResourceRepository::getResourceByLink)
-                .filter(Objects::nonNull)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .forEach(result::set);
 
         if (result.get() != null) return Mono.just(result.get());
@@ -76,6 +77,8 @@ public class FintClient {
                 .getSkole()
                 .stream()
                 .map(schoolRepository::getResourceByLink)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
     }

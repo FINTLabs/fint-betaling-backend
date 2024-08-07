@@ -57,13 +57,17 @@ public class GroupService {
                 .getElevforhold()
                 .stream()
                 .map(studentRelationRepository::getResourceByLink)
-                .filter(e -> e != null && e.getSystemId() != null && e.getSystemId().getIdentifikatorverdi() != null)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(e -> e.getSystemId() != null && e.getSystemId().getIdentifikatorverdi() != null)
                 .collect(Collectors.toMap(
                         e -> e.getSystemId().getIdentifikatorverdi(),
                         e -> e.getElev()
                                 .stream()
                                 .filter(Objects::nonNull)
                                 .map(studentRepository::getResourceByLink)
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
                                 .map(CustomerFactory::toCustomer)
                                 .distinct()
                                 .findFirst()
@@ -76,7 +80,8 @@ public class GroupService {
 
         return school.getBasisgruppe().stream()
                 .map(basisGroupRepository::getResourceByLink)
-                .filter(Objects::nonNull)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -86,7 +91,8 @@ public class GroupService {
 
         return school.getUndervisningsgruppe().stream()
                 .map(group -> teachingGroupRepository.getResourceByLink(group))
-                .filter(Objects::nonNull)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -96,7 +102,8 @@ public class GroupService {
 
         return school.getKontaktlarergruppe().stream()
                 .map(contactTeacherGroupRepository::getResourceByLink)
-                .filter(Objects::nonNull)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(this::createCustomerGroup)
                 .collect(Collectors.toList());
     }
@@ -125,12 +132,14 @@ public class GroupService {
 
         return studentRelationLinks.stream()
                 .map(studentRelationRepository::getResourceByLink)
-                .filter(Objects::nonNull)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .filter(studentRelation -> isActive(studentRelation, today))
                 .map(this::getStudentLink)
                 .filter(Objects::nonNull)
                 .map(studentRepository::getResourceByLink)
-                .filter(Objects::nonNull)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .map(CustomerFactory::toCustomer)
                 .distinct()
                 .collect(Collectors.toList());
