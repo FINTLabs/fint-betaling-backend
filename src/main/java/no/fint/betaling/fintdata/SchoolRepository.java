@@ -5,11 +5,13 @@ import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Repository
 public class SchoolRepository extends FintResourceRepository<SkoleResource, SkoleResources> {
 
     public SchoolRepository(RestUtil restUtil, Endpoints endpoints) {
