@@ -40,6 +40,8 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
                 .values()
                 .stream()
                 .map(this::createPrincipal)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
 
         if (!updatedList.isEmpty()) {
@@ -47,7 +49,9 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
         }
     }
 
-    private Principal createPrincipal(FakturautstederResource fakturautsteder) {
+    private Optional<Principal> createPrincipal(FakturautstederResource fakturautsteder) {
+        if (fakturautsteder.getOrganisasjonselement().isEmpty()) return Optional.empty();
+
         Principal principal = new Principal();
         principal.setOrganisation(organisationRepository.getOrganisationByHref(fakturautsteder.getOrganisasjonselement().get(0).getHref()));
         principal.setCode(fakturautsteder.getSystemId().getIdentifikatorverdi());
@@ -63,6 +67,6 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
                 .map(Link::getHref)
                 .forEach(principal::setUri);
 
-        return principal;
+        return Optional.of(principal);
     }
 }
