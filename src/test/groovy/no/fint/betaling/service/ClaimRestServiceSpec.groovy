@@ -1,24 +1,15 @@
 package no.fint.betaling.service
 
-import no.fint.betaling.claim.ClaimDatabaseService
-import no.fint.betaling.claim.ClaimFactory
-import no.fint.betaling.claim.ClaimRestService
-import no.fint.betaling.claim.ClaimRestStatusService
-import no.fint.betaling.claim.InvoiceFactory
-import no.fint.betaling.model.Claim
-import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.ClaimsDatePeriod
-import no.fint.betaling.claim.ClaimRepository
-import no.fint.betaling.util.BetalingObjectFactory
+import no.fint.betaling.claim.*
 import no.fint.betaling.common.util.FintClient
 import no.fint.betaling.common.util.RestUtil
+import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.util.BetalingObjectFactory
+import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.http.HttpHeaders
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import spock.lang.Ignore
 import spock.lang.Specification
-
-import java.time.LocalDateTime
 
 class ClaimRestServiceSpec extends Specification {
     RestUtil restUtil
@@ -67,39 +58,53 @@ class ClaimRestServiceSpec extends Specification {
                 .verify()
     }
 
-    def "Send claim as inovice returns status"() {
-//        given:
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//        def thisIsTheInvoice = betalingObjectFactory.newFaktura()
-//
-//        when:
-//        def response = claimService.updateClaim(invoice)
-//
-//        then:
-//
-//
-//
-//        1* claimRepository.get(12345L)  >> betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-//        1 * restUtil.post(*_) >> Mono.just(new URI('link.to.Location'))
-//        1 * fintClient.getFaktura(*_) >> [thisIsTheInvoice]
-//        1 * fintClient.setInvoiceUri(_) >> Optional.of('link.to.Location')
-//        response.claimStatus == ClaimStatus.ACCEPTED.toString()
+    def "Send claim as invoice returns status"() {
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
+        def invoice = betalingObjectFactory.newFakturagrunnlag()
+        def headers = new HttpHeaders()
+        headers.setLocation(new URI('link.to.Location'))
+
+        when:
+        def response = claimService.sendClaim(claim).block()
+
+        then:
+        1 * invoiceFactory.createInvoice(claim) >> invoice
+        1 * restUtil.post(*_) >> Mono.just(headers)
+        response.claimStatus == ClaimStatus.SENT
+        claim.invoiceUri == 'link.to.Location'
     }
 
-    @Ignore
     def "Update claims fetches invoices and updates claims"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.SENT)
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//
-//        when:
-//        claimService.updateClaims()
-//
-//        then:
-//        1 * claimRepository.getAll(_ as Query) >> [claim]
-//        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> invoice
-//        1 * claimRepository.updateClaim(_ as Query, _ as Update)
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
+        claim.setInvoiceUri('link.to.Location')
+        def invoice = betalingObjectFactory.newFakturagrunnlag()
+
+        when:
+        def result = claimService.updateClaimStatus(claim).block()
+
+        then:
+        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, 'link.to.Location') >> Mono.just(invoice)
+        1 * claimRepository.get(_) >> claim
+        1 * fintClient.getSelfLink(invoice) >> Optional.empty()
+        1 * fintClient.getFaktura(_) >> Mono.just([])
+        result == null
     }
+
+    def "Update claims should return Mono.empty() when invoiceUri is empty"() {
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
+        claim.setInvoiceUri('') // Set the invoiceUri to an empty string or null
+
+        when:
+        def result = claimService.updateClaimStatus(claim)
+
+        then:
+        0 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) // Ensure restUtil.get is never called
+        result.blockOptional().isEmpty() // Check that the result is Mono.empty()
+    }
+
 
 //    @Ignore("Must be rewritten from mongoDb to postgresql")
 //    def "Update claim given valid invoice updates claim"() {

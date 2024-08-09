@@ -35,25 +35,4 @@ class ClaimRepositorySpec extends Specification {
         then:
         1 * claimJpaRepository.save(claim) >> claim
     }
-
-    @Ignore("Changed into using sequence")
-    def "Get highest order number"() {
-        when:
-        claimRepository.setHighestOrderNumber()
-
-        then:
-        1 * claimJpaRepository.findHighestOrderNumber() >> Optional.of(5678L);
-        claimRepository.orderNumberCounter.get() == 5678
-    }
-
-    @Ignore("Changed into using sequence")
-    def "Get highest order number - use default value"(){
-            when:
-            claimRepository.setHighestOrderNumber()
-
-            then:
-            1 * claimJpaRepository.findHighestOrderNumber() >> Optional.empty();
-            claimRepository.orderNumberCounter.get() == 10000L
-
-    }
 }

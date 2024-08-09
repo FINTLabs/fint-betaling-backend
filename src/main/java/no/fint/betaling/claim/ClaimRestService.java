@@ -55,7 +55,7 @@ public class ClaimRestService {
                 });
     }
 
-    private Mono<Claim> sendClaim(Claim claim) {
+    public Mono<Claim> sendClaim(Claim claim) {
         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
 
         return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
