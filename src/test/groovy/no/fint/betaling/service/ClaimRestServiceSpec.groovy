@@ -19,7 +19,7 @@ class ClaimRestServiceSpec extends Specification {
     FintClient fintClient
     BetalingObjectFactory betalingObjectFactory
     ClaimDatabaseService claimDatabaseService
-    ClaimRestService claimService
+    ClaimRestService claimRestService
     ClaimRestStatusService claimRestStatusService
 
     void setup() {
@@ -31,7 +31,7 @@ class ClaimRestServiceSpec extends Specification {
         claimDatabaseService = Mock()
         claimRestStatusService = Mock()
 
-        claimService = new ClaimRestService(restUtil, fintClient, invoiceFactory, claimRepository, claimDatabaseService, claimRestStatusService)
+        claimRestService = new ClaimRestService(restUtil, fintClient, invoiceFactory, claimRepository, claimDatabaseService, claimRestStatusService)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -45,7 +45,7 @@ class ClaimRestServiceSpec extends Specification {
         restUtil.post(*_) >> Mono.just(header)
 
         when:
-        def claims = claimService.sendClaims([12345L])
+        def claims = claimRestService.sendClaims([12345L])
 
         then:
         StepVerifier
@@ -66,7 +66,7 @@ class ClaimRestServiceSpec extends Specification {
         headers.setLocation(new URI('link.to.Location'))
 
         when:
-        def response = claimService.sendClaim(claim).block()
+        def response = claimRestService.sendClaim(claim).block()
 
         then:
         1 * invoiceFactory.createInvoice(claim) >> invoice
@@ -82,7 +82,7 @@ class ClaimRestServiceSpec extends Specification {
         def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
-        def result = claimService.updateClaimStatus(claim).block()
+        def result = claimRestService.updateClaimStatus(claim).block()
 
         then:
         1 * restUtil.get(_ as Class<FakturagrunnlagResource>, 'link.to.Location') >> Mono.just(invoice)
@@ -98,54 +98,10 @@ class ClaimRestServiceSpec extends Specification {
         claim.setInvoiceUri('') // Set the invoiceUri to an empty string or null
 
         when:
-        def result = claimService.updateClaimStatus(claim)
+        def result = claimRestService.updateClaimStatus(claim)
 
         then:
         0 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) // Ensure restUtil.get is never called
         result.blockOptional().isEmpty() // Check that the result is Mono.empty()
     }
-
-
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def "Update claim given valid invoice updates claim"() {
-//        given:
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//
-//        when:
-//        claimService.updateClaim(invoice)
-//
-//        then:
-//        1 * claimRepository.updateClaim(_ as Query, _ as Update)
-//    }
-
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def "Get claims given valid order number returns list of claims matching order number"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
-//
-//        when:
-//        def claims = claimService.getClaimsByOrderNumber('12')
-//
-//        then:
-//        1 * claimRepository.getAll(_ as Query) >> [claim]
-//        claims.size() == 1
-//        claims.get(0).orderNumber == '12345'
-//    }
-
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def 'Fetch links to Faktura for Fakturagrunnlag'() {
-//        given:
-//        def mapper = new ObjectMapper()
-//        def fakturagrunnlag = mapper.readValue(getClass().getResourceAsStream('/dummy_fakturagrunnlag.json'), FakturagrunnlagResource)
-//
-//        when:
-//        claimService.updateClaim(fakturagrunnlag)
-//
-//        then:
-//        2 * restUtil.get(*_) >>> [Mono.just(betalingObjectFactory.newFaktura()), Mono.just(betalingObjectFactory.newFaktura())]
-//        1 * claimRepository.updateClaim(_ as Query,
-//                _/*{it.modifierOps['$set'].every { it.key ['invoiceUri', 'invoiceNumbers', 'invoiceDate', 'paymentDueDate', 'amountDue'] }}*/
-//        )
-//    }
-
 }

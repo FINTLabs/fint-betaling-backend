@@ -1,0 +1,253 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FileService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.file</a>
+</div>
+
+<h1>Coverage Summary for Class: FileService (no.fint.betaling.file)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FileService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93%
+  </span>
+  <span class="absValue">
+    (40/43)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$01I0MIE2</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$4kN8OO4G</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$876RAnEd</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$AGkxSELw</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$DX5HgSsG</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$fMZWMh88</td>
+  </tr>
+  <tr>
+    <td class="name">FileService$SpockMock$1453189514$auxiliary$qfrWiSuH</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93%
+  </span>
+  <span class="absValue">
+    (40/43)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.file;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.common.exception.InsufficientDataException;
+&nbsp;import no.fint.betaling.common.exception.UnsupportedMediaTypeException;
+&nbsp;import no.fint.betaling.common.exception.NoVISIDColumnException;
+&nbsp;import no.fint.betaling.common.exception.UnableToReadFileException;
+&nbsp;import no.fint.betaling.model.Customer;
+&nbsp;import no.fint.betaling.model.CustomerGroup;
+&nbsp;import no.fint.betaling.common.util.CustomerFileGroup;
+&nbsp;import org.apache.commons.lang3.StringUtils;
+&nbsp;import org.apache.poi.ss.usermodel.Cell;
+&nbsp;import org.apache.poi.ss.usermodel.Sheet;
+&nbsp;import org.apache.poi.ss.usermodel.WorkbookFactory;
+&nbsp;import org.apache.tika.Tika;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import java.io.ByteArrayInputStream;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Optional;
+&nbsp;import java.util.stream.IntStream;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+<b class="fc">&nbsp;public class FileService {</b>
+&nbsp;
+&nbsp;    @Value(&quot;${fint.betaling.dnd.file-types:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel}&quot;)
+&nbsp;    private String[] fileTypes;
+&nbsp;    @Value(&quot;${fint.betaling.dnd.VIS-ID:VIS-ID}&quot;)
+&nbsp;    private String visId;
+&nbsp;
+&nbsp;    public Sheet getSheetFromBytes(byte[] file) throws UnableToReadFileException, UnsupportedMediaTypeException {
+<b class="fc">&nbsp;        String contentType = new Tika().detect(file);</b>
+<b class="fc">&nbsp;        if (!isTypeOfTypeExcel(contentType)) {</b>
+<b class="fc">&nbsp;            throw new UnsupportedMediaTypeException(contentType);</b>
+&nbsp;        }
+&nbsp;        try {
+<b class="fc">&nbsp;            return WorkbookFactory.create(new ByteArrayInputStream(file)).getSheetAt(0);</b>
+<b class="nc">&nbsp;        } catch (IOException ex) {</b>
+<b class="nc">&nbsp;            log.info(ex.getMessage(), ex);</b>
+<b class="nc">&nbsp;            throw new UnableToReadFileException(ex.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public CustomerFileGroup extractCustomerFileGroupFromSheet(Sheet sheet, Map&lt;String, Customer&gt; customersInput) throws NoVISIDColumnException, InsufficientDataException {
+<b class="fc">&nbsp;        CustomerGroup customerGroup = new CustomerGroup();</b>
+<b class="fc">&nbsp;        ArrayList&lt;Customer&gt; customers = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        ArrayList&lt;String&gt; notFoundCustomers = new ArrayList&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;        Cell visIdCell = getVisIdCell(sheet);</b>
+&nbsp;
+<b class="fc">&nbsp;        IntStream</b>
+<b class="fc">&nbsp;                .range(visIdCell.getRowIndex() + 1, sheet.getPhysicalNumberOfRows())</b>
+<b class="fc">&nbsp;                .mapToObj(sheet::getRow)</b>
+<b class="fc">&nbsp;                .filter(Objects::nonNull)</b>
+<b class="fc">&nbsp;                .map(row -&gt; row.getCell(visIdCell.getColumnIndex()))</b>
+<b class="fc">&nbsp;                .filter(Objects::nonNull)</b>
+<b class="fc">&nbsp;                .map(cell1 -&gt; String.format(&quot;%.0f&quot;, cell1.getNumericCellValue()))</b>
+<b class="fc">&nbsp;                .forEach(s -&gt;</b>
+<b class="fc">&nbsp;                        getCustomerNumberByVisId(s, customersInput)</b>
+<b class="fc">&nbsp;                                .map(customers::add)</b>
+<b class="fc">&nbsp;                                .orElseGet(() -&gt; notFoundCustomers.add(s))</b>
+&nbsp;                );
+&nbsp;
+<b class="fc">&nbsp;        customerGroup.setCustomers(customers);</b>
+<b class="fc">&nbsp;        CustomerFileGroup customerFileGroup = new CustomerFileGroup(customerGroup, notFoundCustomers);</b>
+<b class="fc">&nbsp;        if (!customerFileGroup.hasCustomers()) {</b>
+<b class="fc">&nbsp;            throw new InsufficientDataException();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return customerFileGroup;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Cell getVisIdCell(Sheet sheet) throws NoVISIDColumnException {
+<b class="fc">&nbsp;        return IntStream</b>
+<b class="fc">&nbsp;                .range(0, sheet.getPhysicalNumberOfRows())</b>
+<b class="fc">&nbsp;                .mapToObj(sheet::getRow)</b>
+<b class="fc">&nbsp;                .filter(Objects::nonNull)</b>
+<b class="fc">&nbsp;                .flatMap(row -&gt;</b>
+<b class="fc">&nbsp;                        IntStream</b>
+<b class="fc">&nbsp;                                .range(0, row.getPhysicalNumberOfCells())</b>
+<b class="fc">&nbsp;                                .mapToObj(row::getCell)</b>
+<b class="fc">&nbsp;                                .filter(Objects::nonNull)</b>
+<b class="fc">&nbsp;                                .filter(cell1 -&gt; cell1.getStringCellValue().equals(visId)))</b>
+<b class="fc">&nbsp;                .findFirst()</b>
+<b class="fc">&nbsp;                .orElseThrow(NoVISIDColumnException::new);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Optional&lt;Customer&gt; getCustomerNumberByVisId(String visId, Map&lt;String, Customer&gt; customers) {
+<b class="fc">&nbsp;        return Optional.ofNullable(customers.get(visId));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isTypeOfTypeExcel(String contentType) {
+<b class="fc">&nbsp;        return StringUtils.equalsAny(contentType, fileTypes);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

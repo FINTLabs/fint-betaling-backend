@@ -1,0 +1,296 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClaimDatabaseService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.claim</a>
+</div>
+
+<h1>Coverage Summary for Class: ClaimDatabaseService (no.fint.betaling.claim)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClaimDatabaseService</td>
+<td class="coverageStat">
+  <span class="percent">
+    72,7%
+  </span>
+  <span class="absValue">
+    (8/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    69,7%
+  </span>
+  <span class="absValue">
+    (23/33)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$3elt5jt6</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$4xj13X85</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$8JLvXlsR</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$EYQ7OT9z</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$FXRiAkKg</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$JcuYqTO9</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$JweoJMJW</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$NHBTY7yd</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$nZjDRAOk</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$oLUWzEXe</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$qbXcbCYU</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$wreB2xNJ</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimDatabaseService$SpockMock$1611902584$auxiliary$ZDjhiv5C</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    40%
+  </span>
+  <span class="absValue">
+    (4/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    70,6%
+  </span>
+  <span class="absValue">
+    (24/34)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.claim;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.model.Claim;
+&nbsp;import no.fint.betaling.model.ClaimStatus;
+&nbsp;import no.fint.betaling.model.ClaimsDatePeriod;
+&nbsp;import no.fint.betaling.model.Order;
+&nbsp;import org.apache.commons.lang3.StringUtils;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.time.ZoneId;
+&nbsp;import java.util.Calendar;
+&nbsp;import java.util.List;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+&nbsp;public class ClaimDatabaseService {
+&nbsp;
+&nbsp;    private final ClaimRepository claimRepository;
+&nbsp;    private final ClaimFactory claimFactory;
+&nbsp;
+&nbsp;    public ClaimDatabaseService(ClaimRepository claimRepository,
+<b class="fc">&nbsp;                                ClaimFactory claimFactory) {</b>
+<b class="fc">&nbsp;        this.claimRepository = claimRepository;</b>
+<b class="fc">&nbsp;        this.claimFactory = claimFactory;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Claim&gt; storeClaims(Order order) {
+<b class="fc">&nbsp;        return claimFactory</b>
+<b class="fc">&nbsp;                .createClaims(order)</b>
+<b class="fc">&nbsp;                .stream()</b>
+<b class="fc">&nbsp;                .map(claimRepository::storeClaim)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int countClaimsByStatus(ClaimStatus[] statuses, String days) {
+<b class="fc">&nbsp;        if (StringUtils.isNotBlank(days)) {</b>
+<b class="fc">&nbsp;            return claimRepository.countByStatusAndDays(Long.parseLong(days), statuses);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return claimRepository.countByStatus(statuses);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void cancelClaim(long orderNumber) {
+<b class="nc">&nbsp;        Claim claim = getClaimByOrderNumber(orderNumber);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {</b>
+<b class="nc">&nbsp;            claim.setClaimStatus(ClaimStatus.CANCELLED);</b>
+<b class="nc">&nbsp;            claimRepository.save(claim);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            log.warn(&quot;cancel claim called, but claim was not in stored status (orderNumber: {}, status: {})&quot;, orderNumber, claim.getClaimStatus());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Claim&gt; getClaimsByPeriodAndOrganisationnumberAndStatus(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+<b class="fc">&nbsp;        return claimRepository.getByDateAndSchoolAndStatus(</b>
+<b class="fc">&nbsp;                claimsDatePeriodToTimestamp(period),</b>
+&nbsp;                organisationNumber,
+&nbsp;                statuses);
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Claim&gt; getClaimsByStatus(ClaimStatus... statuses) {
+<b class="fc">&nbsp;        return claimRepository.get(statuses);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Claim getClaimByOrderNumber(long orderNumber) {
+<b class="nc">&nbsp;        return claimRepository.get(orderNumber);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Claim&gt; getClaimsByCustomerName(String name) {
+<b class="fc">&nbsp;        return claimRepository.getByCustomerName(name);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;Claim&gt; getUnsentClaims() {
+<b class="nc">&nbsp;        return claimRepository.get(</b>
+&nbsp;                ClaimStatus.STORED,
+&nbsp;                ClaimStatus.SEND_ERROR);
+&nbsp;    }
+&nbsp;
+&nbsp;    public static LocalDateTime claimsDatePeriodToTimestamp(ClaimsDatePeriod period) {
+<b class="fc">&nbsp;        Calendar calendar = Calendar.getInstance();</b>
+<b class="fc">&nbsp;        calendar.set(Calendar.HOUR_OF_DAY, 0);</b>
+<b class="fc">&nbsp;        calendar.clear(Calendar.MINUTE);</b>
+<b class="fc">&nbsp;        calendar.clear(Calendar.SECOND);</b>
+<b class="fc">&nbsp;        calendar.clear(Calendar.MILLISECOND);</b>
+&nbsp;
+<b class="pc">&nbsp;        switch (period) {</b>
+&nbsp;            case ALL:
+&nbsp;                break;
+&nbsp;            case WEEK:
+<b class="nc">&nbsp;                calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());</b>
+&nbsp;                break;
+&nbsp;            case MONTH:
+<b class="nc">&nbsp;                calendar.set(Calendar.DAY_OF_MONTH, 1);</b>
+&nbsp;                break;
+&nbsp;            case YEAR:
+<b class="nc">&nbsp;                calendar.set(Calendar.DAY_OF_YEAR, 1);</b>
+&nbsp;                break;
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        return period == ClaimsDatePeriod.ALL ? null : LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

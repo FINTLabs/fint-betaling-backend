@@ -1,0 +1,325 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClaimRestStatusService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.claim</a>
+</div>
+
+<h1>Coverage Summary for Class: ClaimRestStatusService (no.fint.betaling.claim)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClaimRestStatusService</td>
+<td class="coverageStat">
+  <span class="percent">
+    7,1%
+  </span>
+  <span class="absValue">
+    (1/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5,5%
+  </span>
+  <span class="absValue">
+    (4/73)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$5AUXJH80</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$EdOSRL0h</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$G3OQ699T</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$kVOJHyDm</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$msg7uouH</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$pqgLuYMT</td>
+  </tr>
+  <tr>
+    <td class="name">ClaimRestStatusService$SpockMock$2107322000$auxiliary$xv8BnDS1</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    6,7%
+  </span>
+  <span class="absValue">
+    (1/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    5,4%
+  </span>
+  <span class="absValue">
+    (4/74)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.claim;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.common.exception.ClientErrorException;
+&nbsp;import no.fint.betaling.common.exception.ServerErrorException;
+&nbsp;import no.fint.betaling.common.util.RestUtil;
+&nbsp;import no.fint.betaling.model.Claim;
+&nbsp;import no.fint.betaling.model.ClaimStatus;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.HttpStatusCode;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.scheduling.annotation.Async;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;import reactor.util.retry.Retry;
+&nbsp;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.List;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+&nbsp;public class ClaimRestStatusService {
+<b class="fc">&nbsp;    private static final Duration INITAL_DELAY = Duration.ofSeconds(3);</b>
+<b class="fc">&nbsp;    private static final Duration DELAY = Duration.ofSeconds(10);</b>
+&nbsp;    private static final int MAX_ATTEMPTS = 120;
+<b class="fc">&nbsp;    private static final Duration MAX_TOTAL_DURATION = Duration.ofMinutes(20);</b>
+&nbsp;
+&nbsp;    private final RestUtil restClient;
+&nbsp;    private final ClaimRepository claimRepository;
+&nbsp;
+<b class="nc">&nbsp;    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository) {</b>
+<b class="nc">&nbsp;        this.restClient = restClient;</b>
+<b class="nc">&nbsp;        this.claimRepository = claimRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Async
+&nbsp;    public void processRequest(Claim claim) {
+&nbsp;
+<b class="nc">&nbsp;        String url = claim.getInvoiceUri();</b>
+<b class="nc">&nbsp;        if (!isValidStatusUri(url)) {</b>
+<b class="nc">&nbsp;            log.error(&quot;Invalid status uri for claim {} with url {}&quot;, claim.getOrderNumber(), url);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        wait(INITAL_DELAY);</b>
+&nbsp;
+<b class="nc">&nbsp;        restClient.bodyless(url)</b>
+<b class="nc">&nbsp;                .flatMap(response -&gt; evaluateResponse(response, claim))</b>
+<b class="nc">&nbsp;                .repeatWhenEmpty(repeat -&gt; repeat.delayElements(DELAY).take(MAX_ATTEMPTS))</b>
+<b class="nc">&nbsp;                .retryWhen(Retry</b>
+<b class="nc">&nbsp;                        .backoff(MAX_ATTEMPTS, DELAY)</b>
+<b class="nc">&nbsp;                        .maxBackoff(MAX_TOTAL_DURATION)</b>
+<b class="nc">&nbsp;                        .filter(this::isRetryableException))</b>
+<b class="nc">&nbsp;                .subscribe(</b>
+<b class="nc">&nbsp;                        response -&gt; updateClaimOnSuccess(claim, response),</b>
+<b class="nc">&nbsp;                        error -&gt; updateClaimOnFailure(claim, error)</b>
+&nbsp;                );
+&nbsp;    }
+&nbsp;
+&nbsp;    public void setStatusMessages(List&lt;Claim&gt; claims) {
+<b class="nc">&nbsp;        claims.stream()</b>
+<b class="nc">&nbsp;                .filter(claim -&gt; !StringUtils.hasText(claim.getStatusMessage()))</b>
+<b class="nc">&nbsp;                .forEach(claim -&gt; claim.setStatusMessage(getStatusMessage(claim.getClaimStatus())));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getStatusMessage(ClaimStatus status) {
+<b class="nc">&nbsp;        return switch (status) {</b>
+<b class="nc">&nbsp;            case STORED -&gt; &quot;Ikke oversendt&quot;;</b>
+<b class="nc">&nbsp;            case SENT -&gt; &quot;Overføring pågår&quot;;</b>
+<b class="nc">&nbsp;            case ACCEPTED -&gt; &quot;Overført til økonomisystem&quot;;</b>
+<b class="nc">&nbsp;            case ISSUED -&gt; &quot;Faktura utstedt&quot;;</b>
+<b class="nc">&nbsp;            case PAID -&gt; &quot;Fakturert, betalt eller kreditert&quot;;</b>
+<b class="nc">&nbsp;            case CREDITED -&gt; &quot;Kreditert&quot;;</b>
+<b class="nc">&nbsp;            case ERROR -&gt; &quot;Feilet (ukjent årsak)&quot;;</b>
+<b class="nc">&nbsp;            case SEND_ERROR -&gt; &quot;Overføring via FINT har feilet&quot;;</b>
+<b class="nc">&nbsp;            case ACCEPT_ERROR -&gt; &quot;Overføring avslått av økonomisystem&quot;;</b>
+<b class="nc">&nbsp;            case UPDATE_ERROR -&gt; &quot;Oppdatering av fakturastatus har feilet&quot;;</b>
+<b class="nc">&nbsp;            case CANCELLED -&gt; &quot;Slettet av bruker&quot;;</b>
+<b class="nc">&nbsp;            default -&gt; &quot;Ukjent status&quot;;</b>
+&nbsp;        };
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateClaimOnSuccess(Claim claim, ResponseEntity&lt;Void&gt; response) {
+&nbsp;
+<b class="nc">&nbsp;        String location = getLocation(response);</b>
+&nbsp;
+<b class="nc">&nbsp;        if (!StringUtils.hasText(location)) {</b>
+<b class="nc">&nbsp;            log.error(&quot;Unexpected result: Success on getting status, but Location is empty for claim {} with url {} gave response {}&quot;, claim.getOrderNumber(), claim.getInvoiceUri(), response.getStatusCode());</b>
+<b class="nc">&nbsp;            claim.setClaimStatus(ClaimStatus.SEND_ERROR);</b>
+<b class="nc">&nbsp;            claim.setStatusMessage(&quot;Successfull return but location is empty&quot;);</b>
+<b class="nc">&nbsp;            claimRepository.save(claim);</b>
+&nbsp;            return;
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Claim {} created ({}), location: {}&quot;, claim.getOrderNumber(), response.getStatusCode(), location);</b>
+<b class="nc">&nbsp;        claim.setInvoiceUri(location);</b>
+<b class="nc">&nbsp;        claim.setClaimStatus(ClaimStatus.ACCEPTED);</b>
+<b class="nc">&nbsp;        claim.setStatusMessage(null);</b>
+<b class="nc">&nbsp;        claimRepository.save(claim);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void updateClaimOnFailure(Claim claim, Throwable error) {
+<b class="nc">&nbsp;        log.warn(&quot;Error updating claim {} {} with invoiceUri {}&quot;, claim.getOrderNumber(), claim.getClaimStatus(), claim.getInvoiceUri());</b>
+<b class="nc">&nbsp;        log.error(&quot;Error in checking claim status: &quot; + error.getMessage(), error);</b>
+<b class="nc">&nbsp;		log.warn(String.valueOf(error.getCause())); //I wonder if this will log out the body of the response, not only the error code</b>
+&nbsp;
+<b class="nc">&nbsp;        claim.setClaimStatus(ClaimStatus.SEND_ERROR);</b>
+<b class="nc">&nbsp;        claim.setStatusMessage(error.getMessage());</b>
+<b class="nc">&nbsp;        claim.setInvoiceUri(null);</b>
+<b class="nc">&nbsp;        claimRepository.save(claim);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Mono&lt;ResponseEntity&lt;Void&gt;&gt; evaluateResponse(ResponseEntity&lt;Void&gt; response, Claim claim) {
+<b class="nc">&nbsp;        HttpStatusCode statusCode = response.getStatusCode();</b>
+&nbsp;
+<b class="nc">&nbsp;        if (statusCode.equals(HttpStatus.ACCEPTED)) {</b>
+<b class="nc">&nbsp;            return Mono.empty(); // Retur empty Mono to trigger repeatWhenEmpty</b>
+<b class="nc">&nbsp;        } else if (statusCode.is2xxSuccessful()) {</b>
+<b class="nc">&nbsp;            return Mono.just(response); // Return response to break retryWhen</b>
+<b class="nc">&nbsp;        } else if (statusCode.is4xxClientError()) {</b>
+<b class="nc">&nbsp;            return Mono.error(new ClientErrorException(statusCode));</b>
+<b class="nc">&nbsp;        } else if (statusCode.is5xxServerError()) {</b>
+<b class="nc">&nbsp;            return Mono.error(new ServerErrorException(statusCode));</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            return Mono.error(new RuntimeException(&quot;Unexpected status code: &quot; + statusCode));</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getLocation(ResponseEntity&lt;Void&gt; response) {
+<b class="nc">&nbsp;        if (response.getHeaders().getLocation() == null) return &quot;&quot;;</b>
+<b class="nc">&nbsp;        return response.getHeaders().getLocation().toString();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isRetryableException(Throwable ex) {
+<b class="nc">&nbsp;        return ex instanceof ServerErrorException;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isValidStatusUri(String url) {
+<b class="nc">&nbsp;        if (!StringUtils.hasText(url)) return false;</b>
+<b class="nc">&nbsp;        return url.contains(&quot;status&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void wait(Duration duration) {
+&nbsp;        try {
+<b class="nc">&nbsp;            Thread.sleep(duration.toMillis());</b>
+<b class="nc">&nbsp;        } catch (InterruptedException e) {</b>
+<b class="nc">&nbsp;            log.error(&quot;Error waiting&quot;, e);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

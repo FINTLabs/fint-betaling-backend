@@ -1,0 +1,203 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FintResourceRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.fintdata</a>
+</div>
+
+<h1>Coverage Summary for Class: FintResourceRepository (no.fint.betaling.fintdata)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FintResourceRepository</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (9/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (8/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96,8%
+  </span>
+  <span class="absValue">
+    (30/31)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.fintdata;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.common.util.RestUtil;
+&nbsp;import no.fint.model.resource.AbstractCollectionResources;
+&nbsp;import no.fint.model.resource.FintLinks;
+&nbsp;import no.fint.model.resource.Link;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.web.reactive.function.client.WebClientResponseException;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;import java.util.function.Function;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class FintResourceRepository&lt;T extends FintLinks, U extends AbstractCollectionResources&lt;T&gt;&gt; {
+&nbsp;
+&nbsp;    protected final RestUtil restUtil;
+&nbsp;    protected final String endpoint;
+<b class="fc">&nbsp;    protected Map&lt;Link, T&gt; resources = new HashMap&lt;&gt;();</b>
+&nbsp;    private final Class&lt;U&gt; resourcesClass;
+&nbsp;    private final Function&lt;T, List&lt;Link&gt;&gt; linkProvider;
+&nbsp;
+&nbsp;    public FintResourceRepository(RestUtil restUtil, String endpoint, Class&lt;U&gt; resourcesClass) {
+<b class="fc">&nbsp;        this(restUtil, endpoint, resourcesClass, FintLinks::getSelfLinks);</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    public FintResourceRepository(RestUtil restUtil, String endpoint, Class&lt;U&gt; resourcesClass, Function&lt;T, List&lt;Link&gt;&gt; linkProvider) {</b>
+<b class="fc">&nbsp;        this.restUtil = restUtil;</b>
+<b class="fc">&nbsp;        this.endpoint = endpoint;</b>
+<b class="fc">&nbsp;        this.resourcesClass = resourcesClass;</b>
+<b class="fc">&nbsp;        this.linkProvider = linkProvider;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public int update() {
+<b class="fc">&nbsp;        log.debug(&quot;Updating ressurs from {} ...&quot;, endpoint);</b>
+&nbsp;
+&nbsp;        U updatedResources;
+&nbsp;
+&nbsp;        try {
+<b class="fc">&nbsp;            updatedResources = restUtil.getWithRetry(resourcesClass, endpoint).block();</b>
+<b class="fc">&nbsp;        } catch (WebClientResponseException ex) {</b>
+<b class="fc">&nbsp;            log.error(ex.getMessage());</b>
+<b class="fc">&nbsp;            return 0;</b>
+&nbsp;        }
+&nbsp;
+<b class="pc">&nbsp;        if (updatedResources == null || updatedResources.getTotalItems() == 0) return 0;</b>
+&nbsp;
+<b class="fc">&nbsp;        Map&lt;Link, T&gt; newResources = new HashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;        updatedResources.getContent().forEach(resource -&gt; linkProvider.apply(resource).forEach(link -&gt; newResources.put(link, resource)));</b>
+<b class="fc">&nbsp;        resources = newResources;</b>
+<b class="fc">&nbsp;        log.debug(&quot;Update completed, {} resources.&quot;, resources.size());</b>
+<b class="fc">&nbsp;        onResourcesUpdated();</b>
+<b class="fc">&nbsp;        return resources.size();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Collection&lt;T&gt; get() {
+<b class="pc">&nbsp;        if (resources.isEmpty()) {</b>
+<b class="fc">&nbsp;            update();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return resources.values();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;Link, T&gt; getMap() {
+<b class="fc">&nbsp;        if (resources.isEmpty()) {</b>
+<b class="fc">&nbsp;            update();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return resources;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Optional&lt;T&gt; getResourceByLink(Link link) {
+<b class="pc">&nbsp;        if (link == null || !StringUtils.hasText(link.getHref())) {</b>
+<b class="nc">&nbsp;            return Optional.empty();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return Optional.ofNullable(resources.get(link));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public boolean isEmpty() {
+<b class="fc">&nbsp;        return resources.isEmpty();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void onResourcesUpdated() {
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

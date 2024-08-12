@@ -1,0 +1,324 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RestUtil</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.common.util</a>
+</div>
+
+<h1>Coverage Summary for Class: RestUtil (no.fint.betaling.common.util)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RestUtil</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (9/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    56,5%
+  </span>
+  <span class="absValue">
+    (39/69)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">RestUtil$LastUpdated</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$3OE83RHU</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$hdumb7de</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$hRn6YyRh</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$iF21i4bT</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$JvJkH6tn</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$Kf5Q6Akz</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$mcHuzX6f</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$OSU6oKOD</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$qVF7Z7Is</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$uRF6GDXa</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$y8E4Y9tj</td>
+  </tr>
+  <tr>
+    <td class="name">RestUtil$SpockMock$10244828$auxiliary$zxC2jwmv</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    78,6%
+  </span>
+  <span class="absValue">
+    (11/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    57,7%
+  </span>
+  <span class="absValue">
+    (41/71)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.common.util;
+&nbsp;
+&nbsp;import lombok.Data;
+&nbsp;import lombok.Setter;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.http.HttpHeaders;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.stereotype.Component;
+&nbsp;import org.springframework.web.reactive.function.client.WebClient;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;import reactor.util.retry.Retry;
+&nbsp;
+&nbsp;import java.time.Duration;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Component
+&nbsp;public class RestUtil {
+&nbsp;
+<b class="fc">&nbsp;    @Setter</b>
+&nbsp;    @Value(&quot;${fint.client.base-url}&quot;)
+&nbsp;    private String baseUrl;
+&nbsp;
+&nbsp;    @Value(&quot;${fint.betaling.org-id}&quot;)
+&nbsp;    private String orgId;
+&nbsp;
+&nbsp;    private final WebClient webClient;
+&nbsp;
+<b class="fc">&nbsp;    private final Map&lt;String, Long&gt; sinceTimestamp = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;    public RestUtil(WebClient webClient) {</b>
+<b class="fc">&nbsp;        this.webClient = webClient;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; Mono&lt;T&gt; getUpdates(Class&lt;T&gt; clazz, String uri) {
+<b class="fc">&nbsp;        final String url = checkUrl(uri);</b>
+<b class="fc">&nbsp;        return webClient.get()</b>
+<b class="fc">&nbsp;                .uri(url.concat(&quot;/last-updated&quot;))</b>
+<b class="fc">&nbsp;                .header(&quot;x-org-id&quot;, orgId)</b>
+<b class="fc">&nbsp;                .header(&quot;x-client&quot;, &quot;betaling&quot;)</b>
+<b class="fc">&nbsp;                .retrieve()</b>
+<b class="fc">&nbsp;                .bodyToMono(LastUpdated.class)</b>
+<b class="fc">&nbsp;                .flatMap(lastUpdated -&gt; webClient.get()</b>
+<b class="fc">&nbsp;                        .uri(url, uriBuilder -&gt; uriBuilder.queryParam(&quot;sinceTimeStamp&quot;, sinceTimestamp.getOrDefault(url, 0L)).build())</b>
+<b class="fc">&nbsp;                        .retrieve()</b>
+<b class="fc">&nbsp;                        .bodyToMono(clazz)</b>
+<b class="fc">&nbsp;                        .doOnNext(it -&gt; sinceTimestamp.put(url, lastUpdated.getLastUpdated()))</b>
+&nbsp;                );
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; Mono&lt;T&gt; getWithRetry(Class&lt;T&gt; clazz, String uri) {
+<b class="nc">&nbsp;        uri = checkUrl(uri);</b>
+<b class="nc">&nbsp;        return webClient.get()</b>
+<b class="nc">&nbsp;                .uri(uri.replace(baseUrl, &quot;&quot;))</b>
+<b class="nc">&nbsp;                .header(&quot;x-org-id&quot;, orgId)</b>
+<b class="nc">&nbsp;                .header(&quot;x-client&quot;, &quot;betaling&quot;)</b>
+<b class="nc">&nbsp;                .retrieve()</b>
+<b class="nc">&nbsp;                .bodyToMono(clazz)</b>
+<b class="nc">&nbsp;                .retryWhen(</b>
+<b class="nc">&nbsp;                        Retry.backoff(5, Duration.ofSeconds(10))</b>
+<b class="nc">&nbsp;                                .maxBackoff(Duration.ofSeconds(60))</b>
+&nbsp;                );
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    public &lt;T&gt; Mono&lt;T&gt; get(Class&lt;T&gt; clazz, String uri) {
+<b class="fc">&nbsp;        uri = checkUrl(uri);</b>
+<b class="fc">&nbsp;        return webClient.get()</b>
+<b class="fc">&nbsp;                .uri(uri.replace(baseUrl, &quot;&quot;))</b>
+<b class="fc">&nbsp;                .header(&quot;x-org-id&quot;, orgId)</b>
+<b class="fc">&nbsp;                .header(&quot;x-client&quot;, &quot;betaling&quot;)</b>
+<b class="fc">&nbsp;                .retrieve()</b>
+<b class="fc">&nbsp;                .bodyToMono(clazz);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Mono&lt;HttpHeaders&gt; head(String uri) {
+<b class="nc">&nbsp;        uri = checkUrl(uri);</b>
+<b class="nc">&nbsp;        log.info(&quot;GET {}&quot;, uri);</b>
+&nbsp;
+<b class="nc">&nbsp;        return webClient</b>
+<b class="nc">&nbsp;                .get()</b>
+<b class="nc">&nbsp;                .uri(uri)</b>
+<b class="nc">&nbsp;                .header(&quot;x-org-id&quot;, orgId)</b>
+<b class="nc">&nbsp;                .header(&quot;x-client&quot;, &quot;betaling&quot;)</b>
+<b class="nc">&nbsp;                .retrieve()</b>
+<b class="nc">&nbsp;                .toBodilessEntity()</b>
+<b class="nc">&nbsp;                .filter(entity -&gt; entity.getStatusCode().is2xxSuccessful())</b>
+<b class="nc">&nbsp;                .flatMap(entity -&gt; Mono.justOrEmpty(entity.getHeaders()));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Mono&lt;ResponseEntity&lt;Void&gt;&gt; bodyless(String uri) {
+<b class="nc">&nbsp;        uri = checkUrl(uri);</b>
+<b class="nc">&nbsp;        log.info(&quot;GET {}&quot;, uri);</b>
+&nbsp;
+<b class="nc">&nbsp;        return webClient</b>
+<b class="nc">&nbsp;                .get()</b>
+<b class="nc">&nbsp;                .uri(uri)</b>
+<b class="nc">&nbsp;                .header(&quot;x-org-id&quot;, orgId)</b>
+<b class="nc">&nbsp;                .header(&quot;x-client&quot;, &quot;betaling&quot;)</b>
+<b class="nc">&nbsp;                .retrieve()</b>
+<b class="nc">&nbsp;                .toBodilessEntity();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public &lt;T&gt; Mono&lt;HttpHeaders&gt; post(String uri, T content, Class&lt;T&gt; clazz) {
+<b class="fc">&nbsp;        uri = checkUrl(uri);</b>
+&nbsp;        // todo: what is x-client id ??
+<b class="fc">&nbsp;        log.info(&quot;POST {} {}&quot;, uri, content);</b>
+&nbsp;
+<b class="fc">&nbsp;        return webClient</b>
+<b class="fc">&nbsp;                .post()</b>
+<b class="fc">&nbsp;                .uri(uri)</b>
+<b class="fc">&nbsp;                .header(&quot;x-org-id&quot;, orgId)</b>
+<b class="fc">&nbsp;                .header(&quot;x-client&quot;, &quot;betaling&quot;)</b>
+<b class="fc">&nbsp;                .body(Mono.just(content), clazz)</b>
+<b class="fc">&nbsp;                .retrieve()</b>
+<b class="fc">&nbsp;                .toBodilessEntity()</b>
+<b class="fc">&nbsp;                .filter(entity -&gt; entity.getStatusCode().is2xxSuccessful())</b>
+<b class="fc">&nbsp;                .flatMap(entity -&gt; {</b>
+<b class="fc">&nbsp;                    log.debug(&quot;POST returned {}&quot;, entity.getStatusCode());</b>
+<b class="fc">&nbsp;                    return Mono.justOrEmpty(entity.getHeaders());</b>
+&nbsp;                });
+&nbsp;    }
+&nbsp;
+<b class="pc">&nbsp;    @Data</b>
+&nbsp;    private static class LastUpdated {
+<b class="fc">&nbsp;        private Long lastUpdated;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    // To not waste time on this, we just replace old urls
+&nbsp;    private String checkUrl(String url) {
+<b class="fc">&nbsp;        return url.replace(&quot;beta1.felleskomponent.no&quot;, &quot;api.felleskomponent.no&quot;);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,329 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > GroupService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.group</a>
+</div>
+
+<h1>Coverage Summary for Class: GroupService (no.fint.betaling.group)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">GroupService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (17/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (6/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    98,9%
+  </span>
+  <span class="absValue">
+    (88/89)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$1ShVvu4M</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$CSxJ9So1</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$e2b0DilI</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$fX7xhXOG</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$hNwN44l8</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$kH2Clcax</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$ppx37LCf</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$q84Ch6Se</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$yVKVKYOR</td>
+  </tr>
+  <tr>
+    <td class="name">GroupService$SpockMock$1843609615$auxiliary$zEdwR2cH</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (17/17)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (6/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    98,9%
+  </span>
+  <span class="absValue">
+    (88/89)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.group;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.common.exception.SchoolNotFoundException;
+&nbsp;import no.fint.betaling.fintdata.*;
+&nbsp;import no.fint.betaling.model.Customer;
+&nbsp;import no.fint.betaling.model.CustomerGroup;
+&nbsp;import no.fint.betaling.organisation.CustomerFactory;
+&nbsp;import no.fint.model.felles.kompleksedatatyper.Identifikator;
+&nbsp;import no.fint.model.felles.kompleksedatatyper.Periode;
+&nbsp;import no.fint.model.resource.FintLinks;
+&nbsp;import no.fint.model.resource.Link;
+&nbsp;import no.fint.model.resource.utdanning.basisklasser.GruppeResource;
+&nbsp;import no.fint.model.resource.utdanning.elev.ElevforholdResource;
+&nbsp;import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;import java.util.function.Predicate;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+&nbsp;public class GroupService {
+&nbsp;
+&nbsp;    private final SchoolRepository schoolRepository;
+&nbsp;    private final TeachingGroupRepository teachingGroupRepository;
+&nbsp;    private final StudentRelationRepository studentRelationRepository;
+&nbsp;    private final StudentRepository studentRepository;
+&nbsp;    private final BasisGroupRepository basisGroupRepository;
+&nbsp;    private final ContactTeacherGroupRepository contactTeacherGroupRepository;
+&nbsp;
+<b class="fc">&nbsp;    public GroupService(SchoolRepository schoolRepository, TeachingGroupRepository teachingGroupRepository, StudentRelationRepository studentRelationRepository, StudentRepository studentRepository, BasisGroupRepository basisGroupRepository, ContactTeacherGroupRepository contactTeacherGroupRepository) {</b>
+<b class="fc">&nbsp;        this.schoolRepository = schoolRepository;</b>
+<b class="fc">&nbsp;        this.teachingGroupRepository = teachingGroupRepository;</b>
+<b class="fc">&nbsp;        this.studentRelationRepository = studentRelationRepository;</b>
+<b class="fc">&nbsp;        this.studentRepository = studentRepository;</b>
+<b class="fc">&nbsp;        this.basisGroupRepository = basisGroupRepository;</b>
+<b class="fc">&nbsp;        this.contactTeacherGroupRepository = contactTeacherGroupRepository;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private SkoleResource getSchool(String schoolId) {
+<b class="fc">&nbsp;        return schoolRepository.get().stream()</b>
+<b class="fc">&nbsp;                .filter(hasOrganisationNumber(schoolId))</b>
+<b class="fc">&nbsp;                .findFirst()</b>
+<b class="fc">&nbsp;                .orElseThrow(() -&gt; new SchoolNotFoundException(String.format(&quot;x-school-org-id: %s&quot;, schoolId)));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public CustomerGroup getCustomerGroupBySchool(String schoolId) {
+<b class="fc">&nbsp;        SkoleResource school = getSchool(schoolId);</b>
+&nbsp;
+<b class="fc">&nbsp;        return createCustomerGroup(school);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Map&lt;String, Customer&gt; getCustomersForSchoolWithVisIdKey(String schoolId) {
+<b class="fc">&nbsp;        return getSchool(schoolId)</b>
+<b class="fc">&nbsp;                .getElevforhold()</b>
+<b class="fc">&nbsp;                .stream()</b>
+<b class="fc">&nbsp;                .map(studentRelationRepository::getResourceByLink)</b>
+<b class="fc">&nbsp;                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                .map(Optional::get)</b>
+<b class="pc">&nbsp;                .filter(e -&gt; e.getSystemId() != null &amp;&amp; e.getSystemId().getIdentifikatorverdi() != null)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toMap(</b>
+<b class="fc">&nbsp;                        e -&gt; e.getSystemId().getIdentifikatorverdi(),</b>
+<b class="fc">&nbsp;                        e -&gt; e.getElev()</b>
+<b class="fc">&nbsp;                                .stream()</b>
+<b class="fc">&nbsp;                                .filter(Objects::nonNull)</b>
+<b class="fc">&nbsp;                                .map(studentRepository::getResourceByLink)</b>
+<b class="fc">&nbsp;                                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                                .map(Optional::get)</b>
+<b class="fc">&nbsp;                                .map(CustomerFactory::toCustomer)</b>
+<b class="fc">&nbsp;                                .distinct()</b>
+<b class="fc">&nbsp;                                .findFirst()</b>
+<b class="fc">&nbsp;                                .orElseThrow(IllegalStateException::new)</b>
+&nbsp;                ));
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;CustomerGroup&gt; getCustomerGroupsByBasisGroupsAndSchool(String schoolId) {
+<b class="fc">&nbsp;        SkoleResource school = getSchool(schoolId);</b>
+&nbsp;
+<b class="fc">&nbsp;        return school.getBasisgruppe().stream()</b>
+<b class="fc">&nbsp;                .map(basisGroupRepository::getResourceByLink)</b>
+<b class="fc">&nbsp;                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                .map(Optional::get)</b>
+<b class="fc">&nbsp;                .map(this::createCustomerGroup)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;CustomerGroup&gt; getCustomerGroupsByTeachingGroupsAndSchool(String schoolId) {
+<b class="fc">&nbsp;        SkoleResource school = getSchool(schoolId);</b>
+&nbsp;
+<b class="fc">&nbsp;        return school.getUndervisningsgruppe().stream()</b>
+<b class="fc">&nbsp;                .map(group -&gt; teachingGroupRepository.getResourceByLink(group))</b>
+<b class="fc">&nbsp;                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                .map(Optional::get)</b>
+<b class="fc">&nbsp;                .map(this::createCustomerGroup)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public List&lt;CustomerGroup&gt; getCustomerGroupsByContactTeacherGroupsAndSchool(String schoolId) {
+<b class="fc">&nbsp;        SkoleResource school = getSchool(schoolId);</b>
+&nbsp;
+<b class="fc">&nbsp;        return school.getKontaktlarergruppe().stream()</b>
+<b class="fc">&nbsp;                .map(contactTeacherGroupRepository::getResourceByLink)</b>
+<b class="fc">&nbsp;                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                .map(Optional::get)</b>
+<b class="fc">&nbsp;                .map(this::createCustomerGroup)</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private &lt;T extends GruppeResource &amp; FintLinks&gt; CustomerGroup createCustomerGroup(T group) {
+<b class="fc">&nbsp;        CustomerGroup customerGroup = new CustomerGroup();</b>
+<b class="fc">&nbsp;        customerGroup.setName(group.getNavn());</b>
+<b class="fc">&nbsp;        customerGroup.setDescription(group.getBeskrivelse());</b>
+<b class="fc">&nbsp;        customerGroup.setCustomers(getCustomersForGroup(group.getLinks().get(&quot;elevforhold&quot;)));</b>
+<b class="fc">&nbsp;        return customerGroup;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private CustomerGroup createCustomerGroup(SkoleResource school) {
+<b class="fc">&nbsp;        CustomerGroup customerGroup = new CustomerGroup();</b>
+<b class="fc">&nbsp;        customerGroup.setName(school.getNavn());</b>
+<b class="fc">&nbsp;        customerGroup.setDescription(null);</b>
+<b class="fc">&nbsp;        customerGroup.setCustomers(getCustomersForGroup(school.getElevforhold()));</b>
+<b class="fc">&nbsp;        return customerGroup;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;Customer&gt; getCustomersForGroup(List&lt;Link&gt; studentRelationLinks) {
+<b class="pc">&nbsp;        if (studentRelationLinks == null) {</b>
+<b class="nc">&nbsp;            return Collections.emptyList();</b>
+&nbsp;        }
+<b class="fc">&nbsp;        final Date today = new Date();</b>
+&nbsp;
+<b class="fc">&nbsp;        return studentRelationLinks.stream()</b>
+<b class="fc">&nbsp;                .map(studentRelationRepository::getResourceByLink)</b>
+<b class="fc">&nbsp;                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                .map(Optional::get)</b>
+<b class="fc">&nbsp;                .filter(studentRelation -&gt; isActive(studentRelation, today))</b>
+<b class="fc">&nbsp;                .map(this::getStudentLink)</b>
+<b class="fc">&nbsp;                .filter(Objects::nonNull)</b>
+<b class="fc">&nbsp;                .map(studentRepository::getResourceByLink)</b>
+<b class="fc">&nbsp;                .filter(Optional::isPresent)</b>
+<b class="fc">&nbsp;                .map(Optional::get)</b>
+<b class="fc">&nbsp;                .map(CustomerFactory::toCustomer)</b>
+<b class="fc">&nbsp;                .distinct()</b>
+<b class="fc">&nbsp;                .collect(Collectors.toList());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isActive(ElevforholdResource studentRelation, Date today) {
+<b class="fc">&nbsp;        Periode gyldighetsperiode = studentRelation.getGyldighetsperiode();</b>
+<b class="fc">&nbsp;        if (gyldighetsperiode == null) return true;</b>
+<b class="pc">&nbsp;        if (gyldighetsperiode.getSlutt() == null) return true;</b>
+<b class="fc">&nbsp;        return gyldighetsperiode.getSlutt().after(today);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Link getStudentLink(ElevforholdResource resource) {
+<b class="fc">&nbsp;        return resource.getElev().stream().findFirst().orElse(null);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Predicate&lt;SkoleResource&gt; hasOrganisationNumber(String schoolId) {
+<b class="fc">&nbsp;        return s -&gt; Optional.ofNullable(s.getOrganisasjonsnummer())</b>
+<b class="fc">&nbsp;                .map(Identifikator::getIdentifikatorverdi)</b>
+<b class="fc">&nbsp;                .map(schoolId::equals)</b>
+<b class="fc">&nbsp;                .orElse(false);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

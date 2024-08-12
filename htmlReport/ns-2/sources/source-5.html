@@ -1,0 +1,320 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClaimRestService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.claim</a>
+</div>
+
+<h1>Coverage Summary for Class: ClaimRestService (no.fint.betaling.claim)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClaimRestService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    61,1%
+  </span>
+  <span class="absValue">
+    (11/18)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    12,5%
+  </span>
+  <span class="absValue">
+    (5/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    51,8%
+  </span>
+  <span class="absValue">
+    (57/110)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.claim;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.common.util.FintClient;
+&nbsp;import no.fint.betaling.common.util.RestUtil;
+&nbsp;import no.fint.betaling.model.Claim;
+&nbsp;import no.fint.betaling.model.ClaimStatus;
+&nbsp;import no.fint.betaling.model.ClaimsDatePeriod;
+&nbsp;import no.fint.model.resource.okonomi.faktura.FakturaResource;
+&nbsp;import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import org.springframework.util.StringUtils;
+&nbsp;import org.springframework.web.reactive.function.client.WebClientResponseException;
+&nbsp;import reactor.core.publisher.Flux;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;
+&nbsp;import java.time.Duration;
+&nbsp;import java.time.LocalDate;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Objects;
+&nbsp;import java.util.Set;
+&nbsp;
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;@Service
+&nbsp;public class ClaimRestService {
+&nbsp;
+&nbsp;    private final RestUtil restUtil;
+&nbsp;    private final FintClient fintClient;
+&nbsp;    private final InvoiceFactory invoiceFactory;
+&nbsp;    private final ClaimRepository claimRepository;
+&nbsp;    private final ClaimDatabaseService claimDatabaseService;
+&nbsp;    private final ClaimRestStatusService claimRestStatusService;
+&nbsp;
+&nbsp;    @Value(&quot;${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}&quot;)
+&nbsp;    private String invoiceEndpoint;
+&nbsp;
+<b class="fc">&nbsp;    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {</b>
+<b class="fc">&nbsp;        this.restUtil = restUtil;</b>
+<b class="fc">&nbsp;        this.fintClient = fintClient;</b>
+<b class="fc">&nbsp;        this.invoiceFactory = invoiceFactory;</b>
+<b class="fc">&nbsp;        this.claimRepository = claimRepository;</b>
+<b class="fc">&nbsp;        this.claimDatabaseService = claimDatabaseService;</b>
+<b class="fc">&nbsp;        this.claimRestStatusService = claimRestStatusService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Flux&lt;Claim&gt; sendClaims(List&lt;Long&gt; orderNumbers) {
+<b class="fc">&nbsp;        return Flux.fromIterable(claimDatabaseService.getUnsentClaims())</b>
+<b class="fc">&nbsp;                .filter(claim -&gt; orderNumbers.contains(claim.getOrderNumber()))</b>
+<b class="fc">&nbsp;                .flatMap(this::sendClaim)</b>
+<b class="fc">&nbsp;                .onErrorResume(throwable -&gt; {</b>
+<b class="nc">&nbsp;                    log.error(&quot;Error occurred while sending claims&quot;, throwable);</b>
+<b class="nc">&nbsp;                    return Flux.error(throwable);</b>
+&nbsp;                });
+&nbsp;    }
+&nbsp;
+&nbsp;    public Mono&lt;Claim&gt; sendClaim(Claim claim) {
+<b class="fc">&nbsp;        FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);</b>
+&nbsp;
+<b class="fc">&nbsp;        return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)</b>
+<b class="fc">&nbsp;                .doOnNext(httpHeaders -&gt; {</b>
+<b class="pc">&nbsp;                    if (httpHeaders.getLocation() != null) {</b>
+<b class="fc">&nbsp;                        claim.setInvoiceUri(httpHeaders.getLocation().toString());</b>
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        log.error(&quot;Successfull POST to FINT, but no location header in response&quot;);</b>
+&nbsp;                    }
+&nbsp;
+<b class="fc">&nbsp;                    claim.setClaimStatus(ClaimStatus.SENT);</b>
+<b class="fc">&nbsp;                    claim.setStatusMessage(null);</b>
+<b class="fc">&nbsp;                    log.info(&quot;Claim {} sent, location: {}&quot;, claim.getOrderNumber(), claim.getInvoiceUri());</b>
+<b class="fc">&nbsp;                    claimRepository.save(claim);</b>
+&nbsp;                })
+<b class="fc">&nbsp;                .doOnError(WebClientResponseException.class, ex -&gt; {</b>
+<b class="nc">&nbsp;                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);</b>
+<b class="nc">&nbsp;                    claim.setStatusMessage(ex.getMessage());</b>
+<b class="nc">&nbsp;                    log.error(&quot;Error sending claim {}: {}&quot;, claim.getOrderNumber(), ex.getStatusCode());</b>
+<b class="nc">&nbsp;                    claimRepository.save(claim);</b>
+&nbsp;                })
+<b class="fc">&nbsp;                .doOnSuccess(httpHeaders -&gt; claimRestStatusService.processRequest(claim))</b>
+<b class="fc">&nbsp;                .thenReturn(claim);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void updateClaimsByStatusAndAge(ClaimStatus status, Duration maxAge) {
+<b class="nc">&nbsp;        List&lt;Claim&gt; claims = claimDatabaseService.getClaimsByStatus(status)</b>
+<b class="nc">&nbsp;                .stream()</b>
+<b class="nc">&nbsp;                .filter(claim -&gt; maxAge == null || isNewerThan(claim, maxAge))</b>
+<b class="nc">&nbsp;                .toList();</b>
+&nbsp;
+<b class="nc">&nbsp;        log.info(&quot;Updating status for {} claims with status {} and max age {} days&quot;, claims.size(), status, maxAge.toDays());</b>
+<b class="nc">&nbsp;        Flux.fromIterable(claims)</b>
+<b class="nc">&nbsp;                .flatMap(this::updateClaimStatus)</b>
+<b class="nc">&nbsp;                .doOnError(error -&gt; log.error(&quot;Failed to update claim status&quot;, error))</b>
+<b class="nc">&nbsp;                .doOnComplete(() -&gt; log.info(&quot;Completed updating claims - triggered by schedule&quot;))</b>
+<b class="nc">&nbsp;                .subscribe();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Flux&lt;Claim&gt; updateClaimsForPeriodAndOrganisation(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
+<b class="nc">&nbsp;        List&lt;Claim&gt; claims = claimDatabaseService</b>
+<b class="nc">&nbsp;                .getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)</b>
+<b class="nc">&nbsp;                .stream()</b>
+<b class="nc">&nbsp;                .filter(claim -&gt; claim.getClaimStatus() == ClaimStatus.ACCEPTED ||</b>
+<b class="nc">&nbsp;                        claim.getClaimStatus() == ClaimStatus.ISSUED ||</b>
+<b class="nc">&nbsp;                        claim.getClaimStatus() == ClaimStatus.PAID ||</b>
+<b class="nc">&nbsp;                        claim.getClaimStatus() == ClaimStatus.CREDITED ||</b>
+<b class="nc">&nbsp;                        claim.getClaimStatus() == ClaimStatus.UPDATE_ERROR)</b>
+<b class="nc">&nbsp;                .toList();</b>
+<b class="nc">&nbsp;        log.info(&quot;Start updating status for {} claims&quot;, claims.size());</b>
+&nbsp;
+<b class="nc">&nbsp;        return Flux.fromIterable(claims)</b>
+<b class="nc">&nbsp;                .flatMap(this::updateClaimStatus)</b>
+<b class="nc">&nbsp;                .doOnError(error -&gt; log.error(&quot;Failed to update claim status&quot;, error))</b>
+<b class="nc">&nbsp;                .doOnComplete(() -&gt; log.info(&quot;Completed updating claims - triggered by user&quot;));</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public Mono&lt;Claim&gt; updateClaimStatus(Claim claim) {
+&nbsp;
+<b class="fc">&nbsp;        if (!StringUtils.hasText(claim.getInvoiceUri())) {</b>
+<b class="fc">&nbsp;            log.warn(&quot;Claim {} has no invoice URI&quot;, claim.getOrderNumber());</b>
+<b class="fc">&nbsp;            return Mono.empty();</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())</b>
+<b class="fc">&nbsp;                .flatMap(this::updateClaimStatusAndDates)</b>
+<b class="fc">&nbsp;                .onErrorResume(WebClientResponseException.class, e -&gt; {</b>
+<b class="nc">&nbsp;                    claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);</b>
+<b class="nc">&nbsp;                    claim.setStatusMessage(e.getMessage());</b>
+<b class="nc">&nbsp;                    log.error(&quot;Error updating claim {}: [{}] {}&quot;, claim.getOrderNumber(), e.getStatusCode(), e.getMessage());</b>
+<b class="nc">&nbsp;                    return Mono.empty();</b>
+&nbsp;                })
+<b class="fc">&nbsp;                .onErrorResume(e -&gt; {</b>
+<b class="fc">&nbsp;                    log.warn(&quot;Error updating claim {} [{}]&quot;, claim.getOrderNumber(), claim.getClaimStatus());</b>
+<b class="fc">&nbsp;                    log.error(&quot;Exception: &quot; + e.getMessage(), e);</b>
+<b class="fc">&nbsp;                    return Mono.empty();</b>
+&nbsp;                });
+&nbsp;    }
+&nbsp;
+&nbsp;    private Mono&lt;Claim&gt; updateClaimStatusAndDates(FakturagrunnlagResource invoice) {
+<b class="fc">&nbsp;        Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));</b>
+<b class="fc">&nbsp;        fintClient.getSelfLink(invoice).ifPresent(claim::setInvoiceUri);</b>
+&nbsp;
+<b class="fc">&nbsp;        return fintClient.getFaktura(invoice)</b>
+<b class="fc">&nbsp;                .flatMap(fakturaList -&gt; {</b>
+<b class="fc">&nbsp;                    log.debug(&quot;Claim {} has {} invoices&quot;, claim.getOrderNumber(), fakturaList.size());</b>
+&nbsp;
+<b class="fc">&nbsp;                    boolean hasStatusChanged = updateClaimStatus(fakturaList, claim);</b>
+<b class="fc">&nbsp;                    boolean hasDateChanged = updateClaimDate(claim, fakturaList);</b>
+&nbsp;
+<b class="nc">&nbsp;                    if (hasStatusChanged || hasDateChanged) {</b>
+<b class="nc">&nbsp;                        claimRepository.save(claim);</b>
+<b class="nc">&nbsp;                        log.info(&quot;Claim {} updated&quot;, claim.getOrderNumber());</b>
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        log.debug(&quot;Claim {} has no update&quot;, claim.getOrderNumber());</b>
+&nbsp;                    }
+&nbsp;
+<b class="nc">&nbsp;                    return Mono.just(claim);</b>
+&nbsp;                });
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean updateClaimDate(Claim claim, List&lt;FakturaResource&gt; fakturaList) {
+<b class="fc">&nbsp;        Set&lt;String&gt; originalInvoiceNumer = claim.getInvoiceNumbers();</b>
+<b class="fc">&nbsp;        LocalDate originalInvoiceDate = claim.getInvoiceDate();</b>
+<b class="fc">&nbsp;        LocalDate originalPaymentDueDate = claim.getPaymentDueDate();</b>
+<b class="fc">&nbsp;        Long originalAmountDue = claim.getAmountDue();</b>
+&nbsp;
+<b class="fc">&nbsp;        claim.setInvoiceNumbers(fintClient.getFakturanummere(fakturaList));</b>
+<b class="fc">&nbsp;        fintClient.getInvoiceDate(fakturaList).ifPresent(claim::setInvoiceDate);</b>
+<b class="nc">&nbsp;        fintClient.getPaymentDueDate(fakturaList).ifPresent(claim::setPaymentDueDate);</b>
+<b class="nc">&nbsp;        fintClient.getAmountDue(fakturaList).ifPresent(claim::setAmountDue);</b>
+&nbsp;
+<b class="nc">&nbsp;        return !Objects.equals(originalInvoiceNumer, claim.getInvoiceNumbers()) ||</b>
+<b class="nc">&nbsp;                !Objects.equals(originalInvoiceDate, claim.getInvoiceDate()) ||</b>
+<b class="nc">&nbsp;                !Objects.equals(originalPaymentDueDate, claim.getPaymentDueDate()) ||</b>
+<b class="nc">&nbsp;                !Objects.equals(originalAmountDue, claim.getAmountDue());</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean updateClaimStatus(List&lt;FakturaResource&gt; fakturaList, Claim claim) {
+<b class="fc">&nbsp;        ClaimStatus originalStatus = claim.getClaimStatus();</b>
+<b class="fc">&nbsp;        boolean allCredited = fakturaList.stream().allMatch(FakturaResource::getKreditert);</b>
+<b class="fc">&nbsp;        boolean allPaid = fakturaList.stream().allMatch(FakturaResource::getBetalt);</b>
+<b class="fc">&nbsp;        boolean anyIssued = !fakturaList.isEmpty();</b>
+&nbsp;
+<b class="fc">&nbsp;        log.debug(&quot;Claim {} has status: credited: {}, paid: {}, issued: {}&quot;, claim.getOrderNumber(), allCredited, allPaid, anyIssued);</b>
+&nbsp;
+<b class="fc">&nbsp;        ClaimStatus newStatus = ClaimStatus.ACCEPTED;</b>
+&nbsp;
+<b class="pc">&nbsp;        if (fakturaList.isEmpty()) {</b>
+<b class="fc">&nbsp;            newStatus = ClaimStatus.ACCEPTED;</b>
+<b class="nc">&nbsp;        } else if (allCredited) {</b>
+<b class="nc">&nbsp;            newStatus = ClaimStatus.CREDITED;</b>
+<b class="nc">&nbsp;        } else if (allPaid) {</b>
+<b class="nc">&nbsp;            newStatus = ClaimStatus.PAID;</b>
+<b class="nc">&nbsp;        } else if (anyIssued) {</b>
+<b class="nc">&nbsp;            newStatus = ClaimStatus.ISSUED;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        claim.setClaimStatus(newStatus);</b>
+<b class="pc">&nbsp;        return originalStatus != newStatus;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isNewerThan(Claim claim, Duration maxAge) {
+<b class="nc">&nbsp;        return maxAge == null || Duration.between(claim.getCreatedDate(), LocalDateTime.now()).compareTo(maxAge) &lt;= 0;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

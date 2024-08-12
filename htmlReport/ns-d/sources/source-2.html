@@ -1,0 +1,204 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > UserController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">no.fint.betaling.user</a>
+</div>
+
+<h1>Coverage Summary for Class: UserController (no.fint.betaling.user)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">UserController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    37,5%
+  </span>
+  <span class="absValue">
+    (3/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    18,5%
+  </span>
+  <span class="absValue">
+    (5/27)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package no.fint.betaling.user;
+&nbsp;
+&nbsp;import lombok.extern.slf4j.Slf4j;
+&nbsp;import no.fint.betaling.common.config.ApplicationProperties;
+&nbsp;import no.fint.betaling.common.exception.EmployeeIdException;
+&nbsp;import no.fint.betaling.common.exception.PersonalressursException;
+&nbsp;import no.fint.betaling.model.User;
+&nbsp;import no.vigoiks.resourceserver.security.FintJwtEndUserPrincipal;
+&nbsp;import org.apache.commons.lang3.StringUtils;
+&nbsp;import org.springframework.beans.factory.annotation.Value;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.security.core.annotation.AuthenticationPrincipal;
+&nbsp;import org.springframework.security.oauth2.jwt.Jwt;
+&nbsp;import org.springframework.web.bind.annotation.ExceptionHandler;
+&nbsp;import org.springframework.web.bind.annotation.GetMapping;
+&nbsp;import org.springframework.web.bind.annotation.RequestMapping;
+&nbsp;import org.springframework.web.bind.annotation.RestController;
+&nbsp;import reactor.core.publisher.Mono;
+&nbsp;
+&nbsp;import java.net.URISyntaxException;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(value = &quot;/me&quot;)
+<b class="fc">&nbsp;@Slf4j</b>
+&nbsp;public class UserController {
+&nbsp;
+&nbsp;    @Value(&quot;${fint.idle-time:900000}&quot;)
+&nbsp;    private long idleTime;
+&nbsp;
+&nbsp;    @Value(&quot;${fint.betaling.authorized-role-admin:https://role-catalog.vigoiks.no/vigo/elevfakturering/admin}&quot;)
+&nbsp;    private String authorizedRoleAdmin;
+&nbsp;
+&nbsp;    private final UserCacheService userCacheService;
+&nbsp;
+&nbsp;    private final ApplicationProperties applicationProperties;
+&nbsp;
+<b class="fc">&nbsp;    public UserController(ApplicationProperties applicationProperties, UserCacheService userCacheService) {</b>
+<b class="fc">&nbsp;        this.applicationProperties = applicationProperties;</b>
+<b class="fc">&nbsp;        this.userCacheService = userCacheService;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping
+&nbsp;    public Mono&lt;ResponseEntity&lt;User&gt;&gt; getMe(@AuthenticationPrincipal Jwt jwt) {
+&nbsp;
+&nbsp;        String employeeId;
+<b class="nc">&nbsp;        boolean isAdminUser = false;</b>
+&nbsp;
+<b class="nc">&nbsp;        if (applicationProperties.getDemo() != null &amp;&amp; applicationProperties.getDemo()) {</b>
+<b class="nc">&nbsp;            employeeId = applicationProperties.getDemoUserEmployeeId();</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            FintJwtEndUserPrincipal userPrincipal = FintJwtEndUserPrincipal.from(jwt);</b>
+<b class="nc">&nbsp;            employeeId = userPrincipal.getEmployeeId();</b>
+<b class="nc">&nbsp;            isAdminUser = userPrincipal.getRoles().stream().anyMatch(role -&gt; role.equalsIgnoreCase(authorizedRoleAdmin));</b>
+<b class="nc">&nbsp;            log.debug(&quot;User &quot; + employeeId + &quot; is admin: &quot; + isAdminUser);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        if (StringUtils.isEmpty(employeeId)) {</b>
+<b class="nc">&nbsp;            log.error(&quot;Brukerautorisering mangler employeeId!&quot;);</b>
+<b class="nc">&nbsp;            return Mono.error(new EmployeeIdException(HttpStatus.BAD_REQUEST, &quot;Brukerautorisering mangler nødvendig informasjon (employeeId)!&quot;));</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        return userCacheService.getUser(employeeId, isAdminUser)</b>
+<b class="nc">&nbsp;                .doOnNext(user -&gt; {</b>
+<b class="nc">&nbsp;                    user.setIdleTime(idleTime);</b>
+<b class="nc">&nbsp;                    log.debug(&quot;User: {}&quot;, user);</b>
+&nbsp;                })
+<b class="nc">&nbsp;                .map(ResponseEntity::ok)</b>
+<b class="nc">&nbsp;                .onErrorResume(PersonalressursException.class, ex -&gt; {</b>
+<b class="nc">&nbsp;                    log.error(ex.getMessage());</b>
+<b class="nc">&nbsp;                    return Mono.just(ResponseEntity.badRequest().body(null));</b>
+&nbsp;                })
+<b class="nc">&nbsp;                .onErrorResume(ex -&gt; {</b>
+<b class="nc">&nbsp;                    log.error(&quot;An exception occured on handling getUser&quot;, ex);</b>
+<b class="nc">&nbsp;                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());</b>
+&nbsp;                });
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/ping&quot;)
+&nbsp;    public ResponseEntity&lt;String&gt; ping() throws URISyntaxException {
+<b class="fc">&nbsp;        return ResponseEntity.ok(&quot;Greetings from FINTLabs :)&quot;);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @ExceptionHandler({EmployeeIdException.class})
+&nbsp;    public ResponseEntity handleEmployeeIdException(EmployeeIdException exception) {
+<b class="nc">&nbsp;        return ResponseEntity.status(exception.getStatusCode()).body(exception.getMessage());</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-08-12 08:44</div>
+</div>
+</body>
+</html>

@@ -18,11 +18,6 @@ import java.util.stream.Collectors;
 @Service
 public class ClaimDatabaseService {
 
-    private static final String INVOICE_URI = "invoiceUri";
-    private static final String AMOUNT_DUE = "amountDue";
-    private static final String CLAIM_STATUS = "claimStatus";
-    private static final String STATUS_MESSAGE = "statusMessage";
-
     private final ClaimRepository claimRepository;
     private final ClaimFactory claimFactory;
 
@@ -65,25 +60,12 @@ public class ClaimDatabaseService {
                 statuses);
     }
 
-    public List<Claim> getClaimsToRecheckStatus() {
-        return claimRepository.get(
-                ClaimStatus.ACCEPTED,
-                ClaimStatus.ISSUED,
-                // ClaimStatus.PAID,  // TODO Used to be workaround for issue with Visma Fakturering
-                ClaimStatus.UPDATE_ERROR);
-    }
-
     public List<Claim> getClaimsByStatus(ClaimStatus... statuses) {
         return claimRepository.get(statuses);
     }
 
     public Claim getClaimByOrderNumber(long orderNumber) {
         return claimRepository.get(orderNumber);
-    }
-
-    public List<Claim> getSentClaims() {
-        return claimRepository.get(
-                ClaimStatus.SENT);
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {

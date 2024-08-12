@@ -26,6 +26,7 @@ public class ClaimController {
     private final ClaimRestService claimRestService;
 
     private final ScheduleService scheduleService;
+
     private final ClaimRestStatusService claimRestStatusService;
 
     public ClaimController(ClaimDatabaseService claimDatabaseService, ClaimRestService claimRestService, ScheduleService scheduleService, ClaimRestStatusService claimRestStatusService) {

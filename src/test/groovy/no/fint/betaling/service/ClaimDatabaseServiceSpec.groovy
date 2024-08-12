@@ -69,18 +69,6 @@ class ClaimDatabaseServiceSpec extends Specification {
         actualClaims == expectedClaims
     }
 
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def "Update claim given valid invoice updates claim"() {
-//        given:
-//        def invoice = betalingObjectFactory.newFakturagrunnlag()
-//
-//        when:
-//        claimService.updateClaim(invoice)
-//
-//        then:
-//        1 * claimRepository.updateClaim(_ as Query, _ as Update)
-//    }
-
     def "Get all claims by status returns list"() {
         given:
         def period = ClaimsDatePeriod.ALL
@@ -115,36 +103,6 @@ class ClaimDatabaseServiceSpec extends Specification {
         claims.get(0).customerName == 'Ola Testesen'
     }
 
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def "Get claims given valid order number returns list of claims matching order number"() {
-//        given:
-//        def claim = betalingObjectFactory.newClaim('12345', ClaimStatus.STORED)
-//
-//        when:
-//        def claims = claimService.getClaimsByOrderNumber('12')
-//
-//        then:
-//        1 * claimRepository.getAll(_ as Query) >> [claim]
-//        claims.size() == 1
-//        claims.get(0).orderNumber == '12345'
-//    }
-
-//    @Ignore("Must be rewritten from mongoDb to postgresql")
-//    def 'Fetch links to Faktura for Fakturagrunnlag'() {
-//        given:
-//        def mapper = new ObjectMapper()
-//        def fakturagrunnlag = mapper.readValue(getClass().getResourceAsStream('/dummy_fakturagrunnlag.json'), FakturagrunnlagResource)
-//
-//        when:
-//        claimService.updateClaim(fakturagrunnlag)
-//
-//        then:
-//        2 * restUtil.get(*_) >>> [Mono.just(betalingObjectFactory.newFaktura()), Mono.just(betalingObjectFactory.newFaktura())]
-//        1 * claimRepository.updateClaim(_ as Query,
-//                _/*{it.modifierOps['$set'].every { it.key ['invoiceUri', 'invoiceNumbers', 'invoiceDate', 'paymentDueDate', 'amountDue'] }}*/
-//        )
-//    }
-
     def "Get count of claims by status"() {
 
         when:
@@ -164,5 +122,17 @@ class ClaimDatabaseServiceSpec extends Specification {
         then:
         1 * claimRepository.countByStatusAndDays(14, ClaimStatus.SENT) >> 143
         claims == 143
+    }
+
+    def "Get claims given valid order number returns list of claims matching order number"() {
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
+
+        when:
+        def result = claimDatabaseService.getClaimByOrderNumber(12L)
+
+        then:
+        1 * claimRepository.get(12L) >> claim
+        result.orderNumber == 12345L
     }
 }
