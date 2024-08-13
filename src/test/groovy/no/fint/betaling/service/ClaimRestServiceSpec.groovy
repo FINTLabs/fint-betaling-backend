@@ -4,9 +4,11 @@ import no.fint.betaling.claim.*
 import no.fint.betaling.common.util.FintClient
 import no.fint.betaling.common.util.RestUtil
 import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.http.HttpHeaders
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import spock.lang.Specification
