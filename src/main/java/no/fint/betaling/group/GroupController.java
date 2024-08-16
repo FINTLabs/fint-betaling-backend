@@ -12,29 +12,38 @@ import java.util.List;
 @RequestMapping(value = "/group")
 public class GroupController {
 
-    private final GroupService groupService;
+    private final SchoolGroupService schoolGroupService;
 
-    public GroupController(GroupService groupService) {
-        this.groupService = groupService;
+    private final BasisGroupService basisGroupService;
+
+    private final TeachingGroupService teachingGroupService;
+
+    private final ContactTeacherGroupService contactTeacherGroupService;
+
+    public GroupController(SchoolGroupService schoolGroupService, BasisGroupService basisGroupService, TeachingGroupService teachingGroupService, ContactTeacherGroupService contactTeacherGroupService) {
+        this.schoolGroupService = schoolGroupService;
+        this.basisGroupService = basisGroupService;
+        this.teachingGroupService = teachingGroupService;
+        this.contactTeacherGroupService = contactTeacherGroupService;
     }
 
     @GetMapping("/school")
-    public ResponseEntity<CustomerGroup> getCustomerGroupBySchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupBySchool(schoolId));
+    public ResponseEntity<CustomerGroup> getFromSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return ResponseEntity.ok(schoolGroupService.getFromSchool(schoolId));
     }
 
     @GetMapping("/basis-group")
-    public ResponseEntity<List<CustomerGroup>> getCustomerGroupsByBasisGroupsAndSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupsByBasisGroupsAndSchool(schoolId));
+    public ResponseEntity<List<CustomerGroup>> getFromBasisGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return ResponseEntity.ok(basisGroupService.getFromBasisGroups(schoolId));
     }
 
     @GetMapping("/teaching-group")
-    public ResponseEntity<List<CustomerGroup>> getCustomerGroupsByTeachingGroupsAndSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupsByTeachingGroupsAndSchool(schoolId));
+    public ResponseEntity<List<CustomerGroup>> getFromTeachingGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return ResponseEntity.ok(teachingGroupService.getFromTeachingGroups(schoolId));
     }
 
     @GetMapping("/contact-teacher-group")
-    public ResponseEntity<List<CustomerGroup>> getCustomerGroupsByContactTeacherGroupsAndSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(groupService.getCustomerGroupsByContactTeacherGroupsAndSchool(schoolId));
+    public ResponseEntity<List<CustomerGroup>> getFromContactTeacherGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return ResponseEntity.ok(contactTeacherGroupService.getFromContactTeacherGroups(schoolId));
     }
 }

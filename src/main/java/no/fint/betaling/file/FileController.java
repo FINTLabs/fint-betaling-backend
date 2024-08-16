@@ -7,6 +7,7 @@ import no.fint.betaling.common.exception.NoVISIDColumnException;
 import no.fint.betaling.common.exception.UnableToReadFileException;
 import no.fint.betaling.group.GroupService;
 import no.fint.betaling.common.util.CustomerFileGroup;
+import no.fint.betaling.group.ImportFileGroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +21,11 @@ public class FileController {
 
     private final FileService fileService;
 
-    private final GroupService groupService;
+    private final ImportFileGroupService importFileGroupService;
 
-    public FileController(FileService fileService, GroupService groupService) {
+    public FileController(FileService fileService, ImportFileGroupService importFileGroupService) {
         this.fileService = fileService;
-        this.groupService = groupService;
+        this.importFileGroupService = importFileGroupService;
     }
 
     @PostMapping
@@ -32,7 +33,7 @@ public class FileController {
     public ResponseEntity<CustomerFileGroup> getCustomersOnFile(@RequestHeader(name = "x-school-org-id") String schoolId, @RequestBody byte[] file) throws NoVISIDColumnException, UnableToReadFileException, InsufficientDataException, UnsupportedMediaTypeException {
         return ResponseEntity.ok(fileService.extractCustomerFileGroupFromSheet(
                 fileService.getSheetFromBytes(file),
-                groupService.getCustomersForSchoolWithVisIdKey(schoolId)));
+                importFileGroupService.getCustomersForSchoolWithVisIdKey(schoolId)));
     }
 
     @ExceptionHandler({InsufficientDataException.class})

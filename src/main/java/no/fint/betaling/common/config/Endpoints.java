@@ -20,6 +20,9 @@ public class Endpoints {
     @Value("${fint.betaling.endpoints.basis-group:/utdanning/elev/basisgruppe}")
     private String basisGroup;
 
+    @Value("${fint.betaling.endpoints.basis-group-membership:/utdanning/elev/basisgruppemedlemskap}")
+    private String basisGroupMembership;
+
     @Value("${fint.betaling.endpoints.teaching-group:/utdanning/timeplan/undervisningsgruppe}")
     private String teachingGroup;
 

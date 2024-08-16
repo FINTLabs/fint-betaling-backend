@@ -7,9 +7,12 @@ import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource
 import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
 import no.fint.model.resource.utdanning.elev.BasisgruppeResource
+import no.fint.model.resource.utdanning.elev.BasisgruppemedlemskapResource
 import no.fint.model.resource.utdanning.elev.ElevforholdResource
 import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResource
+import no.fint.model.resource.utdanning.elev.KontaktlarergruppemedlemskapResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
+import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResource
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource
 
 class FintObjectFactory {
@@ -37,6 +40,7 @@ class FintObjectFactory {
         resource.addSkole(new Link(verdi: 'link.to.School'))
         resource.addTrinn(new Link(verdi: 'link.to.Level'))
         resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
+        resource.addGruppemedlemskap(new Link(verdi: 'link.to.BasisGroupMembership'))
         resource.addSelf(new Link(verdi: 'link.to.BasisGroup'))
         return resource
     }
@@ -50,6 +54,7 @@ class FintObjectFactory {
         resource.addSkole(new Link(verdi: 'link.to.School'))
         resource.addFag(new Link(verdi: 'link.to.Subject'))
         resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
+        resource.addGruppemedlemskap(new Link(verdi: 'link.to.TeachingGroupMembership'))
         resource.addSelf(new Link(verdi: 'link.to.TeachingGroup'))
         return resource
     }
@@ -63,6 +68,7 @@ class FintObjectFactory {
         resource.addSkole(new Link(verdi: 'link.to.School'))
         resource.addBasisgruppe(new Link(verdi: 'link.to.BasisGroup'))
         resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
+        resource.addGruppemedlemskap(new Link(verdi: 'link.to.ContactTeacherGroupMembership'))
         resource.addSelf(new Link(verdi: 'link.to.ContactTeacherGroup'))
         return resource
     }
@@ -84,6 +90,27 @@ class FintObjectFactory {
         resource.setKontaktinformasjon(new Kontaktinformasjon(epostadresse: 'ola@testesen.no', mobiltelefonnummer: '30960547'))
         resource.setPostadresse(new AdresseResource(adresselinje: ['Testeveien 13'], postnummer: '1234', poststed: 'Testeby'))
         resource.addElev(new Link(verdi: 'link.to.Student'))
+        resource.addSelf(new Link(verdi: 'link.to.Self'))
+        return resource
+    }
+
+    static BasisgruppemedlemskapResource newBasisGroupMembership() {
+        BasisgruppemedlemskapResource resource = new BasisgruppemedlemskapResource()
+        resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
+        resource.addSelf(new Link(verdi: 'link.to.Self'))
+        return resource
+    }
+
+    static KontaktlarergruppemedlemskapResource newContactTeacherGroupMembership() {
+        KontaktlarergruppemedlemskapResource resource = new KontaktlarergruppemedlemskapResource()
+        resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
+        resource.addSelf(new Link(verdi: 'link.to.Self'))
+        return resource
+    }
+
+    static UndervisningsgruppemedlemskapResource newTeachingGroupMembership() {
+        UndervisningsgruppemedlemskapResource resource = new UndervisningsgruppemedlemskapResource()
+        resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
         resource.addSelf(new Link(verdi: 'link.to.Self'))
         return resource
     }
