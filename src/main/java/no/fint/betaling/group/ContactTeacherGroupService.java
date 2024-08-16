@@ -64,7 +64,7 @@ public class ContactTeacherGroupService extends GroupService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .filter(membeship -> isActive(membeship.getGyldighetsperiode(), today))
-                .flatMap(membership -> membership.getElevforhold().stream())
+                .map(this::getElevforholdLink)
                 .map(studentRelationRepository::getResourceByLink)
                 .filter(Optional::isPresent)
                 .map(Optional::get)

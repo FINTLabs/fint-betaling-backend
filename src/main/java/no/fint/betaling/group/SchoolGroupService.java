@@ -65,5 +65,4 @@ public class SchoolGroupService extends GroupService {
                 .distinct()
                 .collect(Collectors.toList());
     }
-
 }

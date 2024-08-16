@@ -20,9 +20,6 @@ class GroupControllerSpec extends Specification {
 
     private ContactTeacherGroupService contactTeacherGroupService = Mock()
 
-//    @SpringBean
-//    private GroupService groupService = Mock(GroupService.class)
-
     void setup() {
         groupController = new GroupController(schoolGroupService, basisGroupService, teachingGroupService, contactTeacherGroupService)
         customerGroup = new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])

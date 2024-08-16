@@ -12,35 +12,12 @@ import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 @Slf4j
 @Service
 public abstract class GroupService {
-
-    //private final SchoolRepository schoolRepository;
-//    private final TeachingGroupRepository teachingGroupRepository;
-//    private final StudentRelationRepository studentRelationRepository;
-//    private final StudentRepository studentRepository;
-//    private final BasisGroupRepository basisGroupRepository;
-//    private final ContactTeacherGroupRepository contactTeacherGroupRepository;
-//    private final BasisGroupMembershipRepository basisGroupMembershipRepository;
-//    private final ContactTeacherGroupMembershipRepository contactTeacherGroupMembershipRepository;
-//    private final TeachingGroupMembershipRepository teachingGroupMembershipRepository;
-//
-//    public GroupService(SchoolRepository schoolRepository) {
-//        this.schoolRepository = schoolRepository;
-//        this.teachingGroupRepository = teachingGroupRepository;
-//        this.studentRelationRepository = studentRelationRepository;
-//        this.studentRepository = studentRepository;
-//        this.basisGroupRepository = basisGroupRepository;
-//        this.contactTeacherGroupRepository = contactTeacherGroupRepository;
-//        this.basisGroupMembershipRepository = basisGroupMembershipRepository;
-//        this.contactTeacherGroupMembershipRepository = contactTeacherGroupMembershipRepository;
-//        this.teachingGroupMembershipRepository = teachingGroupMembershipRepository;
-//    }
 
     protected SkoleResource getSchool(SchoolRepository schoolRepository, String schoolId) {
         return schoolRepository.get().stream()

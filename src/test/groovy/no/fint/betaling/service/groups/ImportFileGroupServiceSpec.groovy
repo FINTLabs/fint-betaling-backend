@@ -29,6 +29,7 @@ class ImportFileGroupServiceSpec extends Specification {
 
         when:
         def result = importFileGroupService.getCustomersForSchoolWithVisIdKey('NO123456789')
+
         then:
         1 * schoolRepository.get() >> [school]
         1 * studentRelationRepository.getResourceByLink(new Link(verdi: 'link.to.StudentRelation')) >> Optional.of(studentRelation)

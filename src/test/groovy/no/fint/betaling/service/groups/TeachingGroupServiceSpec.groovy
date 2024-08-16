@@ -1,13 +1,6 @@
 package no.fint.betaling.service.groups
 
-import no.fint.betaling.fintdata.ContactTeacherGroupMembershipRepository
-import no.fint.betaling.fintdata.ContactTeacherGroupRepository
-import no.fint.betaling.fintdata.SchoolRepository
-import no.fint.betaling.fintdata.StudentRelationRepository
-import no.fint.betaling.fintdata.StudentRepository
-import no.fint.betaling.fintdata.TeachingGroupMembershipRepository
-import no.fint.betaling.fintdata.TeachingGroupRepository
-import no.fint.betaling.group.ContactTeacherGroupService
+import no.fint.betaling.fintdata.*
 import no.fint.betaling.group.TeachingGroupService
 import no.fint.betaling.util.FintObjectFactory
 import no.fint.model.resource.Link

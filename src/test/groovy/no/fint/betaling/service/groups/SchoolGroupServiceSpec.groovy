@@ -1,6 +1,5 @@
 package no.fint.betaling.service.groups
 
-
 import no.fint.betaling.fintdata.SchoolRepository
 import no.fint.betaling.fintdata.StudentRelationRepository
 import no.fint.betaling.fintdata.StudentRepository
