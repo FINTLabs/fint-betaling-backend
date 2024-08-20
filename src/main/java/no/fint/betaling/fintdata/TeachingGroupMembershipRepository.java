@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 public class TeachingGroupMembershipRepository extends FintResourceRepository<UndervisningsgruppemedlemskapResource, UndervisningsgruppemedlemskapResources> {
 
     public TeachingGroupMembershipRepository(RestUtil restUtil, Endpoints endpoints) {
-        super(restUtil, endpoints.getTeachingGroup(), UndervisningsgruppemedlemskapResources.class);
+        super(restUtil, endpoints.getTeachingGroupMembership(), UndervisningsgruppemedlemskapResources.class);
     }
 }
