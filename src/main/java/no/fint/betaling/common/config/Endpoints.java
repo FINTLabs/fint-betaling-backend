@@ -33,7 +33,7 @@ public class Endpoints {
     private String contactTeacherGroup;
 
     @Value("${fint.betaling.endpoints.contact-teacher-group-membership:/utdanning/elev/kontaktlarergruppemedlemskap}")
-    public String contactTeacherGroupMembership;
+    private String contactTeacherGroupMembership;
 
     @Value("${fint.betaling.endpoints.student-relation:/utdanning/elev/elevforhold}")
     private String studentRelation;
