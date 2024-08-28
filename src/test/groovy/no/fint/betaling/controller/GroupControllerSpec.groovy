@@ -1,10 +1,8 @@
 package no.fint.betaling.controller
 
-import no.fint.betaling.group.GroupController
+import no.fint.betaling.group.*
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.CustomerGroup
-import no.fint.betaling.group.GroupService
-import org.spockframework.spring.SpringBean
 import org.springframework.http.HttpStatus
 import spock.lang.Specification
 
@@ -14,21 +12,26 @@ class GroupControllerSpec extends Specification {
 
     CustomerGroup customerGroup
 
-    @SpringBean
-    private GroupService groupService = Mock(GroupService.class)
+    private SchoolGroupService schoolGroupService = Mock()
+
+    private BasisGroupService basisGroupService = Mock()
+
+    private TeachingGroupService teachingGroupService = Mock()
+
+    private ContactTeacherGroupService contactTeacherGroupService = Mock()
 
     void setup() {
-        groupController = new GroupController(groupService)
+        groupController = new GroupController(schoolGroupService, basisGroupService, teachingGroupService, contactTeacherGroupService)
         customerGroup = new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])
     }
 
     def "Get customers from school"() {
 
         when:
-        def response = groupController.getCustomerGroupBySchool('DUMMY')
+        def response = groupController.getFromSchool('DUMMY')
 
         then:
-        1 * groupService.getCustomerGroupBySchool('DUMMY') >> customerGroup
+        1 * schoolGroupService.getFromSchool('DUMMY') >> customerGroup
         response.statusCode == HttpStatus.OK
         response.getBody() == customerGroup
     }
@@ -36,10 +39,10 @@ class GroupControllerSpec extends Specification {
     def "Get customer groups from basis groups"() {
 
         when:
-        def response = groupController.getCustomerGroupsByBasisGroupsAndSchool('DUMMY')
+        def response = groupController.getFromBasisGroups('DUMMY')
 
         then:
-        1 * groupService.getCustomerGroupsByBasisGroupsAndSchool('DUMMY') >> [customerGroup]
+        1 * basisGroupService.getFromBasisGroups('DUMMY') >> [customerGroup]
         response.statusCode == HttpStatus.OK
         response.getBody() == [customerGroup]
     }
@@ -47,10 +50,10 @@ class GroupControllerSpec extends Specification {
     def "Get customer groups from teaching groups"() {
 
         when:
-        def response = groupController.getCustomerGroupsByTeachingGroupsAndSchool('DUMMY')
+        def response = groupController.getFromTeachingGroups('DUMMY')
 
         then:
-        1 * groupService.getCustomerGroupsByTeachingGroupsAndSchool('DUMMY') >> [customerGroup]
+        1 * teachingGroupService.getFromTeachingGroups('DUMMY') >> [customerGroup]
         response.getStatusCode() == HttpStatus.OK
         response.getBody() == [customerGroup]
     }
@@ -58,10 +61,10 @@ class GroupControllerSpec extends Specification {
     def "Get customer groups from contact teacher groups"() {
 
         when:
-        def response = groupController.getCustomerGroupsByContactTeacherGroupsAndSchool('DUMMY')
+        def response = groupController.getFromContactTeacherGroups('DUMMY')
 
         then:
-        1 * groupService.getCustomerGroupsByContactTeacherGroupsAndSchool('DUMMY') >> [customerGroup]
+        1 * contactTeacherGroupService.getFromContactTeacherGroups('DUMMY') >> [customerGroup]
         response.getStatusCode() == HttpStatus.OK
         response.getBody() == [customerGroup]
     }

@@ -1,6 +1,7 @@
 package no.fint.betaling.controller
 
 import no.fint.betaling.file.FileController
+import no.fint.betaling.group.ImportFileGroupService
 import no.fint.betaling.model.Customer
 import no.fint.betaling.model.CustomerGroup
 import no.fint.betaling.file.FileService
@@ -19,7 +20,7 @@ class FileControllerSpec extends Specification {
     FileService fileService = Mock()
 
     @SpringBean
-    GroupService groupService = Mock()
+    ImportFileGroupService groupService = Mock()
 
     void setup() {
         fileController = new FileController(fileService, groupService)

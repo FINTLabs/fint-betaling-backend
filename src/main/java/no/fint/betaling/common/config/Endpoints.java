@@ -20,11 +20,20 @@ public class Endpoints {
     @Value("${fint.betaling.endpoints.basis-group:/utdanning/elev/basisgruppe}")
     private String basisGroup;
 
+    @Value("${fint.betaling.endpoints.basis-group-membership:/utdanning/elev/basisgruppemedlemskap}")
+    private String basisGroupMembership;
+
     @Value("${fint.betaling.endpoints.teaching-group:/utdanning/timeplan/undervisningsgruppe}")
     private String teachingGroup;
 
+    @Value("${fint.betaling.endpoints.teaching-group-membership:/utdanning/timeplan/undervisningsgruppemedlemskap}")
+    private String teachingGroupMembership;
+
     @Value("${fint.betaling.endpoints.contact-teacher-group:/utdanning/elev/kontaktlarergruppe}")
     private String contactTeacherGroup;
+
+    @Value("${fint.betaling.endpoints.contact-teacher-group-membership:/utdanning/elev/kontaktlarergruppemedlemskap}")
+    private String contactTeacherGroupMembership;
 
     @Value("${fint.betaling.endpoints.student-relation:/utdanning/elev/elevforhold}")
     private String studentRelation;
@@ -43,5 +52,4 @@ public class Endpoints {
 
     @Value("${fint.betaling.endpoints.skoleressurs:/utdanning/elev/skoleressurs}")
     private String schoolResource;
-
 }
