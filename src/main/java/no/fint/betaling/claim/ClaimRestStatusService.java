@@ -6,14 +6,12 @@ import no.fint.betaling.common.exception.ServerErrorException;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
@@ -31,12 +29,10 @@ public class ClaimRestStatusService {
 
     private final RestUtil restClient;
     private final ClaimRepository claimRepository;
-    private final WebClient webClient;
 
-    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository, @Qualifier("webClient") WebClient webClient) {
+    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository) {
         this.restClient = restClient;
         this.claimRepository = claimRepository;
-        this.webClient = webClient;
     }
 
     @Async
