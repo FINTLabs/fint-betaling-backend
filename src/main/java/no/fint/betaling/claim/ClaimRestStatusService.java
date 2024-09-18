@@ -6,12 +6,15 @@ import no.fint.betaling.common.exception.ServerErrorException;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -28,10 +31,12 @@ public class ClaimRestStatusService {
 
     private final RestUtil restClient;
     private final ClaimRepository claimRepository;
+    private final WebClient webClient;
 
-    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository) {
+    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository, @Qualifier("webClient") WebClient webClient) {
         this.restClient = restClient;
         this.claimRepository = claimRepository;
+        this.webClient = webClient;
     }
 
     @Async
@@ -101,13 +106,16 @@ public class ClaimRestStatusService {
     }
 
     private void updateClaimOnFailure(Claim claim, Throwable error) {
-        log.warn("Error updating claim {} {} with invoiceUri {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getInvoiceUri());
-        log.error("Error in checking claim status: " + error.getMessage(), error);
-		log.warn(String.valueOf(error.getCause())); //I wonder if this will log out the body of the response, not only the error code
 
-        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-        claim.setStatusMessage(error.getMessage());
+        String message = (error instanceof WebClientResponseException webClientError
+                && StringUtils.hasText(webClientError.getResponseBodyAsString()))
+                ? webClientError.getResponseBodyAsString() : error.getMessage();
+
+        log.error("Error updating claim {} {} with invoiceUri {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getInvoiceUri());
+        log.error("Claim status: {}", message);
         claim.setInvoiceUri(null);
+        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+        claim.setStatusMessage(message);
         claimRepository.save(claim);
     }
 
