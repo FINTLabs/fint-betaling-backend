@@ -1,5 +1,7 @@
 package no.fint.betaling.claim;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.ClientErrorException;
 import no.fint.betaling.common.exception.ServerErrorException;
@@ -105,7 +107,8 @@ public class ClaimRestStatusService {
 
         String message = (error instanceof WebClientResponseException webClientError
                 && StringUtils.hasText(webClientError.getResponseBodyAsString()))
-                ? webClientError.getResponseBodyAsString() : error.getMessage();
+                ? extractErrorMessageFromJson(webClientError.getResponseBodyAsString())
+                : error.getMessage();
 
         log.error("Error updating claim {} {} with invoiceUri {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getInvoiceUri());
         log.error("Claim status: {}", message);
@@ -113,6 +116,16 @@ public class ClaimRestStatusService {
         claim.setClaimStatus(ClaimStatus.SEND_ERROR);
         claim.setStatusMessage(message);
         claimRepository.save(claim);
+    }
+
+    private String extractErrorMessageFromJson(String json) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = mapper.readTree(json);
+            return jsonNode.has("message") ? jsonNode.get("message").asText() : "null";
+        }catch (Exception e){
+            return "Error in JSON-Parsing";
+        }
     }
 
     private Mono<ResponseEntity<Void>> evaluateResponse(ResponseEntity<Void> response, Claim claim) {
