@@ -58,6 +58,7 @@ jobs:
           - ofk-no
           - bfk-no
           - afk-no
+          - vlfk-no
         cluster:
           - aks-api-fint-2022-02-08
 #          - aks-beta-fint-2021-11-23

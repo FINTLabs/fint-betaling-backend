@@ -1,0 +1,17 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: FintClient
+metadata:
+  name: fint-betaling-backend
+  namespace: vlfk-no
+spec:
+  orgId: vlfk.no
+  note: Client til fint-betaling-backend for vlfk
+  components:
+    - okonomi_faktura
+    - okonomi_kodeverk
+    - utdanning_elev
+    - administrasjon_personal
+    - utdanning_timeplan
+    - utdanning_utdanningsprogram
+    - administrasjon_organisasjon
+    - administrasjon_organisasjonselement
