@@ -16,21 +16,23 @@ public class ClaimFactory {
     private String orgId;
 
     public List<Claim> createClaims(Order order) {
+        LocalDateTime now = LocalDateTime.now();
+
         return order
                 .getCustomers()
                 .stream()
-                .map(customer -> createClaim(order, customer))
+                .map(customer -> createClaim(order, customer, now))
                 .collect(Collectors.toList());
     }
 
-    private Claim createClaim(Order order, Customer customer) {
+    private Claim createClaim(Order order, Customer customer, LocalDateTime creationDateTime) {
 
         List<OrderItem> clonedOrderItems = order.getOrderItems().stream().map(CloneUtil::cloneObject).toList();
 
         Claim claim = new Claim();
         claim.setOrgId(orgId);
-        claim.setCreatedDate(LocalDateTime.now());
-        claim.setLastModifiedDate(LocalDateTime.now());
+        claim.setCreatedDate(creationDateTime);
+        claim.setLastModifiedDate(creationDateTime);
         claim.setOriginalAmountDue(order.sum());
         claim.setRequestedNumberOfDaysToPaymentDeadline(order.getRequestedNumberOfDaysToPaymentDeadline());
         claim.setCustomerId(customer.getId());
