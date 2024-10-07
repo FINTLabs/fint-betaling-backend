@@ -48,11 +48,9 @@ spec:
     database: fint-core
   url:
     hostname: betaling-demo.felleskomponent.no
+    basePath: /api
   ingress:
     enabled: true
-    middlewares:
-      - fint-betaling-auth-forward-sso
-    basePath: /api
   resources:
     limits:
       memory: "5Gi"
