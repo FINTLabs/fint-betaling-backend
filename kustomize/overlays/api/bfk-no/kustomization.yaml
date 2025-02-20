@@ -4,11 +4,12 @@ resources:
   - application.yaml
   - fint_client.yaml
 namespace: bfk-no
-commonLabels:
-  app.kubernetes.io/name: fint-betaling-backend
-  app.kubernetes.io/instance: fint-betaling-backend_bfk-no
-  app.kubernetes.io/version: "latest"
-  app.kubernetes.io/component: backend
-  app.kubernetes.io/part-of: fint-betaling
-  fintlabs.no/org-id: bfk.no
-  fintlabs.no/team: core
+labels:
+  - pairs:
+      app.kubernetes.io/name: fint-betaling-backend
+      app.kubernetes.io/instance: fint-betaling-backend_bfk-no
+      app.kubernetes.io/version: "latest"
+      app.kubernetes.io/component: backend
+      app.kubernetes.io/part-of: fint-betaling
+      fintlabs.no/org-id: bfk.no
+      fintlabs.no/team: core
