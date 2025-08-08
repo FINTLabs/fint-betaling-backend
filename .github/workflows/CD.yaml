@@ -55,9 +55,9 @@ jobs:
       matrix:
         org:
 #          - fintlabs-no
-#          - ofk-no
-#          - bfk-no
-#          - afk-no
+          - ofk-no
+          - bfk-no
+          - afk-no
           - tromsfylke-no
           - vlfk-no
         cluster:
