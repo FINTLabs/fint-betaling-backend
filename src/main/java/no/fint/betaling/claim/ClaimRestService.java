@@ -95,6 +95,26 @@ public class ClaimRestService {
                 .subscribe();
     }
 
+    public void updateClaimsOlderThanOneHour(ClaimStatus currentStatus) {
+        LocalDateTime threshold = LocalDateTime.now().minusHours(1);
+        List<Claim> claims = claimDatabaseService.getClaimsByStatus(currentStatus)
+                .stream()
+                .filter(c -> c.getCreatedDate() != null && c.getCreatedDate().isBefore(threshold))
+                .toList();
+
+        log.info("Updating status for {} claims created before {} (older than 1h), from {} to {}",
+                claims.size(), threshold, currentStatus, ClaimStatus.SEND_ERROR);
+
+        Flux.fromIterable(claims)
+                .flatMap(claim -> {
+                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                    return updateClaimStatus(claim);
+                })
+                .doOnError(error -> log.error("Failed to update claim status", error))
+                .doOnComplete(() -> log.info("Completed updating claims - triggered by schedule"))
+                .subscribe();
+    }
+
     public Flux<Claim> updateClaimsForPeriodAndOrganisation(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
         List<Claim> claims = claimDatabaseService
                 .getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
