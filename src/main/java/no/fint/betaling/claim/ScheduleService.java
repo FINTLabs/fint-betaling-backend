@@ -17,10 +17,11 @@ public class ScheduleService {
         this.claimRestService = claimRestService;
     }
 
-    @Scheduled(cron = "0 15 6-16 * * MON-FRI")
-    public void updateClaimsOlderThan(){
-        claimRestService.updateClaimsOlderThanOneHour(ClaimStatus.SENT);
-    }
+    //TODO: will be enabled later
+//    @Scheduled(cron = "0 15 6-16 * * MON-FRI")
+//    public void updateClaimsOlderThan(){
+//        claimRestService.updateClaimsOlderThanOneHour(ClaimStatus.SENT);
+//    }
 
     @Scheduled(cron = "0 48 6-16 * * MON-FRI")
     public void updateAcceptedClaims() {
