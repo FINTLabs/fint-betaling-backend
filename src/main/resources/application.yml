@@ -59,4 +59,5 @@ fint:
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     demo-user-employee-id: "100006"
     demo: "false"
+    principal-matching-strategy: "byOrgnummer"
 
