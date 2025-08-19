@@ -60,3 +60,6 @@ fint:
     demo-user-employee-id: "100006"
     demo: "false"
 
+logging:
+  level:
+    no.fint.betaling.fintdata: debug
