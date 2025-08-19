@@ -49,9 +49,6 @@ public class FintResourceRepository<T extends FintLinks, U extends AbstractColle
         updatedResources.getContent().forEach(resource -> linkProvider.apply(resource).forEach(link -> newResources.put(link, resource)));
         resources = newResources;
         log.debug("Update completed, {} resources.", resources.size());
-        resources.values().stream().forEach(t -> {
-            log.debug("Resources:{}", t.getSelfLinks());
-        });
         onResourcesUpdated();
         return resources.size();
     }
