@@ -61,11 +61,20 @@ dependencies {
     implementation 'commons-beanutils:commons-beanutils:1.9.4'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
-    // https://mvnrepository.com/artifact/org.apache.poi/poi
-    implementation 'org.apache.poi:poi:5.2.3'
-    implementation 'org.apache.poi:poi-ooxml:5.2.3'
 
-    implementation 'org.apache.tika:tika-parsers:1.28.5'
+    implementation(platform("org.apache.tika:tika-bom:3.2.3"))
+    implementation 'org.apache.tika:tika-core'
+    implementation 'org.apache.tika:tika-parsers-standard-package'
+
+    implementation 'org.apache.poi:poi-ooxml:5.4.1'
+
+    implementation 'com.github.jai-imageio:jai-imageio-core:1.4.0'
+    implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
+
+    implementation 'org.apache.pdfbox:pdfbox:2.0.31'
+
+    implementation 'org.apache.commons:commons-compress:1.28.0'
+    implementation 'org.apache.commons:commons-lang3:3.19.0'
 
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
