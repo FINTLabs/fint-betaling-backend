@@ -14,15 +14,15 @@ public class GroupController {
 
     private final SchoolGroupService schoolGroupService;
 
-    private final BasisGroupService basisGroupService;
+    private final KlasseService klasseService;
 
     private final TeachingGroupService teachingGroupService;
 
     private final ContactTeacherGroupService contactTeacherGroupService;
 
-    public GroupController(SchoolGroupService schoolGroupService, BasisGroupService basisGroupService, TeachingGroupService teachingGroupService, ContactTeacherGroupService contactTeacherGroupService) {
+    public GroupController(SchoolGroupService schoolGroupService, KlasseService klasseService, TeachingGroupService teachingGroupService, ContactTeacherGroupService contactTeacherGroupService) {
         this.schoolGroupService = schoolGroupService;
-        this.basisGroupService = basisGroupService;
+        this.klasseService = klasseService;
         this.teachingGroupService = teachingGroupService;
         this.contactTeacherGroupService = contactTeacherGroupService;
     }
@@ -34,7 +34,7 @@ public class GroupController {
 
     @GetMapping("/basis-group")
     public ResponseEntity<List<CustomerGroup>> getFromBasisGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(basisGroupService.getFromBasisGroups(schoolId));
+        return ResponseEntity.ok(klasseService.getFromKlasse(schoolId));
     }
 
     @GetMapping("/teaching-group")
