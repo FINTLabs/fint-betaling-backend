@@ -39,8 +39,6 @@ dependencies {
     implementation 'no.fint:fint-model-resource:0.4.1'
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.97.Final:osx-aarch_64'
 
-    // this one goes!
-    // implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
     implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -61,7 +59,6 @@ dependencies {
     implementation 'commons-beanutils:commons-beanutils:1.9.4'
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
-    // https://mvnrepository.com/artifact/org.apache.poi/poi
     implementation 'org.apache.poi:poi:5.2.3'
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
 

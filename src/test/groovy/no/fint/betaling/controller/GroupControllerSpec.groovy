@@ -14,14 +14,14 @@ class GroupControllerSpec extends Specification {
 
     private SchoolGroupService schoolGroupService = Mock()
 
-    private BasisGroupService basisGroupService = Mock()
+    private KlasseService klasseService = Mock()
 
     private TeachingGroupService teachingGroupService = Mock()
 
     private ContactTeacherGroupService contactTeacherGroupService = Mock()
 
     void setup() {
-        groupController = new GroupController(schoolGroupService, basisGroupService, teachingGroupService, contactTeacherGroupService)
+        groupController = new GroupController(schoolGroupService, klasseService, teachingGroupService, contactTeacherGroupService)
         customerGroup = new CustomerGroup(name: 'testGroup', description: 'test', customers: [new Customer(name: 'Testesen')])
     }
 
@@ -42,7 +42,7 @@ class GroupControllerSpec extends Specification {
         def response = groupController.getFromBasisGroups('DUMMY')
 
         then:
-        1 * basisGroupService.getFromBasisGroups('DUMMY') >> [customerGroup]
+        1 * klasseService.getFromKlasse('DUMMY') >> [customerGroup]
         response.statusCode == HttpStatus.OK
         response.getBody() == [customerGroup]
     }

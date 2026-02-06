@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class FintDataFetcherService {
 
-    private final BasisGroupRepository basisGroupRepository;
-    private final BasisGroupMembershipRepository basisGroupMembershipRepository;
+    private final KlasseRepository klasseRepository;
+    private final klassemedlemskapRepository klassemedlemskapRepository;
     private final ContactTeacherGroupRepository contactTeacherGroupRepository;
     private final ContactTeacherGroupMembershipRepository contactTeacherGroupMembershipRepository;
     private final StudentRepository studentRepository;
@@ -22,8 +22,8 @@ public class FintDataFetcherService {
     private final InvoiceIssuerRepository invoiceIssuerRepository;
     private final LineItemRepository lineItemRepository;
 
-    public FintDataFetcherService(BasisGroupRepository basisGroupRepository,
-                                  BasisGroupMembershipRepository basisGroupMembershipRepository,
+    public FintDataFetcherService(KlasseRepository klasseRepository,
+                                  klassemedlemskapRepository klassemedlemskapRepository,
                                   ContactTeacherGroupRepository contactTeacherGroupRepository,
                                   ContactTeacherGroupMembershipRepository contactTeacherGroupMembershipRepository,
                                   StudentRepository studentRepository,
@@ -35,8 +35,8 @@ public class FintDataFetcherService {
                                   TaxCodeRepository taxCodeRepository,
                                   InvoiceIssuerRepository invoiceIssuerRepository,
                                   LineItemRepository lineItemRepository) {
-        this.basisGroupRepository = basisGroupRepository;
-        this.basisGroupMembershipRepository = basisGroupMembershipRepository;
+        this.klasseRepository = klasseRepository;
+        this.klassemedlemskapRepository = klassemedlemskapRepository;
         this.contactTeacherGroupRepository = contactTeacherGroupRepository;
         this.contactTeacherGroupMembershipRepository = contactTeacherGroupMembershipRepository;
         this.studentRepository = studentRepository;
@@ -52,8 +52,8 @@ public class FintDataFetcherService {
 
     @Scheduled(initialDelay = 1000L, fixedDelayString = "${fint.betaling.refresh-rate:3600000}")
     public void updateAll() {
-        int basisGroupsUpdated = basisGroupRepository.update();
-        int basisGroupMembershipsUpdated = basisGroupMembershipRepository.update();
+        int klasseUpdated = klasseRepository.update();
+        int klassemedlemskapUpdated = klassemedlemskapRepository.update();
         int contactTeacherGroupsUpdated = contactTeacherGroupRepository.update();
         int contactTeacherGroupMembershipsUpdated = contactTeacherGroupMembershipRepository.update();
         int studentRelationsUpdated = studentRelationRepository.update();
@@ -65,6 +65,6 @@ public class FintDataFetcherService {
         int taxCodesUpdated = taxCodeRepository.update();
         int lineItemsUpdated = lineItemRepository.update();
         int invoiceIssuersUpdated = invoiceIssuerRepository.update();
-        log.info("Oppdateringer fullført: Basisgrupper ({}), Basisgruppemedlemskap ({}) Kontaktlærergrupper ({}), Kontaktlærergruppemedlemskap ({}), Elevforhold ({}), Elever ({}), Skoler ({}), Skoleresurser ({}), Undervisningsgrupper ({}), Undervisningsgruppemedlemskap ({}), Skattekoder ({}), Fakturautstedere ({}), Varelinjer ({})", basisGroupsUpdated, basisGroupMembershipsUpdated, contactTeacherGroupsUpdated, contactTeacherGroupMembershipsUpdated, studentRelationsUpdated, studentsUpdated, schoolsUpdated, schoolResourcesUpdated, teachingGroupsUpdated, teachingGroupMembershipsUpdated, taxCodesUpdated, invoiceIssuersUpdated, lineItemsUpdated);
+        log.info("Oppdateringer fullført: KlasseUpdated ({}), KlassemedlemskapUpdated ({}) Kontaktlærergrupper ({}), Kontaktlærergruppemedlemskap ({}), Elevforhold ({}), Elever ({}), Skoler ({}), Skoleresurser ({}), Undervisningsgrupper ({}), Undervisningsgruppemedlemskap ({}), Skattekoder ({}), Fakturautstedere ({}), Varelinjer ({})", klasseUpdated, klassemedlemskapUpdated, contactTeacherGroupsUpdated, contactTeacherGroupMembershipsUpdated, studentRelationsUpdated, studentsUpdated, schoolsUpdated, schoolResourcesUpdated, teachingGroupsUpdated, teachingGroupMembershipsUpdated, taxCodesUpdated, invoiceIssuersUpdated, lineItemsUpdated);
     }
 }

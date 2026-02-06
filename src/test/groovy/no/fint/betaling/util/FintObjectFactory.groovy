@@ -6,11 +6,7 @@ import no.fint.model.felles.kompleksedatatyper.Personnavn
 import no.fint.model.resource.Link
 import no.fint.model.resource.felles.PersonResource
 import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
-import no.fint.model.resource.utdanning.elev.BasisgruppeResource
-import no.fint.model.resource.utdanning.elev.BasisgruppemedlemskapResource
-import no.fint.model.resource.utdanning.elev.ElevforholdResource
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppeResource
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppemedlemskapResource
+import no.fint.model.resource.utdanning.elev.*
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
 import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResource
 import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource
@@ -23,7 +19,7 @@ class FintObjectFactory {
         resource.setNavn('HVS')
         resource.setSkolenummer(new Identifikator(identifikatorverdi: '08010'))
         resource.setOrganisasjonsnummer(new Identifikator(identifikatorverdi: 'NO123456789'))
-        resource.addBasisgruppe(new Link('link.to.BasisGroup'))
+        resource.addKlasse(new Link('link.to.Klasse'))
         resource.addUndervisningsgruppe(new Link('link.to.TeachingGroup'))
         resource.addKontaktlarergruppe(new Link('link.to.ContactTeacherGroup'))
         resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
@@ -31,29 +27,29 @@ class FintObjectFactory {
         return resource
     }
 
-    static BasisgruppeResource newBasisGroup() {
-        BasisgruppeResource resource = new BasisgruppeResource()
+    static KlasseResource newKlasse() {
+        KlasseResource resource = new KlasseResource()
         resource.setSystemId(new Identifikator(identifikatorverdi: '1TIA'))
-        resource.setPeriode(Collections.emptyList())
         resource.setNavn('1TIA')
         resource.setBeskrivelse('Basisgruppe 1TIA')
+        resource.addSkolear(new Link(verdi: 'link.to.Skoleaar'))
         resource.addSkole(new Link(verdi: 'link.to.School'))
         resource.addTrinn(new Link(verdi: 'link.to.Level'))
-        resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
-        resource.addGruppemedlemskap(new Link(verdi: 'link.to.BasisGroupMembership'))
-        resource.addSelf(new Link(verdi: 'link.to.BasisGroup'))
+        resource.addTermin(new Link(verdi: 'link.to.Termin'))
+        resource.addUndervisningsforhold(new Link(verdi: 'link.to.Undervisningsforhold'))
+        resource.addKlassemedlemskap(new Link(verdi: 'link.to.Klassemedlemskap'))
+        resource.addKontaktlarergruppe(new Link(verdi: 'Link.to.Kontaktlarergruppe'))
+        resource.addSelf(new Link(verdi: 'link.to.Klasse'))
         return resource
     }
 
     static UndervisningsgruppeResource newTeachingGroup() {
         UndervisningsgruppeResource resource = new UndervisningsgruppeResource()
         resource.setSystemId(new Identifikator(identifikatorverdi: 'YFF4106'))
-        resource.setPeriode(Collections.emptyList())
         resource.setNavn('YFF4106')
         resource.setBeskrivelse('Undervisningsgruppe YFF4106')
         resource.addSkole(new Link(verdi: 'link.to.School'))
         resource.addFag(new Link(verdi: 'link.to.Subject'))
-        resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
         resource.addGruppemedlemskap(new Link(verdi: 'link.to.TeachingGroupMembership'))
         resource.addSelf(new Link(verdi: 'link.to.TeachingGroup'))
         return resource
@@ -62,12 +58,10 @@ class FintObjectFactory {
     static KontaktlarergruppeResource newContactTeacherGroup() {
         KontaktlarergruppeResource resource = new KontaktlarergruppeResource()
         resource.setSystemId(new Identifikator(identifikatorverdi: '3T13DX'))
-        resource.setPeriode(Collections.emptyList())
         resource.setNavn('3T13DX')
         resource.setBeskrivelse('Kontaktlærergruppe 3T13DX')
         resource.addSkole(new Link(verdi: 'link.to.School'))
-        resource.addBasisgruppe(new Link(verdi: 'link.to.BasisGroup'))
-        resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
+        resource.addKlasse(new Link(verdi: 'link.to.Klasse'))
         resource.addGruppemedlemskap(new Link(verdi: 'link.to.ContactTeacherGroupMembership'))
         resource.addSelf(new Link(verdi: 'link.to.ContactTeacherGroup'))
         return resource
@@ -94,10 +88,11 @@ class FintObjectFactory {
         return resource
     }
 
-    static BasisgruppemedlemskapResource newBasisGroupMembership() {
-        BasisgruppemedlemskapResource resource = new BasisgruppemedlemskapResource()
+    static KlassemedlemskapResource newKlassemedlemskap() {
+        KlassemedlemskapResource resource = new KlassemedlemskapResource()
         resource.addElevforhold(new Link(verdi: 'link.to.StudentRelation'))
-        resource.addSelf(new Link(verdi: 'link.to.Self'))
+        resource.addKlasse(new Link(verdi: 'link.to.Klasse'))
+        resource.addSelf(new Link(verdi: 'link.to.Klassemedlemskap'))
         return resource
     }
 

@@ -17,11 +17,11 @@ public class Endpoints {
     @Value("${fint.betaling.endpoints.school:/utdanning/utdanningsprogram/skole}")
     private String school;
 
-    @Value("${fint.betaling.endpoints.basis-group:/utdanning/elev/basisgruppe}")
-    private String basisGroup;
+    @Value("${fint.betaling.endpoints.basis-group:/utdanning/elev/klasse}")
+    private String klasse;
 
-    @Value("${fint.betaling.endpoints.basis-group-membership:/utdanning/elev/basisgruppemedlemskap}")
-    private String basisGroupMembership;
+    @Value("${fint.betaling.endpoints.basis-group-membership:/utdanning/elev/klassemedlemskap}")
+    private String klassemedlemskap;
 
     @Value("${fint.betaling.endpoints.teaching-group:/utdanning/timeplan/undervisningsgruppe}")
     private String teachingGroup;
