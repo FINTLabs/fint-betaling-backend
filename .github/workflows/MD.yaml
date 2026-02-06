@@ -77,7 +77,7 @@ jobs:
         uses: azure/k8s-bake@v3
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: kustomize/${{ steps.environment.outputs.result }}
+          kustomizationPath: kustomize/overlays/${{ steps.environment.outputs.result }}
       - name: Determine secret name
         id: secretname
         run: |
