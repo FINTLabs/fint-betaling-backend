@@ -2,9 +2,9 @@ package no.fint.betaling.service
 
 import no.fint.betaling.fintdata.StudentRepository
 import no.fint.betaling.organisation.PersonService
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator
+import no.novari.fint.model.resource.Link
+import no.novari.fint.model.resource.felles.PersonResource
 import spock.lang.Specification
 
 class PersonServiceSpec extends Specification {

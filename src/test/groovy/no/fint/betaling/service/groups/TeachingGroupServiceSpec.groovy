@@ -3,7 +3,7 @@ package no.fint.betaling.service.groups
 import no.fint.betaling.fintdata.*
 import no.fint.betaling.group.TeachingGroupService
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.model.resource.Link
+import no.novari.fint.model.resource.Link
 import spock.lang.Specification
 
 class TeachingGroupServiceSpec extends Specification {

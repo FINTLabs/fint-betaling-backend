@@ -4,8 +4,8 @@ import no.fint.betaling.common.config.Endpoints
 import no.fint.betaling.fintdata.SchoolRepository
 import no.fint.betaling.util.FintObjectFactory
 import no.fint.betaling.common.util.RestUtil
-import no.fint.model.resource.Link
-import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResources
+import no.novari.fint.model.resource.Link
+import no.novari.fint.model.resource.utdanning.utdanningsprogram.SkoleResources
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import spock.lang.Specification

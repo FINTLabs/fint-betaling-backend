@@ -3,10 +3,10 @@ package no.fint.betaling.repository
 import no.fint.betaling.common.config.Endpoints
 import no.fint.betaling.common.util.RestUtil
 import no.fint.betaling.fintdata.TaxCodeRepository
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.resource.Link
-import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource
-import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator
+import no.novari.fint.model.resource.Link
+import no.novari.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource
+import no.novari.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources
 import reactor.core.publisher.Mono
 import spock.lang.Specification
 
