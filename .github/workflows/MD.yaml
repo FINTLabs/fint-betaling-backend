@@ -55,7 +55,7 @@ jobs:
         uses: actions/github-script@v6
         id: environment
         with:
-          script: return '${{ CLUSTER_NAME }}'.split('-')[1]
+          script: return '${{ inputs.cluster }}'.split('-')[1]
           result-encoding: string
 
       - uses: gradle/actions/wrapper-validation@v5
