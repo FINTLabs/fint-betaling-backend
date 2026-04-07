@@ -2,8 +2,8 @@ package no.fint.betaling.fintdata;
 
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResource;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResources;
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResource;
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResources;
 import org.springframework.stereotype.Repository;
 
 @Repository

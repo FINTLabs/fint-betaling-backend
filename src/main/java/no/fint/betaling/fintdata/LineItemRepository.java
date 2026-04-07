@@ -4,9 +4,9 @@ import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Taxcode;
-import no.fint.model.resource.Link;
-import no.fint.model.resource.okonomi.kodeverk.VareResource;
-import no.fint.model.resource.okonomi.kodeverk.VareResources;
+import no.novari.fint.model.resource.Link;
+import no.novari.fint.model.resource.okonomi.kodeverk.VareResource;
+import no.novari.fint.model.resource.okonomi.kodeverk.VareResources;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;

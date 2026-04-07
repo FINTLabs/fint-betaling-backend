@@ -5,8 +5,8 @@ import no.fint.betaling.fintdata.StudentRelationRepository
 import no.fint.betaling.fintdata.StudentRepository
 import no.fint.betaling.group.SchoolGroupService
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.model.felles.kompleksedatatyper.Periode
-import no.fint.model.resource.Link
+import no.novari.fint.model.felles.kompleksedatatyper.Periode
+import no.novari.fint.model.resource.Link
 import spock.lang.Specification
 
 class SchoolGroupServiceSpec extends Specification {

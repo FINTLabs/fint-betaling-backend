@@ -1,9 +1,9 @@
 package no.fint.betaling.util
 
 import no.fint.betaling.common.util.RestUtil
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.resource.administrasjon.personal.PersonalressursResources
-import no.fint.model.resource.utdanning.elev.ElevResource
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator
+import no.novari.fint.model.resource.administrasjon.personal.PersonalressursResources
+import no.novari.fint.model.resource.utdanning.elev.ElevResource
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.springframework.http.HttpHeaders

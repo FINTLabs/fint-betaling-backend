@@ -3,9 +3,9 @@ package no.fint.betaling.fintdata;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Taxcode;
-import no.fint.model.resource.Link;
-import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource;
-import no.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources;
+import no.novari.fint.model.resource.Link;
+import no.novari.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResource;
+import no.novari.fint.model.resource.okonomi.kodeverk.MerverdiavgiftResources;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;

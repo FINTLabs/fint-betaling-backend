@@ -4,9 +4,9 @@ import no.fint.betaling.fintdata.*;
 import no.fint.betaling.model.Customer;
 import no.fint.betaling.model.CustomerGroup;
 import no.fint.betaling.organisation.CustomerFactory;
-import no.fint.model.resource.Link;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
-import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
+import no.novari.fint.model.resource.Link;
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
+import no.novari.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
