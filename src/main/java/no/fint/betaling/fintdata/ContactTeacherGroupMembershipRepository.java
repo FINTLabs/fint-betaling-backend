@@ -2,8 +2,8 @@ package no.fint.betaling.fintdata;
 
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppemedlemskapResource;
-import no.fint.model.resource.utdanning.elev.KontaktlarergruppemedlemskapResources;
+import no.novari.fint.model.resource.utdanning.elev.KontaktlarergruppemedlemskapResource;
+import no.novari.fint.model.resource.utdanning.elev.KontaktlarergruppemedlemskapResources;
 import org.springframework.stereotype.Repository;
 
 @Repository

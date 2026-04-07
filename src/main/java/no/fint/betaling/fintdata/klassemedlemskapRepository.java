@@ -2,8 +2,8 @@ package no.fint.betaling.fintdata;
 
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.model.resource.utdanning.elev.KlassemedlemskapResource;
-import no.fint.model.resource.utdanning.elev.KlassemedlemskapResources;
+import no.novari.fint.model.resource.utdanning.elev.KlassemedlemskapResource;
+import no.novari.fint.model.resource.utdanning.elev.KlassemedlemskapResources;
 import org.springframework.stereotype.Repository;
 
 @Repository

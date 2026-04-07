@@ -1,15 +1,15 @@
 package no.fint.betaling.util
 
-import no.fint.model.felles.kompleksedatatyper.Identifikator
-import no.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
-import no.fint.model.felles.kompleksedatatyper.Personnavn
-import no.fint.model.resource.Link
-import no.fint.model.resource.felles.PersonResource
-import no.fint.model.resource.felles.kompleksedatatyper.AdresseResource
-import no.fint.model.resource.utdanning.elev.*
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResource
-import no.fint.model.resource.utdanning.utdanningsprogram.SkoleResource
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator
+import no.novari.fint.model.felles.kompleksedatatyper.Kontaktinformasjon
+import no.novari.fint.model.felles.kompleksedatatyper.Personnavn
+import no.novari.fint.model.resource.Link
+import no.novari.fint.model.resource.felles.PersonResource
+import no.novari.fint.model.resource.felles.kompleksedatatyper.AdresseResource
+import no.novari.fint.model.resource.utdanning.elev.*
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppemedlemskapResource
+import no.novari.fint.model.resource.utdanning.utdanningsprogram.SkoleResource
 
 class FintObjectFactory {
 

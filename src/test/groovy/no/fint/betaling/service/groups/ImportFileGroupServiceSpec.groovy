@@ -5,7 +5,7 @@ import no.fint.betaling.fintdata.StudentRelationRepository
 import no.fint.betaling.fintdata.StudentRepository
 import no.fint.betaling.group.ImportFileGroupService
 import no.fint.betaling.util.FintObjectFactory
-import no.fint.model.resource.Link
+import no.novari.fint.model.resource.Link
 import spock.lang.Specification
 
 class ImportFileGroupServiceSpec extends Specification {

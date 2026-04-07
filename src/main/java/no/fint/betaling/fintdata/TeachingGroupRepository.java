@@ -3,8 +3,8 @@ package no.fint.betaling.fintdata;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
-import no.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResource;
+import no.novari.fint.model.resource.utdanning.timeplan.UndervisningsgruppeResources;
 import org.springframework.stereotype.Repository;
 
 @Slf4j

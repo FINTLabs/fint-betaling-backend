@@ -2,10 +2,10 @@ package no.fint.betaling.claim;
 
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.organisation.PersonService;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
-import no.fint.model.resource.Link;
-import no.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
-import no.fint.model.resource.okonomi.faktura.FakturalinjeResource;
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.novari.fint.model.resource.Link;
+import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
+import no.novari.fint.model.resource.okonomi.faktura.FakturalinjeResource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

@@ -2,9 +2,9 @@ package no.fint.betaling.fintdata;
 
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.util.RestUtil;
-import no.fint.model.resource.AbstractCollectionResources;
-import no.fint.model.resource.FintLinks;
-import no.fint.model.resource.Link;
+import no.novari.fint.model.resource.AbstractCollectionResources;
+import no.novari.fint.model.resource.FintLinks;
+import no.novari.fint.model.resource.Link;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 

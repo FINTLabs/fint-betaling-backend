@@ -5,17 +5,14 @@ import no.fint.betaling.common.config.Endpoints;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Lineitem;
 import no.fint.betaling.model.Organisation;
-import no.fint.model.resource.Link;
-import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResource;
-import no.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResources;
+import no.novari.fint.model.resource.Link;
+import no.novari.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResource;
+import no.novari.fint.model.resource.administrasjon.organisasjon.OrganisasjonselementResources;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -59,7 +56,7 @@ public class OrganisationRepository extends FintResourceRepository<Organisasjons
 
         resources
                 .values()
-                .forEach( resource -> {
+                .forEach(resource -> {
                     Organisation organisation = new Organisation();
                     if (resource.getOrganisasjonsnummer() != null) {
                         organisation.setOrganisationNumber(resource.getOrganisasjonsnummer().getIdentifikatorverdi());

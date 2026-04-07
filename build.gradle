@@ -32,11 +32,11 @@ repositories {
 
 
 dependencies {
-    implementation "no.fint:fint-okonomi-model-java:${apiVersion}"
-    implementation "no.fint:fint-okonomi-resource-model-java:${apiVersion}"
-    implementation "no.fint:fint-utdanning-resource-model-java:${apiVersion}"
+    implementation "no.novari:fint-okonomi-model-java:${apiVersion}"
+    implementation "no.novari:fint-okonomi-resource-model-java:${apiVersion}"
+    implementation "no.novari:fint-utdanning-resource-model-java:${apiVersion}"
+    implementation 'no.novari:fint-model-resource:1.0.1'
     implementation 'no.fintlabs:fint-resource-server-security:1.1.1-rc-3'
-    implementation 'no.fint:fint-model-resource:0.4.1'
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.97.Final:osx-aarch_64'
 
     implementation 'org.springframework.boot:spring-boot-starter-security'

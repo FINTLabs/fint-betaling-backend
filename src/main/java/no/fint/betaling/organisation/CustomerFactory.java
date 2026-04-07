@@ -1,9 +1,9 @@
 package no.fint.betaling.organisation;
 
 import no.fint.betaling.model.Customer;
-import no.fint.model.felles.kompleksedatatyper.Identifikator;
-import no.fint.model.felles.kompleksedatatyper.Personnavn;
-import no.fint.model.resource.felles.PersonResource;
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator;
+import no.novari.fint.model.felles.kompleksedatatyper.Personnavn;
+import no.novari.fint.model.resource.felles.PersonResource;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
