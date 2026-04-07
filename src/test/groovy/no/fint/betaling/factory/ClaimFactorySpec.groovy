@@ -1,6 +1,7 @@
 package no.fint.betaling.factory
 
 import no.fint.betaling.claim.ClaimFactory
+import no.fint.betaling.claim.ClaimStatusService
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.util.BetalingObjectFactory
 import spock.lang.Specification
@@ -10,9 +11,11 @@ import java.time.LocalDate
 class ClaimFactorySpec extends Specification {
     private ClaimFactory claimFactory
     private BetalingObjectFactory betalingObjectFactory
+    private ClaimStatusService claimStatusService
 
     void setup() {
-        claimFactory = new ClaimFactory()
+        claimStatusService = Mock(ClaimStatusService)
+        claimFactory = new ClaimFactory(claimStatusService)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 

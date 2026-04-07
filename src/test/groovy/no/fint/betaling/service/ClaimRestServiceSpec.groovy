@@ -23,6 +23,7 @@ class ClaimRestServiceSpec extends Specification {
     ClaimDatabaseService claimDatabaseService
     ClaimRestService claimRestService
     ClaimRestStatusService claimRestStatusService
+    ClaimStatusService claimStatusService
 
     void setup() {
         restUtil = Mock()
@@ -32,8 +33,9 @@ class ClaimRestServiceSpec extends Specification {
         fintClient = Mock()
         claimDatabaseService = Mock()
         claimRestStatusService = Mock()
+        claimStatusService = Mock()
 
-        claimRestService = new ClaimRestService(restUtil, fintClient, invoiceFactory, claimRepository, claimDatabaseService, claimRestStatusService)
+        claimRestService = new ClaimRestService(restUtil, fintClient, invoiceFactory, claimRepository, claimDatabaseService, claimRestStatusService, claimStatusService)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 

@@ -3,6 +3,7 @@ package no.fint.betaling.service
 import no.fint.betaling.claim.ClaimFactory
 
 import no.fint.betaling.claim.ClaimDatabaseService
+import no.fint.betaling.claim.ClaimStatusService
 import no.fint.betaling.claim.InvoiceFactory
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
@@ -24,6 +25,7 @@ class ClaimDatabaseServiceSpec extends Specification {
     InvoiceFactory invoiceFactory
     FintClient fintClient
     BetalingObjectFactory betalingObjectFactory
+    ClaimStatusService claimStatusService
 
     void setup() {
         restUtil = Mock()
@@ -31,8 +33,9 @@ class ClaimDatabaseServiceSpec extends Specification {
         claimFactory = Mock()
         invoiceFactory = Mock()
         fintClient = Mock()
+        claimStatusService = Mock()
 
-        claimDatabaseService = new ClaimDatabaseService(claimRepository, claimFactory)
+        claimDatabaseService = new ClaimDatabaseService(claimRepository, claimFactory, claimStatusService)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 

@@ -1,10 +1,7 @@
 package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.model.Claim;
-import no.fint.betaling.model.ClaimStatus;
-import no.fint.betaling.model.ClaimsDatePeriod;
-import no.fint.betaling.model.Order;
+import no.fint.betaling.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +17,13 @@ public class ClaimDatabaseService {
 
     private final ClaimRepository claimRepository;
     private final ClaimFactory claimFactory;
+    private final ClaimStatusService claimStatusService;
 
     public ClaimDatabaseService(ClaimRepository claimRepository,
-                                ClaimFactory claimFactory) {
+                                ClaimFactory claimFactory, ClaimStatusService claimStatusService) {
         this.claimRepository = claimRepository;
         this.claimFactory = claimFactory;
+        this.claimStatusService = claimStatusService;
     }
 
     public List<Claim> storeClaims(Order order) {
@@ -46,7 +45,7 @@ public class ClaimDatabaseService {
         Claim claim = getClaimByOrderNumber(orderNumber);
 
         if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
-            claim.setClaimStatus(ClaimStatus.CANCELLED);
+            claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.CANCELLED);
             claimRepository.save(claim);
         } else {
             log.warn("cancel claim called, but claim was not in stored status (orderNumber: {}, status: {})", orderNumber, claim.getClaimStatus());

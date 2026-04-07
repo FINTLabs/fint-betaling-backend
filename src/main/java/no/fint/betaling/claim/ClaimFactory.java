@@ -11,9 +11,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class ClaimFactory {
-
+    private final ClaimStatusService claimStatusService;
     @Value("${fint.betaling.org-id}")
     private String orgId;
+
+    public ClaimFactory(ClaimStatusService claimStatusService) {
+        this.claimStatusService = claimStatusService;
+    }
 
     public List<Claim> createClaims(Order order) {
         LocalDateTime now = LocalDateTime.now();
@@ -41,7 +45,7 @@ public class ClaimFactory {
         claim.setOrganisationUnit(order.getOrganisationUnit());
         claim.setPrincipalCode(order.getPrincipal().getCode());
         claim.setPrincipalUri(order.getPrincipal().getUri());
-        claim.setClaimStatus(ClaimStatus.STORED);
+        claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.STORED);
 
         claim.setOrderItems(clonedOrderItems);
         clonedOrderItems.forEach(orderItem -> orderItem.setClaim(claim));

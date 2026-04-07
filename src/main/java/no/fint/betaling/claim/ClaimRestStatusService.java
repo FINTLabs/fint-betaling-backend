@@ -31,10 +31,12 @@ public class ClaimRestStatusService {
 
     private final RestUtil restClient;
     private final ClaimRepository claimRepository;
+    private final ClaimStatusService claimStatusService;
 
-    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository) {
+    public ClaimRestStatusService(RestUtil restClient, ClaimRepository claimRepository, ClaimStatusService claimStatusService) {
         this.restClient = restClient;
         this.claimRepository = claimRepository;
+        this.claimStatusService = claimStatusService;
     }
 
     @Async
@@ -90,7 +92,7 @@ public class ClaimRestStatusService {
 
         if (!StringUtils.hasText(location)) {
             log.error("Unexpected result: Success on getting status, but Location is empty for claim {} with url {} gave response {}", claim.getOrderNumber(), claim.getInvoiceUri(), response.getStatusCode());
-            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+            claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.SEND_ERROR);
             claim.setStatusMessage("Successfull return but location is empty");
             claimRepository.save(claim);
             return;
@@ -98,7 +100,7 @@ public class ClaimRestStatusService {
 
         log.info("Claim {} created ({}), location: {}", claim.getOrderNumber(), response.getStatusCode(), location);
         claim.setInvoiceUri(location);
-        claim.setClaimStatus(ClaimStatus.ACCEPTED);
+        claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.ACCEPTED);
         claim.setStatusMessage(null);
         claimRepository.save(claim);
     }
@@ -113,7 +115,7 @@ public class ClaimRestStatusService {
         log.error("Error updating claim {} {} with invoiceUri {}", claim.getOrderNumber(), claim.getClaimStatus(), claim.getInvoiceUri());
         log.error("Claim status: {}", message);
         claim.setInvoiceUri(null);
-        claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+        claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.SEND_ERROR);
         claim.setStatusMessage(message);
         claimRepository.save(claim);
     }

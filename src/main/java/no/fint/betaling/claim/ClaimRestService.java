@@ -32,17 +32,19 @@ public class ClaimRestService {
     private final ClaimRepository claimRepository;
     private final ClaimDatabaseService claimDatabaseService;
     private final ClaimRestStatusService claimRestStatusService;
+    private final ClaimStatusService claimStatusService;
 
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {
+    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService, ClaimStatusService claimStatusService) {
         this.restUtil = restUtil;
         this.fintClient = fintClient;
         this.invoiceFactory = invoiceFactory;
         this.claimRepository = claimRepository;
         this.claimDatabaseService = claimDatabaseService;
         this.claimRestStatusService = claimRestStatusService;
+        this.claimStatusService = claimStatusService;
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
@@ -59,26 +61,31 @@ public class ClaimRestService {
         FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
 
         return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
-                .doOnNext(httpHeaders -> {
+                .map(httpHeaders -> {
                     if (httpHeaders.getLocation() != null) {
                         claim.setInvoiceUri(httpHeaders.getLocation().toString());
                     } else {
-                        log.error("Successfull POST to FINT, but no location header in response");
+                        log.error("Successful POST to FINT, but no location header in response");
                     }
 
-                    claim.setClaimStatus(ClaimStatus.SENT);
                     claim.setStatusMessage(null);
+                    claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.SENT);
+                    log.info("ClaimStatus: {}", claim.getClaimStatus());
                     log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+
                     claimRepository.save(claim);
+                    claimRestStatusService.processRequest(claim);
+
+                    return claim;
                 })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                .onErrorResume(WebClientResponseException.class, ex -> {
                     claim.setStatusMessage(ex.getMessage());
+                    claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.SEND_ERROR);
                     log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
                     claimRepository.save(claim);
-                })
-                .doOnSuccess(httpHeaders -> claimRestStatusService.processRequest(claim))
-                .thenReturn(claim);
+
+                    return Mono.just(claim);
+                });
     }
 
     public void updateClaimsByStatusAndAge(ClaimStatus status, Duration maxAge) {
@@ -107,7 +114,7 @@ public class ClaimRestService {
 
         Flux.fromIterable(claims)
                 .flatMap(claim -> {
-                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+                    claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.SEND_ERROR);
                     return updateClaimStatus(claim);
                 })
                 .doOnError(error -> log.error("Failed to update claim status", error))
@@ -143,7 +150,7 @@ public class ClaimRestService {
         return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
                 .flatMap(this::updateClaimStatusAndDates)
                 .onErrorResume(WebClientResponseException.class, e -> {
-                    claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
+                    claimStatusService.setClaimStatusAndSaveHistory(claim, ClaimStatus.UPDATE_ERROR);
                     claim.setStatusMessage(e.getMessage());
                     log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
                     return Mono.empty();
@@ -214,7 +221,7 @@ public class ClaimRestService {
             newStatus = ClaimStatus.ISSUED;
         }
 
-        claim.setClaimStatus(newStatus);
+        claimStatusService.setClaimStatusAndSaveHistory(claim, newStatus);
         return originalStatus != newStatus;
     }
 
