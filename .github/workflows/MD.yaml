@@ -50,21 +50,12 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '17'
-
-      - name: Get environment
-        uses: actions/github-script@v6
-        id: environment
-        with:
-          script: return '${{ inputs.cluster }}'.split('-')[1]
-          result-encoding: string
-
       - uses: gradle/actions/wrapper-validation@v5
       - uses: gradle/actions/setup-gradle@v5
         with:
           gradle-version: wrapper
       - name: build gradlew
         run: ./gradlew -x test build
-
       - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -92,7 +83,7 @@ jobs:
           echo "SECRET_NAME=$(echo AKS_${{ steps.environment.outputs.result }}_FINT_GITHUB | tr '[:lower:]' '[:upper:]')" >> $GITHUB_OUTPUT
       - uses: azure/login@v2
         with:
-          creds: ${{ secrets[ steps.secretname.outputs.SECRET_NAME ] }}
+          creds: ${{ secrets[steps.secretname.outputs.SECRET_NAME] }}
       - uses: azure/aks-set-context@v4
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
