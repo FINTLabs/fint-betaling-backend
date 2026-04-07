@@ -4,10 +4,32 @@ metadata:
   name: fint-betaling-backend
   namespace: fintlabs-no
 spec:
+  onePassword:
+    itemPath: "vaults/aks-beta-vault/items/betaling-demo-fintlabs"
   port: 8080
   orgId: fintlabs.no
   image: ghcr.io/fintlabs/fint-betaling-backend:latest
   env:
+    - name: fint.client.details.username
+      valueFrom:
+        secretKeyRef:
+          name: fint.client.username
+          key: fint.client.username
+    - name: fint.client.details.password
+      valueFrom:
+        secretKeyRef:
+          name: fint.client.password
+          key: fint.client.password
+    - name: fint.client.details.client-id
+      valueFrom:
+        secretKeyRef:
+          name: fint.client.client-id
+          key: fint.client.client-id
+    - name: fint.client.details.client-secret
+      valueFrom:
+        secretKeyRef:
+          name: fint.client.client-secret
+          key: fint.client.client-secret
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M'
     - name: fint.betaling.invoice-update-rate
