@@ -50,6 +50,14 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '17'
+
+      - name: Get environment
+        uses: actions/github-script@v6
+        id: environment
+        with:
+          script: return '${{ CLUSTER_NAME }}'.split('-')[1]
+          result-encoding: string
+
       - uses: gradle/actions/wrapper-validation@v5
       - uses: gradle/actions/setup-gradle@v5
         with:
