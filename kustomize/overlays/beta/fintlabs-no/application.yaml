@@ -17,17 +17,17 @@ spec:
     - name: spring.security.oauth2.client.registration.fint.client-id
       value: 'demo'
     - name: fint.oauth.enabled
-      value: 'false'
+      value: 'true'
     - name: fint.client.enabled
-      value: 'false'
+      value: 'true'
     - name: fint.client.base-url
       value: 'https://beta.felleskomponent.no'
     - name: fint.betaling.client-name
       value: 'FINT-Betaling'
     - name: fint.betaling.org-id
-      value: 'pwf.no'
+      value: 'fintlabs.no'
     - name: fint.betaling.default-org-id
-      value: 'pwf.no'
+      value: 'fintlabs.no'
     - name: fint.betaling.default-school-org-id
       value: '970123458'
     - name: fint.betaling.date-range
