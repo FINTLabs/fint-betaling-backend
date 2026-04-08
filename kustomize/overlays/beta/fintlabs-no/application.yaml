@@ -4,68 +4,42 @@ metadata:
   name: fint-betaling-backend
   namespace: fintlabs-no
 spec:
-  onePassword:
-    itemPath: "vaults/aks-beta-vault/items/betaling-demo-fintlabs"
   port: 8080
   orgId: fintlabs.no
   image: ghcr.io/fintlabs/fint-betaling-backend:latest
+  imagePullPolicy: Always
   env:
-    - name: fint.client.username
-      valueFrom:
-        secretKeyRef:
-          name: fint.client.username
-          key: fint.client.username
-    - name: fint.client.password
-      valueFrom:
-        secretKeyRef:
-          name: fint.client.password
-          key: fint.client.password
-    - name: fint.client.client-id
-      valueFrom:
-        secretKeyRef:
-          name: fint.client.client-id
-          key: fint.client.client-id
-    - name: fint.client.client-secret
-      valueFrom:
-        secretKeyRef:
-          name: fint.client.client-secret
-          key: fint.client.client-secret
+    - name: fint.betaling.org-id
+      value: fintlabs.no
+    - name: fint.betaling.default-org-id
+      value: fintlabs.no
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M'
     - name: fint.betaling.invoice-update-rate
-      value: '60000'
+      value: '300000'
     - name: fint.betaling.principal-matching-strategy
-      value: 'byOrgnummer'
-    - name: spring.security.oauth2.client.registration.fint.client-id
-      value: 'demo'
-    - name: fint.oauth.enabled
-      value: 'true'
+      value: 'default'
     - name: fint.client.enabled
       value: 'true'
     - name: fint.client.base-url
       value: 'https://beta.felleskomponent.no'
     - name: fint.betaling.client-name
       value: 'FINT-Betaling'
-    - name: fint.betaling.org-id
-      value: 'fintlabs.no'
     - name: fint.betaling.default-org-id
       value: 'fintlabs.no'
     - name: fint.betaling.default-school-org-id
       value: '970123458'
     - name: fint.betaling.date-range
       value: '7, 14, 30'
-    - name: fint.betaling.demo-user-employeeid
-      value: '100006'
-    - name: fint.betaling.demo
-      value: 'true'
-    - name: fint.betaling.demo-user-org-id
-      value: '970123458'
     - name: fint.betaling.invoice-update-cron
       value: '0 0 0 31 2 ?'
     - name: fint.betaling.endpoints.environment
       value: 'beta'
     - name: logging.level.root
       value: 'INFO'
+  envFrom:
+    - secretRef:
+        name: fint-betaling-backend
   database:
     database: fint-core
   url:
@@ -80,3 +54,4 @@ spec:
     requests:
       memory: "512Mi"
       cpu: "250m"
+  restartPolicy: Always
