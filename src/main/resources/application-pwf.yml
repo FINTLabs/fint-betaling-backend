@@ -30,7 +30,7 @@ fint:
       enable: true
   client:
     base-url: https://beta.felleskomponent.no
-    enabled: false
+    enabled: true
 
   betaling:
     client-name: "betaling@client.fintlabs.no"
