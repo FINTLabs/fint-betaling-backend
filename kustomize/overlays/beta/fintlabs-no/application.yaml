@@ -36,7 +36,7 @@ spec:
     - name: fint.betaling.demo-user-employeeid
       value: '100006'
     - name: fint.betaling.demo
-      value: 'true'
+      value: 'false'
     - name: fint.betaling.endpoints.environment
       value: 'beta'
     - name: logging.level.root
