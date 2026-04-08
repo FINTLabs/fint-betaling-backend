@@ -22,20 +22,20 @@ spring:
       client:
         registration:
           fint:
-            client-id: demo
+            client-id: betaling@client.fintlabs.no
 
 fint:
   betaling-backend:
     client-authorization:
       enable: true
   client:
-    base-url: https://play-with-fint.felleskomponent.no
+    base-url: https://beta.felleskomponent.no
     enabled: false
 
   betaling:
-    client-name: "FINT-Betaling"
-    org-id: "pwf.no"
-    default-org-id: "pwf.no"
+    client-name: "betaling@client.fintlabs.no"
+    org-id: "fintlabs.no"
+    default-org-id: "fintlabs.no"
     default-school-org-id: "970123458"
     date-range: "7, 14, 30"
     demo: "false"
@@ -44,7 +44,7 @@ fint:
     principal-matching-strategy: "byOrgnummer"
     invoice-update-cron: '0 30 16 ? * MON-FRI'
     endpoints:
-      environment: "play-with-fint"
+      environment: "beta"
       invoice: "/okonomi/faktura/fakturagrunnlag"
       order-line: "/okonomi/faktura/fakturalinje"
       mva-code: "/okonomi/kodeverk/merverdiavgift"
