@@ -29,14 +29,16 @@ spec:
       value: 'fintlabs.no'
     - name: fint.betaling.default-school-org-id
       value: '970123458'
-    - name: fint.betaling.date-range
-      value: '7, 14, 30'
-    - name: fint.betaling.invoice-update-cron
-      value: '0 0 0 31 2 ?'
     - name: fint.betaling.demo-user-employeeid
       value: '100006'
     - name: fint.betaling.demo
       value: 'false'
+    - name: fint.betaling.demo-user-org-id
+      value: '970123458'
+    - name: fint.betaling.date-range
+      value: '7, 14, 30'
+    - name: fint.betaling.invoice-update-cron
+      value: '0 0 0 31 2 ?'
     - name: fint.betaling.endpoints.environment
       value: 'beta'
     - name: logging.level.root
