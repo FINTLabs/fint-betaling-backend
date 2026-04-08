@@ -10,22 +10,22 @@ spec:
   orgId: fintlabs.no
   image: ghcr.io/fintlabs/fint-betaling-backend:latest
   env:
-    - name: fint.client.details.username
+    - name: fint.client.username
       valueFrom:
         secretKeyRef:
           name: fint.client.username
           key: fint.client.username
-    - name: fint.client.details.password
+    - name: fint.client.password
       valueFrom:
         secretKeyRef:
           name: fint.client.password
           key: fint.client.password
-    - name: fint.client.details.client-id
+    - name: fint.client.client-id
       valueFrom:
         secretKeyRef:
           name: fint.client.client-id
           key: fint.client.client-id
-    - name: fint.client.details.client-secret
+    - name: fint.client.client-secret
       valueFrom:
         secretKeyRef:
           name: fint.client.client-secret
