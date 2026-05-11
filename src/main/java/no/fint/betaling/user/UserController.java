@@ -12,10 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.net.URISyntaxException;
@@ -35,9 +32,12 @@ public class UserController {
 
     private final ApplicationProperties applicationProperties;
 
-    public UserController(ApplicationProperties applicationProperties, UserCacheService userCacheService) {
+    private final UserRepository userRepository;
+
+    public UserController(ApplicationProperties applicationProperties, UserCacheService userCacheService, UserRepository userRepository) {
         this.applicationProperties = applicationProperties;
         this.userCacheService = userCacheService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -79,6 +79,11 @@ public class UserController {
     @GetMapping("/ping")
     public ResponseEntity<String> ping() throws URISyntaxException {
         return ResponseEntity.ok("Greetings from FINTLabs :)");
+    }
+
+    @GetMapping("/{empolyenumber}")
+    public ResponseEntity<Mono<String>> getEmployeeName(@PathVariable String empolyenumber) {
+        return ResponseEntity.ok(userRepository.getNameFromEmplId(empolyenumber));
     }
 
     @ExceptionHandler({EmployeeIdException.class})

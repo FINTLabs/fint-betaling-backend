@@ -3,11 +3,11 @@ package no.fint.betaling.user;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.exception.PersonNotFoundException;
 import no.fint.betaling.common.exception.PersonalressursException;
+import no.fint.betaling.common.util.FintClient;
+import no.fint.betaling.fintdata.OrganisationRepository;
 import no.fint.betaling.fintdata.SchoolRepository;
 import no.fint.betaling.model.Organisation;
 import no.fint.betaling.model.User;
-import no.fint.betaling.common.util.FintClient;
-import no.fint.betaling.fintdata.OrganisationRepository;
 import no.novari.fint.model.felles.kompleksedatatyper.Personnavn;
 import no.novari.fint.model.resource.Link;
 import no.novari.fint.model.resource.administrasjon.personal.PersonalressursResource;
@@ -55,6 +55,13 @@ public class UserRepository {
                             .switchIfEmpty(Mono.error(new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt.")))
                             .flatMap(isAdminUser ? adminUser -> handleAdminUser(adminUser) : nonAdminUser -> handleNonAdminUser(nonAdminUser, personalressurs));
                 });
+    }
+
+    public Mono<String> getNameFromEmplId(String employeeNumber) {
+        return fintClient.getPersonalressurs(employeeNumber)
+                .flatMap(personalressurs -> fintClient.getPerson(personalressurs)
+                        .map(this::getName)
+                        .switchIfEmpty(Mono.error(new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt."))));
     }
 
     private Mono<User> handleAdminUser(User user) {
