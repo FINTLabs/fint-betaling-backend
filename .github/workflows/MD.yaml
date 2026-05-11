@@ -56,7 +56,6 @@ jobs:
           gradle-version: wrapper
       - name: build gradlew
         run: ./gradlew -x test build
-
       - uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -77,14 +76,14 @@ jobs:
         uses: azure/k8s-bake@v3
         with:
           renderEngine: 'kustomize'
-          kustomizationPath: 'kustomize/overlays/${{ steps.environment.outputs.result }}/${{ matrix.org }}'
+          kustomizationPath: 'kustomize/overlays/${{ steps.environment.outputs.result }}/${{ inputs.org }}'
       - name: Determine secret name
         id: secretname
         run: |
           echo "SECRET_NAME=$(echo AKS_${{ steps.environment.outputs.result }}_FINT_GITHUB | tr '[:lower:]' '[:upper:]')" >> $GITHUB_OUTPUT
       - uses: azure/login@v2
         with:
-          creds: ${{ secrets[ steps.secretname.outputs.SECRET_NAME ] }}
+          creds: ${{ secrets[steps.secretname.outputs.SECRET_NAME] }}
       - uses: azure/aks-set-context@v4
         with:
           cluster-name: ${{ env.CLUSTER_NAME }}
