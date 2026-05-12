@@ -40,7 +40,6 @@ public class UserRepository {
     }
 
     public Mono<User> mapUserFromResources(String employeeId, boolean isAdminUser) {
-
         return fintClient.getPersonalressurs(employeeId)
                 .switchIfEmpty(Mono.error(new PersonalressursException(HttpStatus.BAD_REQUEST, "Fant ingen personalressurs for gitt ansatt.")))
                 .flatMap(personalressurs -> {
@@ -57,11 +56,16 @@ public class UserRepository {
                 });
     }
 
-    public Mono<String> getNameFromEmplId(String employeeNumber) {
+    public String getNameFromEmplId(String employeeNumber) {
         return fintClient.getPersonalressurs(employeeNumber)
-                .flatMap(personalressurs -> fintClient.getPerson(personalressurs)
-                        .map(this::getName)
-                        .switchIfEmpty(Mono.error(new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt."))));
+                .flatMap(personalressurs ->
+                        fintClient.getPerson(personalressurs)
+                                .map(this::getName)
+                )
+                .switchIfEmpty(Mono.error(
+                        new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt.")
+                ))
+                .block();
     }
 
     private Mono<User> handleAdminUser(User user) {

@@ -20,7 +20,7 @@ class UserControllerTest extends Specification {
     UserRepository userRepository = Mock()
 
     def setup() {
-        userController = new UserController(applicationProperties, userCacheService, userRepository)
+        userController = new UserController(applicationProperties, userCacheService)
     }
 
     def "getMe returns user information"() {

@@ -6,6 +6,8 @@ import no.fint.betaling.common.exception.ClientErrorException
 import no.fint.betaling.common.util.RestUtil
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
+import no.fint.betaling.model.OrderItem
+import no.fint.betaling.model.dto.ClaimDto
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -58,16 +60,26 @@ class ClaimRestStatusServiceSpec extends Specification {
 
     def "setStatusMessages should set correct messages for claims"() {
         given:
-        def claim1 = new Claim(claimStatus: ClaimStatus.SENT)
-        def claim2 = new Claim(claimStatus: ClaimStatus.ACCEPTED)
-        def claim3 = new Claim(claimStatus: ClaimStatus.ERROR, statusMessage: "Custom error message")
+        def claim1 = new Claim()
+        claim1.setOrderItems(List.of(new OrderItem()))
+        claim1.setClaimStatus(ClaimStatus.SENT)
+        def claimDto1 = new ClaimDto(claim1)
+        def claim2 = new Claim()
+        claim2.setOrderItems(List.of(new OrderItem()))
+        claim2.setClaimStatus(ClaimStatus.ACCEPTED)
+        def claimDto2 = new ClaimDto(claim2)
+        def claim3 = new Claim()
+        claim3.setOrderItems(List.of(new OrderItem()))
+        claim3.setClaimStatus(ClaimStatus.ERROR)
+        claim3.setStatusMessage("Custom error message")
+        def claimDto3 = new ClaimDto(claim3)
 
         when:
-        claimRestStatusService.setStatusMessages([claim1, claim2, claim3])
+        claimRestStatusService.setStatusMessages([claimDto1, claimDto2, claimDto3])
 
         then:
-        assert claim1.statusMessage == "Overføring pågår"
-        assert claim2.statusMessage == "Overført til økonomisystem"
-        assert claim3.statusMessage == "Custom error message" // Should not overwrite existing message
+        assert claimDto1.statusMessage == "Overføring pågår"
+        assert claimDto2.statusMessage == "Overført til økonomisystem"
+        assert claimDto3.statusMessage == "Custom error message" // Should not overwrite existing message
     }
 }

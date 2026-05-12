@@ -8,6 +8,7 @@ import no.fint.betaling.common.exception.ServerErrorException;
 import no.fint.betaling.common.util.RestUtil;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
+import no.fint.betaling.model.dto.ClaimDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -61,7 +62,7 @@ public class ClaimRestStatusService {
                 );
     }
 
-    public void setStatusMessages(List<Claim> claims) {
+    public void setStatusMessages(List<ClaimDto> claims) {
         claims.stream()
                 .filter(claim -> !StringUtils.hasText(claim.getStatusMessage()))
                 .forEach(claim -> claim.setStatusMessage(getStatusMessage(claim.getClaimStatus())));

@@ -5,6 +5,7 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
+import no.fint.betaling.model.dto.ClaimDto;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,11 +66,11 @@ public class ClaimController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Claim>> getAllClaims(@RequestParam(required = false) String periodSelection,
-                                                    @RequestParam(required = false) String schoolSelection,
-                                                    @RequestParam(required = false) String[] status) {
+    public ResponseEntity<List<ClaimDto>> getAllClaims(@RequestParam(required = false) String periodSelection,
+                                                       @RequestParam(required = false) String schoolSelection,
+                                                       @RequestParam(required = false) String[] status) {
 
-        List<Claim> claims = claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(
+        List<ClaimDto> claims = claimDatabaseService.getClaimsDtoByPeriodAndOrganisationnumberAndStatus(
                 toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status));
 
         claimRestStatusService.setStatusMessages(claims);
@@ -83,7 +84,7 @@ public class ClaimController {
     }
 
     @GetMapping("/order-number/{order-number}")
-    public ResponseEntity<Claim> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
+    public ResponseEntity<ClaimDto> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
         return ResponseEntity.ok(claimDatabaseService.getClaimByOrderNumber(orderNumber));
     }
 
