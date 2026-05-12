@@ -66,16 +66,16 @@ public class ClaimController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ClaimDto>> getAllClaims(@RequestParam(required = false) String periodSelection,
-                                                       @RequestParam(required = false) String schoolSelection,
-                                                       @RequestParam(required = false) String[] status) {
+    public Mono<ResponseEntity<List<ClaimDto>>> getAllClaims(@RequestParam(required = false) String periodSelection,
+                                                             @RequestParam(required = false) String schoolSelection,
+                                                             @RequestParam(required = false) String[] status) {
 
-        List<ClaimDto> claims = claimDatabaseService.getClaimsDtoByPeriodAndOrganisationnumberAndStatus(
-                toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status));
-
-        claimRestStatusService.setStatusMessages(claims);
-
-        return ResponseEntity.ok(claims);
+        return claimDatabaseService.getClaimsDtoByPeriodAndOrganisationnumberAndStatus(
+                toDatePeriod(periodSelection), schoolSelection, toClaimStatus(status))
+                .map(claims -> {
+                    claimRestStatusService.setStatusMessages(claims);
+                    return ResponseEntity.ok(claims);
+                });
     }
 
     @GetMapping("/name/{name}")
@@ -84,8 +84,9 @@ public class ClaimController {
     }
 
     @GetMapping("/order-number/{order-number}")
-    public ResponseEntity<ClaimDto> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
-        return ResponseEntity.ok(claimDatabaseService.getClaimByOrderNumber(orderNumber));
+    public Mono<ResponseEntity<ClaimDto>> getClaimsByOrderNumber(@PathVariable(value = "order-number") long orderNumber) {
+        return claimDatabaseService.getClaimByOrderNumber(orderNumber)
+                .map(ResponseEntity::ok);
     }
 
     @GetMapping("/status/{status}")

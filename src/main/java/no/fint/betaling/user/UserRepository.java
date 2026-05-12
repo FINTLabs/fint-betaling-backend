@@ -56,7 +56,7 @@ public class UserRepository {
                 });
     }
 
-    public String getNameFromEmplId(String employeeNumber) {
+    public Mono<String> getNameFromEmplId(String employeeNumber) {
         return fintClient.getPersonalressurs(employeeNumber)
                 .flatMap(personalressurs ->
                         fintClient.getPerson(personalressurs)
@@ -64,8 +64,7 @@ public class UserRepository {
                 )
                 .switchIfEmpty(Mono.error(
                         new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt.")
-                ))
-                .block();
+                ));
     }
 
     private Mono<User> handleAdminUser(User user) {

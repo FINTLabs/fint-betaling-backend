@@ -13,6 +13,7 @@ import no.fint.betaling.model.dto.ClaimDto
 import no.fint.betaling.model.dto.OrderItemDto
 import org.spockframework.spring.SpringBean
 import org.springframework.http.HttpStatus
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 class ClaimControllerSpec extends Specification {
@@ -40,10 +41,10 @@ class ClaimControllerSpec extends Specification {
         def claimDto = createClaim(123L)
 
         when:
-        def response = controller.getAllClaims('', '', null)
+        def response = controller.getAllClaims('', '', null).block()
 
         then:
-        1 * claimDatabaseService.getClaimsDtoByPeriodAndOrganisationnumberAndStatus(_, _, _) >> [claimDto]
+        1 * claimDatabaseService.getClaimsDtoByPeriodAndOrganisationnumberAndStatus(_, _, _) >> Mono.just([claimDto])
         1 * claimRestStatusService.setStatusMessages([claimDto]);
         response.statusCode == HttpStatus.OK
         response.getBody() == [claimDto]
@@ -77,10 +78,10 @@ class ClaimControllerSpec extends Specification {
         def claim = createClaim(123L)
 
         when:
-        def response = controller.getClaimsByOrderNumber(123L)
+        def response = controller.getClaimsByOrderNumber(123L).block()
 
         then:
-        1 * claimDatabaseService.getClaimByOrderNumber(123L) >> claim
+        1 * claimDatabaseService.getClaimByOrderNumber(123L) >> Mono.just(claim)
         response.statusCode == HttpStatus.OK
         response.getBody() == claim
     }

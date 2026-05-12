@@ -11,11 +11,13 @@ import no.fint.betaling.user.UserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -66,7 +68,7 @@ public class ClaimDatabaseService {
                 statuses);
     }
 
-    public List<ClaimDto> getClaimsDtoByPeriodAndOrganisationnumberAndStatus(
+    public Mono<List<ClaimDto>> getClaimsDtoByPeriodAndOrganisationnumberAndStatus(
             ClaimsDatePeriod period,
             String organisationNumber,
             ClaimStatus[] statuses
@@ -76,24 +78,22 @@ public class ClaimDatabaseService {
                 organisationNumber,
                 statuses);
 
-        return byDateAndSchoolAndStatus.stream()
-                .map(claim -> {
-                    String employeeName = Objects.requireNonNullElse(
-                            userRepository.getNameFromEmplId(claim.getCreatedByEmployeeNumber()),
-                            claim.getCreatedByEmployeeNumber());
-
-                    return new ClaimDto(claim, employeeName);
-                })
-                .toList();
+        return Flux.fromIterable(byDateAndSchoolAndStatus)
+                .flatMap(claim -> userRepository.getNameFromEmplId(claim.getCreatedByEmployeeNumber())
+                        .onErrorReturn(claim.getCreatedByEmployeeNumber())
+                        .map(name -> new ClaimDto(claim, name)))
+                .collectList();
     }
 
     public List<Claim> getClaimsByStatus(ClaimStatus... statuses) {
         return claimRepository.get(statuses);
     }
 
-    public ClaimDto getClaimByOrderNumber(long orderNumber) {
+    public Mono<ClaimDto> getClaimByOrderNumber(long orderNumber) {
         Claim claim = claimRepository.get(orderNumber);
-        return new ClaimDto(claim, userRepository.getNameFromEmplId(claim.getCreatedByEmployeeNumber()));
+        return userRepository.getNameFromEmplId(claim.getCreatedByEmployeeNumber())
+                .onErrorReturn(claim.getCreatedByEmployeeNumber())
+                .map(name -> new ClaimDto(claim, name));
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {
