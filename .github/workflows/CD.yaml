@@ -3,6 +3,9 @@ on:
   repository_dispatch:
     types: [ trigger-cd ]
 
+  push:
+    branches: [ main ]
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -54,15 +57,13 @@ jobs:
     strategy:
       matrix:
         org:
-          - fintlabs-no
-#          - ofk-no
-#          - bfk-no
-#          - afk-no
-#          - tromsfylke-no
-#          - vlfk-no
+          - ofk-no
+          - bfk-no
+          - afk-no
+          - tromsfylke-no
+          - vlfk-no
         cluster:
-#          - aks-api-fint-2022-02-08
-          - aks-beta-fint-2021-11-23
+          - aks-api-fint-2022-02-08
         include:
           - org: fintlabs-no
             cluster: aks-beta-fint-2021-11-23
