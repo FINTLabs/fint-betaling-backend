@@ -39,7 +39,7 @@ fint:
     default-school-org-id: "970123458"
     date-range: "7, 14, 30"
     demo: "false"
-    demo-user-employeeid: "100006"
+    demo-user-employeeid: "100007"
     demo-user-org-id: "970123458"
     principal-matching-strategy: "byOrgnummer"
     invoice-update-cron: '0 30 16 ? * MON-FRI'

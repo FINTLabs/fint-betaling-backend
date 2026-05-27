@@ -9,9 +9,11 @@ import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.model.Order
 import no.fint.betaling.claim.ClaimRepository
+import no.fint.betaling.user.UserRepository
 import no.fint.betaling.util.BetalingObjectFactory
 import no.fint.betaling.common.util.FintClient
 import no.fint.betaling.common.util.RestUtil
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 import java.time.LocalDateTime
@@ -24,6 +26,7 @@ class ClaimDatabaseServiceSpec extends Specification {
     InvoiceFactory invoiceFactory
     FintClient fintClient
     BetalingObjectFactory betalingObjectFactory
+    UserRepository userRepository
 
     void setup() {
         restUtil = Mock()
@@ -31,8 +34,9 @@ class ClaimDatabaseServiceSpec extends Specification {
         claimFactory = Mock()
         invoiceFactory = Mock()
         fintClient = Mock()
+        userRepository = Mock()
 
-        claimDatabaseService = new ClaimDatabaseService(claimRepository, claimFactory)
+        claimDatabaseService = new ClaimDatabaseService(claimRepository, claimFactory, userRepository)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -129,10 +133,11 @@ class ClaimDatabaseServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
 
         when:
-        def result = claimDatabaseService.getClaimByOrderNumber(12L)
+        def result = claimDatabaseService.getClaimByOrderNumber(12L).block()
 
         then:
         1 * claimRepository.get(12L) >> claim
+        1 * userRepository.getNameFromEmplId(_) >> Mono.just("Test Name")
         result.orderNumber == 12345L
     }
 }

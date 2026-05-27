@@ -5,6 +5,7 @@ import no.fint.betaling.common.exception.EmployeeIdException
 import no.fint.betaling.model.User
 import no.fint.betaling.user.UserCacheService
 import no.fint.betaling.user.UserController
+import no.fint.betaling.user.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.jwt.Jwt
 import reactor.core.publisher.Mono
@@ -16,6 +17,7 @@ class UserControllerTest extends Specification {
     UserController userController
     ApplicationProperties applicationProperties = Stub()
     UserCacheService userCacheService = Mock()
+    UserRepository userRepository = Mock()
 
     def setup() {
         userController = new UserController(applicationProperties, userCacheService)

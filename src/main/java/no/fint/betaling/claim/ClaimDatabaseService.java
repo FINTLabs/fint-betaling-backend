@@ -1,12 +1,18 @@
 package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.fint.betaling.model.Order;
+import no.fint.betaling.model.dto.ClaimDto;
+import no.fint.betaling.user.UserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,11 +26,13 @@ public class ClaimDatabaseService {
 
     private final ClaimRepository claimRepository;
     private final ClaimFactory claimFactory;
+    private final UserRepository userRepository;
 
     public ClaimDatabaseService(ClaimRepository claimRepository,
-                                ClaimFactory claimFactory) {
+                                ClaimFactory claimFactory, UserRepository userRepository) {
         this.claimRepository = claimRepository;
         this.claimFactory = claimFactory;
+        this.userRepository = userRepository;
     }
 
     public List<Claim> storeClaims(Order order) {
@@ -43,7 +51,7 @@ public class ClaimDatabaseService {
     }
 
     public void cancelClaim(long orderNumber) {
-        Claim claim = getClaimByOrderNumber(orderNumber);
+        Claim claim = claimRepository.get(orderNumber);
 
         if (claim.getClaimStatus().equals(ClaimStatus.STORED)) {
             claim.setClaimStatus(ClaimStatus.CANCELLED);
@@ -60,12 +68,32 @@ public class ClaimDatabaseService {
                 statuses);
     }
 
+    public Mono<List<ClaimDto>> getClaimsDtoByPeriodAndOrganisationnumberAndStatus(
+            ClaimsDatePeriod period,
+            String organisationNumber,
+            ClaimStatus[] statuses
+    ) {
+        var byDateAndSchoolAndStatus = claimRepository.getByDateAndSchoolAndStatus(
+                claimsDatePeriodToTimestamp(period),
+                organisationNumber,
+                statuses);
+
+        return Flux.fromIterable(byDateAndSchoolAndStatus)
+                .flatMap(claim -> userRepository.getNameFromEmplId(claim.getCreatedByEmployeeNumber())
+                        .onErrorReturn(claim.getCreatedByEmployeeNumber())
+                        .map(name -> new ClaimDto(claim, name)))
+                .collectList();
+    }
+
     public List<Claim> getClaimsByStatus(ClaimStatus... statuses) {
         return claimRepository.get(statuses);
     }
 
-    public Claim getClaimByOrderNumber(long orderNumber) {
-        return claimRepository.get(orderNumber);
+    public Mono<ClaimDto> getClaimByOrderNumber(long orderNumber) {
+        Claim claim = claimRepository.get(orderNumber);
+        return userRepository.getNameFromEmplId(claim.getCreatedByEmployeeNumber())
+                .onErrorReturn(claim.getCreatedByEmployeeNumber())
+                .map(name -> new ClaimDto(claim, name));
     }
 
     public List<Claim> getClaimsByCustomerName(String name) {

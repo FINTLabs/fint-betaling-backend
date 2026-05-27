@@ -35,6 +35,7 @@ public class UserController {
 
     private final ApplicationProperties applicationProperties;
 
+
     public UserController(ApplicationProperties applicationProperties, UserCacheService userCacheService) {
         this.applicationProperties = applicationProperties;
         this.userCacheService = userCacheService;

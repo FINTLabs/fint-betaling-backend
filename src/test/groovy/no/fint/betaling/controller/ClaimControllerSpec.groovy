@@ -8,8 +8,12 @@ import no.fint.betaling.claim.ScheduleService
 import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.Order
+import no.fint.betaling.model.OrderItem
+import no.fint.betaling.model.dto.ClaimDto
+import no.fint.betaling.model.dto.OrderItemDto
 import org.spockframework.spring.SpringBean
 import org.springframework.http.HttpStatus
+import reactor.core.publisher.Mono
 import spock.lang.Specification
 
 class ClaimControllerSpec extends Specification {
@@ -34,16 +38,16 @@ class ClaimControllerSpec extends Specification {
 
     def "Get all payments"() {
         given:
-        def claim = createClaim(123L)
+        def claimDto = createClaim(123L)
 
         when:
-        def response = controller.getAllClaims('', '', null)
+        def response = controller.getAllClaims('', '', null).block()
 
         then:
-        1 * claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(_, _, _) >> [claim]
-        1 * claimRestStatusService.setStatusMessages([claim]);
+        1 * claimDatabaseService.getClaimsDtoByPeriodAndOrganisationnumberAndStatus(_, _, _) >> Mono.just([claimDto])
+        1 * claimRestStatusService.setStatusMessages([claimDto]);
         response.statusCode == HttpStatus.OK
-        response.getBody() == [claim]
+        response.getBody() == [claimDto]
     }
 
     def "Set payment given valid payment returns status ok"() {
@@ -74,10 +78,10 @@ class ClaimControllerSpec extends Specification {
         def claim = createClaim(123L)
 
         when:
-        def response = controller.getClaimsByOrderNumber(123L)
+        def response = controller.getClaimsByOrderNumber(123L).block()
 
         then:
-        1 * claimDatabaseService.getClaimByOrderNumber(123L) >> claim
+        1 * claimDatabaseService.getClaimByOrderNumber(123L) >> Mono.just(claim)
         response.statusCode == HttpStatus.OK
         response.getBody() == claim
     }
@@ -105,7 +109,11 @@ class ClaimControllerSpec extends Specification {
         response.getBody() == amountOfClaims
     }
 
-    private static Claim createClaim(long orderNumber) {
-        return new Claim(orderNumber: orderNumber)
+    private ClaimDto createClaim(long orderNumber) {
+        Claim claim = new Claim()
+        claim.setOrderNumber(orderNumber)
+        claim.setOrderItems(List.of(new OrderItem()))
+        def claimDto = new ClaimDto(claim, "test")
+        return claimDto
     }
 }
