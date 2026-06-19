@@ -1,0 +1,16 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: FintClient
+metadata:
+  name: fint-betaling-backend
+  namespace: mrfylke-no
+spec:
+  orgId: mrfylke.no
+  note: Client til fint-betaling-backend for mrfylke
+  components:
+    - okonomi_faktura
+    - okonomi_kodeverk
+    - utdanning_elev
+    - utdanning_utdanningsprogram
+    - utdanning_timeplan
+    - administrasjon_organisasjon
+    - administrasjon_personal

@@ -62,6 +62,7 @@ jobs:
           - afk-no
           - tromsfylke-no
           - vlfk-no
+          - mrfylke-no
         cluster:
           - aks-api-fint-2022-02-08
         include:
