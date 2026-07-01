@@ -37,6 +37,8 @@ spec:
       value: 'api'
     - name: logging.level.root
       value: 'INFO'
+    - name: logging.level.no.fint.betaling.user.UserController
+      value: 'DEBUG'
     - name: logging.level.no.fint.betaling.claim
       value: "DEBUG"
   envFrom:
