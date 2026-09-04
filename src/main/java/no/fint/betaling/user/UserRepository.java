@@ -17,11 +17,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,7 +53,7 @@ public class UserRepository {
                                 return user;
                             })
                             .switchIfEmpty(Mono.error(new PersonNotFoundException("Fant ingen personalressurs for gitt ansatt.")))
-                            .flatMap(isAdminUser ? adminUser -> handleAdminUser(adminUser) : nonAdminUser -> handleNonAdminUser(nonAdminUser, personalressurs));
+                            .flatMap(isAdminUser ? this::handleAdminUser : nonAdminUser -> handleNonAdminUser(nonAdminUser, personalressurs));
                 });
     }
 
@@ -68,26 +69,31 @@ public class UserRepository {
     }
 
     private Mono<User> handleAdminUser(User user) {
-        List<SkoleResource> schools = getAllSchools();
-        user.setOrganisationUnits(mapToOrganisation(schools));
-
-        final Optional<Organisation> owner = getTopOrganisation(schools);
-        owner.ifPresent(user::setOrganisation);
-
-        return Mono.just(user);
+        return withOrganisations(user, this::getAllSchools);
     }
 
     private Mono<User> handleNonAdminUser(User user, PersonalressursResource personalressurs) {
         return getSchoolsBySkoleressurs(personalressurs)
-                .switchIfEmpty(Mono.just(new ArrayList<SkoleResource>()))
-                .flatMap(schools -> {
+                .defaultIfEmpty(List.of())
+                .flatMap(schools -> withOrganisations(user, () -> schools));
+    }
+
+    /**
+     * The cache lookups below fall back to a blocking fetch when the cache is cold, so they must not
+     * run on the Netty event loop thread that the enclosing chain is completing on.
+     */
+    private Mono<User> withOrganisations(User user, Supplier<List<SkoleResource>> schoolSupplier) {
+        return Mono
+                .fromCallable(() -> {
+                    List<SkoleResource> schools = schoolSupplier.get();
                     user.setOrganisationUnits(mapToOrganisation(schools));
 
                     final Optional<Organisation> owner = getTopOrganisation(schools);
                     owner.ifPresent(user::setOrganisation);
 
-                    return Mono.just(user);
-                });
+                    return user;
+                })
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     private Mono<List<SkoleResource>> getSchoolsBySkoleressurs(PersonalressursResource personalressurs) {
@@ -116,7 +122,6 @@ public class UserRepository {
                 .map(Link::getHref)
                 .map(StringUtils::lowerCase)
                 .map(organisationRepository::getTopOrganisationByHref)
-                .distinct()
                 .peek(it -> log.debug("Organisasjon: {}", it))
                 .findAny();
     }
