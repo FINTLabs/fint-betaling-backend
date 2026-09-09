@@ -36,6 +36,9 @@ public class ClaimRestService {
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
+    @Value("${fint.betaling.claim-send-max-concurrency:10}")
+    private int claimSendMaxConcurrency = 10;
+
     public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {
         this.restUtil = restUtil;
         this.fintClient = fintClient;
@@ -48,7 +51,7 @@ public class ClaimRestService {
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
         return Flux.fromIterable(claimDatabaseService.getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
-                .flatMap(this::sendClaim)
+                .flatMap(this::sendClaim, claimSendMaxConcurrency)
                 .onErrorResume(throwable -> {
                     log.error("Error occurred while sending claims", throwable);
                     return Flux.error(throwable);

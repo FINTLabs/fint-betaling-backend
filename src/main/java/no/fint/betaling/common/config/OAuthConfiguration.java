@@ -28,6 +28,9 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "fint.client")
 public class OAuthConfiguration {
 
+    // Network timeout period must be lower than NAM connection cutoff (currently 60 seconds)
+    private static final Duration NETWORK_TIMEOUT = Duration.ofSeconds(55);
+
     private String baseUrl;
     private String username;
     private String password;
@@ -71,8 +74,8 @@ public class OAuthConfiguration {
                                 .maxLifeTime(Duration.ofMinutes(30))
                                 .maxIdleTime(Duration.ofMinutes(5))
                                 .build())
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 600000)
-                .responseTimeout(Duration.ofMinutes(10))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.toIntExact(NETWORK_TIMEOUT.toMillis()))
+                .responseTimeout(NETWORK_TIMEOUT)
         );
     }
 
@@ -115,4 +118,3 @@ public class OAuthConfiguration {
                 .build();
     }
 }
-

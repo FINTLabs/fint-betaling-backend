@@ -56,10 +56,11 @@ class ClaimSendIntegrationSpec extends Specification {
         fintServer.dispatcher = new Dispatcher() {
             @Override
             MockResponse dispatch(RecordedRequest request) {
-                // Keep all 100 pool connections occupied while both endpoint calls fan out.
+                // Long enough for unconstrained fan-out to saturate the pool, but short enough
+                // for a concurrency limit of 10 to finish within the test client's timeout.
                 return new MockResponse()
                         .setResponseCode(201)
-                        .setHeadersDelay(2, TimeUnit.SECONDS)
+                        .setHeadersDelay(500, TimeUnit.MILLISECONDS)
             }
         }
         fintServer.start()
@@ -129,14 +130,14 @@ class ClaimSendIntegrationSpec extends Specification {
                 .maxConnections(MAX_CONNECTIONS)
                 .pendingAcquireTimeout(Duration.ofSeconds(45))
                 .pendingAcquireTimer({ Runnable timeoutTask, Duration ignored ->
-                    Schedulers.parallel().schedule(timeoutTask, 1, TimeUnit.SECONDS)
+                    Schedulers.parallel().schedule(timeoutTask, 250, TimeUnit.MILLISECONDS)
                 } as BiFunction)
                 .build()
         connectionProviders.add(timeoutProvider)
         WebTestClient timeoutWebTestClient = createWebTestClient(timeoutProvider)
         def orderNumbers = (1L..CLAIMS_PER_REQUEST).toList()
 
-        when: 'one endpoint call occupies 100 connections and leaves 60 acquisitions pending'
+        when: 'one endpoint call would leave acquisitions pending without a concurrency limit'
         def outcome = invokeSendEndpoint(timeoutWebTestClient, orderNumbers)
 
         then: 'the pool was saturated without overflowing its 200-entry pending queue'
@@ -183,7 +184,7 @@ class ClaimSendIntegrationSpec extends Specification {
         def webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .clientConnector(new ReactorClientHttpConnector(
-                        HttpClient.create(provider).responseTimeout(Duration.ofSeconds(10))))
+                        HttpClient.create(provider).responseTimeout(Duration.ofSeconds(55))))
                 .build()
 
         def restUtil = new RestUtil(webClient)
