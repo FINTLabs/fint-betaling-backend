@@ -46,13 +46,21 @@ public class ClaimRestService {
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
+        int batchSize = 50;
         return Flux.fromIterable(claimDatabaseService.getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
-                .flatMap(this::sendClaim)
-                .onErrorResume(throwable -> {
-                    log.error("Error occurred while sending claims", throwable);
-                    return Flux.error(throwable);
-                });
+                .buffer(batchSize)
+                .concatMap(batch ->
+                        Flux.fromIterable(batch)
+                                .flatMap(this::sendClaim)
+                                .concatWith(
+                                        Mono.delay(Duration.ofSeconds(10))
+                                                .then(Mono.empty())
+                                )
+                )
+                .doOnError(throwable ->
+                        log.error("Error occurred while sending claims", throwable)
+                );
     }
 
     public Mono<Claim> sendClaim(Claim claim) {
