@@ -44,9 +44,6 @@ public class UserController {
     @GetMapping
     public Mono<ResponseEntity<User>> getMe(@AuthenticationPrincipal Jwt jwt) {
 
-        //Test if endpoint is called
-        log.info("getMe called: {}", jwt.getSubject());
-
         String employeeId;
         boolean isAdminUser = false;
 
