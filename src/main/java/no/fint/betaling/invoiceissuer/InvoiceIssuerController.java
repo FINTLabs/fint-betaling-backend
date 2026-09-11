@@ -1,6 +1,7 @@
 package no.fint.betaling.invoiceissuer;
 
 import lombok.extern.slf4j.Slf4j;
+import no.fint.betaling.common.exception.PrincipalNotFoundException;
 import no.fint.betaling.model.Principal;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,19 +23,34 @@ public class InvoiceIssuerController {
     }
 
     @GetMapping
-    public Mono<Principal> getPrincipalForSchoolId(@RequestHeader(name = "x-school-org-id") String schoolId) {
+    public Mono<Principal> getPrincipalForSchoolId(
+            @RequestHeader(name = "x-school-org-id") String schoolId) {
+
         return invoiceIssuerService.getInvoiceIssuer(schoolId)
-                //Debug logging to solve product update issue
                 .doOnNext(principal -> {
                     if (principal.getLineitems() != null) {
                         principal.getLineitems().stream()
                                 .filter(l -> l.getItemCode().contains("1351"))
-                                .peek(l -> log.info("Return product: " + l.getItemCode() + " - " + l.getDescription()));
+                                .forEach(l -> log.info(
+                                        "Return product: {} - {}",
+                                        l.getItemCode(),
+                                        l.getDescription()
+                                ));
                     }
                 })
+                .onErrorResume(PrincipalNotFoundException.class, ex ->
+                        Mono.error(new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                ex.getMessage()
+                        ))
+                )
                 .onErrorResume(ex -> {
-                    log.error("An exception occured on handling getInvoiceIssuer", ex);
-                    return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
+                    log.error("Error getting invoice issuer for school {}", schoolId, ex);
+
+                    return Mono.error(new ResponseStatusException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to retrieve invoice issuer"
+                    ));
                 });
     }
 }
