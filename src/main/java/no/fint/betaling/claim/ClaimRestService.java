@@ -148,12 +148,31 @@ public class ClaimRestService {
                 .onErrorResume(WebClientResponseException.class, e -> {
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
                     claim.setStatusMessage(e.getMessage());
-                    log.error("Error updating claim {}: [{}] {}", claim.getOrderNumber(), e.getStatusCode(), e.getMessage());
+                    log.error(
+                            "Error updating claim {}: [{}] {}",
+                            claim.getOrderNumber(),
+                            e.getStatusCode(),
+                            e.getMessage()
+                    );
                     return Mono.empty();
                 })
                 .onErrorResume(e -> {
-                    log.warn("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus());
-                    log.error("Exception: " + e.getMessage(), e);
+                    if (e instanceof NullPointerException) {
+                        log.warn(
+                                "Error updating claim {} [{}]: {}",
+                                claim.getOrderNumber(),
+                                claim.getClaimStatus(),
+                                e.getClass().getSimpleName()
+                        );
+                    } else {
+                        log.error(
+                                "Error updating claim {} [{}]",
+                                claim.getOrderNumber(),
+                                claim.getClaimStatus(),
+                                e
+                        );
+                    }
+
                     return Mono.empty();
                 });
     }
