@@ -67,6 +67,7 @@ public class KlasseService extends GroupService {
                 .filter(Objects::nonNull)
                 .map(studentRelationRepository::getResourceByLink)
                 .filter(Optional::isPresent)
+                .filter(elevforhold -> elevforhold.get().getAvbruddsdato() == null)
                 .map(Optional::get)
                 .map(this::getStudentLink)
                 .filter(Objects::nonNull)
