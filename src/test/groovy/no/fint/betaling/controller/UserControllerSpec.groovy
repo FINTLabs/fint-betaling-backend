@@ -23,11 +23,35 @@ class UserControllerTest extends Specification {
         userController = new UserController(applicationProperties, userCacheService)
     }
 
-    def "getMe returns user information"() {
+    def "getMe returns user information when user is admin"() {
         given:
         Jwt jwt = Stub(Jwt) {
             getClaimAsString("employeeId") >> "12345"
             getClaimAsStringList("roles") >> ["https://role-catalog.vigoiks.no/vigo/elevfakturering/admin"]
+        }
+
+        applicationProperties.getDemo() >> false
+        applicationProperties.getDemoUserEmployeeId() >> "12345"
+        User testUser = new User()
+
+        when:
+        def responseMono = userController.getMe(jwt)
+
+        then:
+        1 * userCacheService.getUser(_, _) >> Mono.just(testUser)
+        StepVerifier.create(responseMono)
+                .assertNext { response ->
+                    assert response.getStatusCode() == HttpStatus.OK
+                    assert response.getBody() == testUser
+                }
+                .verifyComplete()
+    }
+
+    def "getMe returns user information when user is non admin"(){
+        given:
+        Jwt jwt = Stub(Jwt) {
+            getClaimAsString("employeeId") >> "54321"
+            getClaimAsStringList("roles") >> ["https://role-catalog.vigoiks.no/vigo/elevfakturering/user"]
         }
 
         applicationProperties.getDemo() >> false
