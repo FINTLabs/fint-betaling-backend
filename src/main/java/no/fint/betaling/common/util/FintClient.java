@@ -15,14 +15,15 @@ import no.novari.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.novari.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -60,16 +61,32 @@ public class FintClient {
     }
 
     public Mono<SkoleressursResource> getSkoleressurs(PersonalressursResource personalressurs) {
-        AtomicReference<SkoleressursResource> result = new AtomicReference<>();
-        personalressurs.getSelfLinks()
-                .stream()
-                .map(schoolResourceRepository::getResourceByLink)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(result::set);
+        List<Link> directLinks = Optional.ofNullable(personalressurs.getSkoleressurs())
+                .orElseGet(Collections::emptyList);
 
-        if (result.get() != null) return Mono.just(result.get());
-        throw new SkoleressursException(HttpStatus.BAD_REQUEST, "Personalressursen har ingen relasjon til en skoleressurs");
+        return Flux.fromIterable(directLinks)
+                .filter(link -> link != null && StringUtils.hasText(link.getHref()))
+                .concatMap(link -> {
+                    log.debug("Fetching skoleressurs from personalressurs link {}", link.getHref());
+                    return restUtil.get(SkoleressursResource.class, link.getHref());
+                })
+                .next()
+                .switchIfEmpty(Mono.fromCallable(() -> {
+                    if (schoolResourceRepository.isEmpty()) {
+                        schoolResourceRepository.update();
+                    }
+                    List<Link> selfLinks = Optional.ofNullable(personalressurs.getSelfLinks())
+                            .orElseGet(Collections::emptyList);
+                    return selfLinks.stream()
+                            .map(schoolResourceRepository::getResourceByLink)
+                            .flatMap(Optional::stream)
+                            .findFirst()
+                            .orElseThrow(() -> {
+                                log.warn("No cached skoleressurs matched personalressurs self links {}", selfLinks);
+                                return new SkoleressursException(HttpStatus.BAD_REQUEST,
+                                        "Personalressursen har ingen relasjon til en skoleressurs");
+                            });
+                }).subscribeOn(Schedulers.boundedElastic()));
     }
 
     public List<SkoleResource> getSkoler(SkoleressursResource skoleressurs) {
