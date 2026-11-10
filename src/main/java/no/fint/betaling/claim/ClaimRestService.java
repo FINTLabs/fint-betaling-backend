@@ -64,13 +64,16 @@ public class ClaimRestService {
         return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
                 .doOnNext(httpHeaders -> {
                     if (httpHeaders.getLocation() != null) {
-                        claim.setInvoiceUri(httpHeaders.getLocation().toString());
+                        String baseUrl = httpHeaders.getLocation().toString().split("/fakturagrunnlag/")[0];
+                        claim.setInvoiceUri(
+                                baseUrl + "/faktura?$filter=fakturanummer eq '%s'"
+                                        .formatted(invoice.getOrdrenummer())
+                        );
                     } else {
                         log.error("Successfull POST to FINT, but no location header in response");
                     }
 
                     claim.setClaimStatus(ClaimStatus.SENT);
-                    claim.setStatusMessage(null);
                     log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
                     claimRepository.save(claim);
                 })
