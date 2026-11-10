@@ -23,7 +23,7 @@ public class ScheduleService {
 //        claimRestService.updateClaimsOlderThanOneHour(ClaimStatus.SENT);
 //    }
 
-    @Scheduled(cron = "0 48 6-16 * * MON-FRI")
+    @Scheduled(cron = "0 */5 * * * *")
     public void updateAcceptedClaims() {
         updateClaims(ClaimStatus.ACCEPTED, Duration.ofDays(30));
     }
