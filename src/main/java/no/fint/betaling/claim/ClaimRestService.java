@@ -7,12 +7,13 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.novari.fint.model.resource.okonomi.faktura.FakturaResource;
-import no.novari.fint.model.resource.okonomi.faktura.FakturaResources;
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -146,8 +147,20 @@ public class ClaimRestService {
         String filterUrl = invoiceEndpoint.replaceFirst("/fakturagrunnlag/?$", "/faktura")
                 + "?$filter=fakturanummer eq '%s'".formatted(claim.getOrderNumber());
 
-        return restUtil.get(FakturaResources.class, filterUrl)
-                .map(invoices -> updateClaimStatusAndDates(claim, invoices.getContent()))
+        HttpHeaders lookupHeaders = new HttpHeaders();
+        lookupHeaders.set("Prefer", "respond-async");
+
+        return restUtil.bodyless(filterUrl, lookupHeaders)
+                .flatMap(response -> {
+                    var location = response.getHeaders().getLocation();
+                    if (location == null || !StringUtils.hasText(location.toString())) {
+                        return Mono.<FakturaResource>error(new IllegalStateException("Invoice lookup returned no Location header"));
+                    }
+                    String invoiceUrl = UriComponentsBuilder.fromUriString(filterUrl)
+                            .build().encode().toUri().resolve(location).toString();
+                    return restUtil.get(FakturaResource.class, invoiceUrl);
+                })
+                .map(invoice -> updateClaimStatusAndDates(claim, List.of(invoice)))
                 .onErrorResume(e -> {
                     log.error("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus(), e);
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
