@@ -8,6 +8,7 @@ import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.util.BetalingObjectFactory
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import org.springframework.http.HttpHeaders
+import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -57,13 +58,13 @@ class ClaimRestServiceSpec extends Specification {
                 .create(claims)
                 .assertNext { c ->
                     assert c.claimStatus == ClaimStatus.SENT
-                    assert c.invoiceUri == "https://beta.felleskomponent.no/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
+                    assert c.invoiceUri == 'https://beta.felleskomponent.no/okonomi/faktura/fakturagrunnlag/status/12345'
                 }
                 .expectComplete()
                 .verify()
     }
 
-    def "Send claim as invoice returns status"() {
+    def "Send claim preserves POST Location for status polling"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
         def invoice = betalingObjectFactory.newFakturagrunnlag()
@@ -76,26 +77,38 @@ class ClaimRestServiceSpec extends Specification {
         then:
         1 * invoiceFactory.createInvoice(claim) >> invoice
         1 * restUtil.post(*_) >> Mono.just(headers)
+        1 * claimRestStatusService.processRequest({
+            it.is(claim) && it.invoiceUri == 'https://link.to.Location'
+        })
 
         response.claimStatus == ClaimStatus.SENT
-        claim.invoiceUri == "https://link.to.Location/faktura?\$filter=fakturanummer eq '12345'"
+        claim.invoiceUri == 'https://link.to.Location'
     }
 
-    def "Update claims fetches invoices and updates claims"() {
+    def "Update claims uses filter URL while preserving stored location #storedLocation"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
-        claim.setInvoiceUri("https://link.to.Location/faktura?\$filter=fakturanummer eq '12345'")
+        claim.setInvoiceUri(storedLocation)
+        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', invoiceEndpoint)
         def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
 
         then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, "https://link.to.Location/faktura?\$filter=fakturanummer eq '12345'") >> Mono.just(invoice)
+        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, expectedFilterUrl) >> Mono.just(invoice)
         1 * claimRepository.get(_) >> claim
         1 * fintClient.getSelfLink(invoice) >> Optional.empty()
         1 * fintClient.getFaktura(_) >> Mono.just([])
         result == null
+        claim.invoiceUri == storedLocation
+
+        where:
+        storedLocation                                                                   | invoiceEndpoint                                                   | expectedFilterUrl
+        'https://api.example.com/okonomi/faktura/fakturagrunnlag/status/12345'              | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
+        'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'              | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
+        "https://api.example.com/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"  | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
+        'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'              | 'https://api.example.com/okonomi/faktura/fakturagrunnlag/'            | "https://api.example.com/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
     }
 
     def "Update claims should return Mono.empty() when invoiceUri is empty"() {

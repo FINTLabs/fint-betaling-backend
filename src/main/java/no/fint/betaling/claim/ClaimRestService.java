@@ -64,11 +64,7 @@ public class ClaimRestService {
         return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
                 .doOnNext(httpHeaders -> {
                     if (httpHeaders.getLocation() != null) {
-                        String baseUrl = httpHeaders.getLocation().toString().split("/fakturagrunnlag/")[0];
-                        claim.setInvoiceUri(
-                                baseUrl + "/faktura?$filter=fakturanummer eq '%s'"
-                                        .formatted(claim.getOrderNumber())
-                        );
+                        claim.setInvoiceUri(httpHeaders.getLocation().toString());
                     } else {
                         log.error("Successfull POST to FINT, but no location header in response");
                     }
@@ -146,7 +142,10 @@ public class ClaimRestService {
             return Mono.empty();
         }
 
-        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+        String filterUrl = invoiceEndpoint.replaceFirst("/fakturagrunnlag/?$", "/faktura")
+                + "?$filter=fakturanummer eq '%s'".formatted(claim.getOrderNumber());
+
+        return restUtil.get(FakturagrunnlagResource.class, filterUrl)
                 .flatMap(this::updateClaimStatusAndDates)
                 .onErrorResume(WebClientResponseException.class, e -> {
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);

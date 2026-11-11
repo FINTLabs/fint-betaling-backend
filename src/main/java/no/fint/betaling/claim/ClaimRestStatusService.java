@@ -54,7 +54,7 @@ public class ClaimRestStatusService {
                 .flatMap(response -> {
                     String location = getLocation(response);
                     if (!StringUtils.hasText(location)) {
-                        return Mono.<String>error(new IllegalStateException("Successful return but Location is empty"));
+                        return Mono.error(new IllegalStateException("Successful return but Location is empty"));
                     }
                     String followUpUrl = URI.create(url).resolve(location).toString();
                     return getResponse(followUpUrl, false)
