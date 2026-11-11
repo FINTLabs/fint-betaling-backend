@@ -40,8 +40,11 @@ class ClaimRestServiceSpec extends Specification {
     def "Given valid claims, send invoices and update claims"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
-        def header = new HttpHeaders();
-        header.setLocation(new URI('link.to.Location'))
+        def header = new HttpHeaders()
+
+        header.setLocation(URI.create(
+                'https://beta.felleskomponent.no/okonomi/faktura/fakturagrunnlag/status/12345'
+        ))
 
         claimDatabaseService.getUnsentClaims() >> [claim]
         restUtil.post(*_) >> Mono.just(header)
@@ -52,10 +55,10 @@ class ClaimRestServiceSpec extends Specification {
         then:
         StepVerifier
                 .create(claims)
-                .assertNext({ c ->
+                .assertNext { c ->
                     assert c.claimStatus == ClaimStatus.SENT
-                    assert c.invoiceUri == 'link.to.Location'
-                })
+                    assert c.invoiceUri == "https://beta.felleskomponent.no/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
+                }
                 .expectComplete()
                 .verify()
     }
@@ -65,7 +68,7 @@ class ClaimRestServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.STORED)
         def invoice = betalingObjectFactory.newFakturagrunnlag()
         def headers = new HttpHeaders()
-        headers.setLocation(new URI('link.to.Location'))
+        headers.setLocation(URI.create('https://link.to.Location'))
 
         when:
         def response = claimRestService.sendClaim(claim).block()
@@ -73,21 +76,22 @@ class ClaimRestServiceSpec extends Specification {
         then:
         1 * invoiceFactory.createInvoice(claim) >> invoice
         1 * restUtil.post(*_) >> Mono.just(headers)
+
         response.claimStatus == ClaimStatus.SENT
-        claim.invoiceUri == 'link.to.Location'
+        claim.invoiceUri == "https://link.to.Location/faktura?\$filter=fakturanummer eq '12345'"
     }
 
     def "Update claims fetches invoices and updates claims"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
-        claim.setInvoiceUri('link.to.Location')
+        claim.setInvoiceUri("https://link.to.Location/faktura?\$filter=fakturanummer eq '12345'")
         def invoice = betalingObjectFactory.newFakturagrunnlag()
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
 
         then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, 'link.to.Location') >> Mono.just(invoice)
+        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, "https://link.to.Location/faktura?\$filter=fakturanummer eq '12345'") >> Mono.just(invoice)
         1 * claimRepository.get(_) >> claim
         1 * fintClient.getSelfLink(invoice) >> Optional.empty()
         1 * fintClient.getFaktura(_) >> Mono.just([])

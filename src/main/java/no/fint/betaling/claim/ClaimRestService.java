@@ -67,7 +67,7 @@ public class ClaimRestService {
                         String baseUrl = httpHeaders.getLocation().toString().split("/fakturagrunnlag/")[0];
                         claim.setInvoiceUri(
                                 baseUrl + "/faktura?$filter=fakturanummer eq '%s'"
-                                        .formatted(invoice.getOrdrenummer())
+                                        .formatted(claim.getOrderNumber())
                         );
                     } else {
                         log.error("Successfull POST to FINT, but no location header in response");
