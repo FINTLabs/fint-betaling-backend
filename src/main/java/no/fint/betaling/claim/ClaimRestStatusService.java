@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
@@ -42,24 +43,49 @@ public class ClaimRestStatusService {
     public void processRequest(Claim claim) {
 
         String url = claim.getInvoiceUri();
-        if (!isValidStatusUri(url)) {
-            log.error("Invalid status uri for claim {} with url {}", claim.getOrderNumber(), url);
+        if (!StringUtils.hasText(url)) {
+            log.error("Missing invoice URI for claim {}", claim.getOrderNumber());
             return;
         }
 
         wait(INITAL_DELAY);
 
-        restClient.bodyless(url)
-                .flatMap(response -> evaluateResponse(response, claim))
+        getResponse(url, true)
+                .flatMap(response -> {
+                    String location = getLocation(response);
+                    if (!StringUtils.hasText(location)) {
+                        return Mono.<String>error(new IllegalStateException("Successful return but Location is empty"));
+                    }
+                    String followUpUrl = URI.create(url).resolve(location).toString();
+                    return getResponse(followUpUrl, false)
+                            .map(followUpResponse -> {
+                                String finalLocation = getLocation(followUpResponse);
+                                return StringUtils.hasText(finalLocation)
+                                        ? URI.create(followUpUrl).resolve(finalLocation).toString()
+                                        : followUpUrl;
+                            });
+                })
+                .subscribe(
+                        location -> updateClaimOnSuccess(claim, location),
+                        error -> updateClaimOnFailure(claim, error)
+                );
+    }
+
+    private Mono<ResponseEntity<Void>> getResponse(String url, boolean lookup) {
+        return Mono.defer(() -> restClient.bodyless(url))
+                .flatMap(response -> {
+                    HttpStatusCode status = response.getStatusCode();
+                    if (lookup && StringUtils.hasText(getLocation(response))
+                            && (status.is2xxSuccessful() || status.is3xxRedirection())) {
+                        return Mono.just(response);
+                    }
+                    return evaluateResponse(response);
+                })
                 .repeatWhenEmpty(repeat -> repeat.delayElements(DELAY).take(MAX_ATTEMPTS))
                 .retryWhen(Retry
                         .backoff(MAX_ATTEMPTS, DELAY)
                         .maxBackoff(MAX_TOTAL_DURATION)
-                        .filter(this::isRetryableException))
-                .subscribe(
-                        response -> updateClaimOnSuccess(claim, response),
-                        error -> updateClaimOnFailure(claim, error)
-                );
+                        .filter(this::isRetryableException));
     }
 
     public void setStatusMessages(List<ClaimDto> claims) {
@@ -85,19 +111,8 @@ public class ClaimRestStatusService {
         };
     }
 
-    private void updateClaimOnSuccess(Claim claim, ResponseEntity<Void> response) {
-
-        String location = getLocation(response);
-
-        if (!StringUtils.hasText(location)) {
-            log.error("Unexpected result: Success on getting status, but Location is empty for claim {} with url {} gave response {}", claim.getOrderNumber(), claim.getInvoiceUri(), response.getStatusCode());
-            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-            claim.setStatusMessage("Successfull return but location is empty");
-            claimRepository.save(claim);
-            return;
-        }
-
-        log.info("Claim {} created ({}), location: {}", claim.getOrderNumber(), response.getStatusCode(), location);
+    private void updateClaimOnSuccess(Claim claim, String location) {
+        log.info("Claim {} created, location: {}", claim.getOrderNumber(), location);
         claim.setInvoiceUri(location);
         claim.setClaimStatus(ClaimStatus.ACCEPTED);
         claim.setStatusMessage(null);
@@ -129,7 +144,7 @@ public class ClaimRestStatusService {
         }
     }
 
-    private Mono<ResponseEntity<Void>> evaluateResponse(ResponseEntity<Void> response, Claim claim) {
+    private Mono<ResponseEntity<Void>> evaluateResponse(ResponseEntity<Void> response) {
         HttpStatusCode statusCode = response.getStatusCode();
 
         if (statusCode.equals(HttpStatus.ACCEPTED)) {
@@ -152,11 +167,6 @@ public class ClaimRestStatusService {
 
     private boolean isRetryableException(Throwable ex) {
         return ex instanceof ServerErrorException;
-    }
-
-    private boolean isValidStatusUri(String url) {
-        if (!StringUtils.hasText(url)) return false;
-        return url.contains("status");
     }
 
     private void wait(Duration duration) {

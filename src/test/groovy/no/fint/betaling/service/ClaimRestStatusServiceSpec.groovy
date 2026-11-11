@@ -12,7 +12,10 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import reactor.core.publisher.Mono
+import reactor.test.scheduler.VirtualTimeScheduler
 import spock.lang.Specification
+
+import java.time.Duration
 
 class ClaimRestStatusServiceSpec extends Specification {
     RestUtil restUtil = Mock()
@@ -23,22 +26,102 @@ class ClaimRestStatusServiceSpec extends Specification {
         claimRestStatusService = new ClaimRestStatusService(restUtil, claimRepository)
     }
 
-    def "processRequest should update claim on success"() {
+    def "processRequest should follow Location from lookup response #lookupStatus"() {
         given:
-        def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/status/123")
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/invoices?filter=12345")
         def headers = new HttpHeaders()
-        headers.setLocation(URI.create("http://test.com/newLocation"))
-        def response = new ResponseEntity<Void>(headers, HttpStatus.CREATED)
-
+        headers.setLocation(URI.create("/status/123"))
+        def response = new ResponseEntity<Void>(headers, lookupStatus)
+        def finalHeaders = new HttpHeaders()
+        if (finalLocation) {
+            finalHeaders.setLocation(URI.create(finalLocation))
+        }
 
         when:
         claimRestStatusService.processRequest(claim)
 
         then:
-        1 * restUtil.bodyless("http://test.com/status/123") >> Mono.just(response)
+        1 * restUtil.bodyless("http://test.com/invoices?filter=12345") >> Mono.just(response)
+        1 * restUtil.bodyless("http://test.com/status/123") >> Mono.just(new ResponseEntity<Void>(finalHeaders, HttpStatus.OK))
         1 * claimRepository.save(_ as Claim) >> { Claim savedClaim ->
             assert savedClaim.claimStatus == ClaimStatus.ACCEPTED
-            assert savedClaim.invoiceUri == "http://test.com/newLocation"
+            assert savedClaim.invoiceUri == expectedLocation
+        }
+
+        where:
+        lookupStatus        | finalLocation                 | expectedLocation
+        HttpStatus.ACCEPTED  | "http://test.com/newLocation" | "http://test.com/newLocation"
+        HttpStatus.CREATED   | "/newLocation"                | "http://test.com/newLocation"
+        HttpStatus.FOUND     | null                          | "http://test.com/status/123"
+        HttpStatus.OK        | null                          | "http://test.com/status/123"
+    }
+
+    def "processRequest should poll the followed URL while it returns accepted"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/invoices", claimStatus: ClaimStatus.SENT)
+        def headers = new HttpHeaders()
+        headers.setLocation(URI.create("http://test.com/status/123"))
+        def scheduler = VirtualTimeScheduler.getOrSet()
+        int attempts = 0
+        restUtil.bodyless(claim.invoiceUri) >> Mono.just(new ResponseEntity<Void>(headers, HttpStatus.ACCEPTED))
+        restUtil.bodyless("http://test.com/status/123") >> Mono.defer {
+            attempts++
+            Mono.just(new ResponseEntity<Void>(new HttpHeaders(), attempts == 1 ? HttpStatus.ACCEPTED : HttpStatus.OK))
+        }
+
+        when:
+        claimRestStatusService.processRequest(claim)
+
+        then:
+        attempts == 1
+        claim.claimStatus == ClaimStatus.SENT
+        0 * claimRepository.save(_)
+
+        when:
+        scheduler.advanceTimeBy(Duration.ofSeconds(10))
+
+        then:
+        attempts == 2
+        1 * claimRepository.save(_ as Claim) >> { Claim savedClaim ->
+            assert savedClaim.claimStatus == ClaimStatus.ACCEPTED
+            assert savedClaim.invoiceUri == "http://test.com/status/123"
+        }
+
+        cleanup:
+        VirtualTimeScheduler.reset()
+    }
+
+    def "processRequest should handle missing Location"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/invoices")
+
+        when:
+        claimRestStatusService.processRequest(claim)
+
+        then:
+        1 * restUtil.bodyless(claim.invoiceUri) >> Mono.just(new ResponseEntity<Void>(new HttpHeaders(), HttpStatus.OK))
+        1 * claimRepository.save(_ as Claim) >> { Claim savedClaim ->
+            assert savedClaim.claimStatus == ClaimStatus.SEND_ERROR
+            assert savedClaim.statusMessage.contains("Location is empty")
+        }
+        0 * restUtil.bodyless(_)
+    }
+
+    def "processRequest should handle errors from the followed URL"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/invoices")
+        def headers = new HttpHeaders()
+        headers.setLocation(URI.create("http://test.com/status/123"))
+
+        when:
+        claimRestStatusService.processRequest(claim)
+
+        then:
+        1 * restUtil.bodyless("http://test.com/invoices") >> Mono.just(new ResponseEntity<Void>(headers, HttpStatus.ACCEPTED))
+        1 * restUtil.bodyless("http://test.com/status/123") >> Mono.error(new ClientErrorException(HttpStatus.BAD_REQUEST))
+        1 * claimRepository.save(_ as Claim) >> { Claim savedClaim ->
+            assert savedClaim.claimStatus == ClaimStatus.SEND_ERROR
+            assert savedClaim.statusMessage.contains("400 BAD_REQUEST")
         }
     }
 
