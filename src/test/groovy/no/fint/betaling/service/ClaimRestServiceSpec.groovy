@@ -100,7 +100,13 @@ class ClaimRestServiceSpec extends Specification {
         1 * claimRepository.get(_) >> claim
         1 * fintClient.getSelfLink(invoice) >> Optional.empty()
         1 * fintClient.getFaktura(_) >> Mono.just([])
-        result == null
+        1 * fintClient.getFakturanummere([]) >> ([] as Set)
+        1 * fintClient.getInvoiceDate([]) >> Optional.empty()
+        1 * fintClient.getPaymentDueDate([]) >> Optional.empty()
+        1 * fintClient.getAmountDue([]) >> Optional.empty()
+        1 * claimRepository.save(claim)
+        result.is(claim)
+        claim.claimStatus == ClaimStatus.ACCEPTED
         claim.invoiceUri == storedLocation
 
         where:
@@ -109,6 +115,46 @@ class ClaimRestServiceSpec extends Specification {
         'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'              | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
         "https://api.example.com/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"  | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
         'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'              | 'https://api.example.com/okonomi/faktura/fakturagrunnlag/'            | "https://api.example.com/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
+    }
+
+    def "Update failure persists UPDATE_ERROR for #failure"() {
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
+        claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
+        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
+        restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> Mono.error(failure)
+
+        when:
+        def result = claimRestService.updateClaimStatus(claim).block()
+
+        then:
+        result == null
+        1 * claimRepository.save({
+            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage == expectedMessage
+        })
+
+        where:
+        failure                                                                               | expectedMessage
+        new NullPointerException()                                                            | 'NullPointerException'
+        new IllegalStateException('Invalid invoice response')                                  | 'Invalid invoice response'
+        WebClientResponseException.create(500, 'Server Error', HttpHeaders.EMPTY, new byte[0], null) | '500 Server Error'
+    }
+
+    def "Invalid invoice response persists UPDATE_ERROR"() {
+        given:
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
+        claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
+        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
+        restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> Mono.just(new FakturagrunnlagResource())
+
+        when:
+        def result = claimRestService.updateClaimStatus(claim).block()
+
+        then:
+        result == null
+        1 * claimRepository.save({
+            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage
+        })
     }
 
     def "Update claims should return Mono.empty() when invoiceUri is empty"() {

@@ -147,34 +147,12 @@ public class ClaimRestService {
 
         return restUtil.get(FakturagrunnlagResource.class, filterUrl)
                 .flatMap(this::updateClaimStatusAndDates)
-                .onErrorResume(WebClientResponseException.class, e -> {
-                    claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
-                    claim.setStatusMessage(e.getMessage());
-                    log.error(
-                            "Error updating claim {}: [{}] {}",
-                            claim.getOrderNumber(),
-                            e.getStatusCode(),
-                            e.getMessage()
-                    );
-                    return Mono.empty();
-                })
                 .onErrorResume(e -> {
-                    if (e instanceof NullPointerException) {
-                        log.warn(
-                                "Error updating claim {} [{}]: {}",
-                                claim.getOrderNumber(),
-                                claim.getClaimStatus(),
-                                e.getClass().getSimpleName()
-                        );
-                    } else {
-                        log.error(
-                                "Error updating claim {} [{}]",
-                                claim.getOrderNumber(),
-                                claim.getClaimStatus(),
-                                e
-                        );
-                    }
-
+                    log.error("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus(), e);
+                    claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
+                    claim.setStatusMessage(StringUtils.hasText(e.getMessage())
+                            ? e.getMessage() : e.getClass().getSimpleName());
+                    claimRepository.save(claim);
                     return Mono.empty();
                 });
     }
