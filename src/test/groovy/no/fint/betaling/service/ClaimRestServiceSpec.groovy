@@ -7,9 +7,14 @@ import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.util.BetalingObjectFactory
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
+import no.novari.fint.model.resource.okonomi.faktura.FakturaResource
+import no.novari.fint.model.resource.okonomi.faktura.FakturaResources
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.springframework.http.HttpHeaders
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import spock.lang.Specification
@@ -90,16 +95,14 @@ class ClaimRestServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
         claim.setInvoiceUri(storedLocation)
         ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', invoiceEndpoint)
-        def invoice = betalingObjectFactory.newFakturagrunnlag()
+        def invoices = new FakturaResources()
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
 
         then:
-        1 * restUtil.get(_ as Class<FakturagrunnlagResource>, expectedFilterUrl) >> Mono.just(invoice)
-        1 * claimRepository.get(_) >> claim
-        1 * fintClient.getSelfLink(invoice) >> Optional.empty()
-        1 * fintClient.getFaktura(_) >> Mono.just([])
+        1 * restUtil.get(_ as Class<FakturaResources>, expectedFilterUrl) >> Mono.just(invoices)
+        0 * claimRepository.get(_)
         1 * fintClient.getFakturanummere([]) >> ([] as Set)
         1 * fintClient.getInvoiceDate([]) >> Optional.empty()
         1 * fintClient.getPaymentDueDate([]) >> Optional.empty()
@@ -122,7 +125,7 @@ class ClaimRestServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
         claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
         ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
-        restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> Mono.error(failure)
+        restUtil.get(_ as Class<FakturaResources>, _) >> Mono.error(failure)
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
@@ -145,7 +148,8 @@ class ClaimRestServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
         claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
         ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
-        restUtil.get(_ as Class<FakturagrunnlagResource>, _) >> Mono.just(new FakturagrunnlagResource())
+        restUtil.get(_ as Class<FakturaResources>, _) >> Mono.just(new FakturaResources([new FakturaResource()]))
+        fintClient.getFakturanummere(_) >> { throw new IllegalArgumentException('Missing invoice number') }
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
@@ -157,6 +161,55 @@ class ClaimRestServiceSpec extends Specification {
         })
     }
 
+    def "Filtered invoice collection updates the existing claim to #expectedStatus without ordrenummer"() {
+        given:
+        def server = new MockWebServer()
+        server.start()
+        def baseUrl = server.url('/').toString()
+        def realRestUtil = new RestUtil(WebClient.builder().baseUrl(baseUrl).build())
+        realRestUtil.baseUrl = baseUrl
+        def realFintClient = new FintClient(realRestUtil, null, null, null)
+        def service = new ClaimRestService(realRestUtil, realFintClient, invoiceFactory,
+                claimRepository, claimDatabaseService, claimRestStatusService)
+        ReflectionTestUtils.setField(service, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
+        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
+        claim.invoiceUri = baseUrl + 'okonomi/faktura/fakturagrunnlag/systemid/abc'
+        def location = claim.invoiceUri
+        server.enqueue(new MockResponse().setHeader('Content-Type', 'application/json').setBody("""
+            {"_embedded":{"_entries":[{
+                "fakturanummer":{"identifikatorverdi":"12345"},
+                "betalt":${paid},"kreditert":${credited},"restbelop":250,
+                "dato":"2026-11-01T00:00:00Z","forfallsdato":"2026-12-01T00:00:00Z"
+            }]}}
+        """))
+
+        when:
+        def result = service.updateClaimStatus(claim).block()
+
+        then:
+        result.is(claim)
+        claim.claimStatus == expectedStatus
+        claim.invoiceNumbers == ['12345'] as Set
+        claim.amountDue == 250L
+        claim.invoiceDate != null
+        claim.paymentDueDate != null
+        claim.invoiceUri == location
+        1 * claimRepository.save(claim)
+        0 * claimRepository.get(_)
+        def request = server.takeRequest()
+        request.requestUrl.encodedPath() == '/okonomi/faktura/faktura'
+        request.requestUrl.queryParameter('$filter') == "fakturanummer eq '12345'"
+
+        cleanup:
+        server.shutdown()
+
+        where:
+        paid  | credited | expectedStatus
+        false | false    | ClaimStatus.ISSUED
+        true  | false    | ClaimStatus.PAID
+        false | true     | ClaimStatus.CREDITED
+    }
+
     def "Update claims should return Mono.empty() when invoiceUri is empty"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
@@ -166,7 +219,7 @@ class ClaimRestServiceSpec extends Specification {
         def result = claimRestService.updateClaimStatus(claim)
 
         then:
-        0 * restUtil.get(_ as Class<FakturagrunnlagResource>, _) // Ensure restUtil.get is never called
+        0 * restUtil.get(_, _) // Ensure restUtil.get is never called
         result.blockOptional().isEmpty() // Check that the result is Mono.empty()
     }
 }

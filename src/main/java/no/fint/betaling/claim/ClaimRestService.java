@@ -7,6 +7,7 @@ import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
 import no.novari.fint.model.resource.okonomi.faktura.FakturaResource;
+import no.novari.fint.model.resource.okonomi.faktura.FakturaResources;
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -145,8 +146,8 @@ public class ClaimRestService {
         String filterUrl = invoiceEndpoint.replaceFirst("/fakturagrunnlag/?$", "/faktura")
                 + "?$filter=fakturanummer eq '%s'".formatted(claim.getOrderNumber());
 
-        return restUtil.get(FakturagrunnlagResource.class, filterUrl)
-                .flatMap(this::updateClaimStatusAndDates)
+        return restUtil.get(FakturaResources.class, filterUrl)
+                .map(invoices -> updateClaimStatusAndDates(claim, invoices.getContent()))
                 .onErrorResume(e -> {
                     log.error("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus(), e);
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
@@ -157,26 +158,20 @@ public class ClaimRestService {
                 });
     }
 
-    private Mono<Claim> updateClaimStatusAndDates(FakturagrunnlagResource invoice) {
-        Claim claim = claimRepository.get(Long.parseLong(invoice.getOrdrenummer().getIdentifikatorverdi()));
-        fintClient.getSelfLink(invoice).ifPresent(claim::setInvoiceUri);
+    private Claim updateClaimStatusAndDates(Claim claim, List<FakturaResource> fakturaList) {
+        log.debug("Claim {} has {} invoices", claim.getOrderNumber(), fakturaList.size());
 
-        return fintClient.getFaktura(invoice)
-                .flatMap(fakturaList -> {
-                    log.debug("Claim {} has {} invoices", claim.getOrderNumber(), fakturaList.size());
+        boolean hasStatusChanged = updateClaimStatus(fakturaList, claim);
+        boolean hasDateChanged = updateClaimDate(claim, fakturaList);
 
-                    boolean hasStatusChanged = updateClaimStatus(fakturaList, claim);
-                    boolean hasDateChanged = updateClaimDate(claim, fakturaList);
+        if (hasStatusChanged || hasDateChanged) {
+            claimRepository.save(claim);
+            log.info("Claim {} updated", claim.getOrderNumber());
+        } else {
+            log.debug("Claim {} has no update", claim.getOrderNumber());
+        }
 
-                    if (hasStatusChanged || hasDateChanged) {
-                        claimRepository.save(claim);
-                        log.info("Claim {} updated", claim.getOrderNumber());
-                    } else {
-                        log.debug("Claim {} has no update", claim.getOrderNumber());
-                    }
-
-                    return Mono.just(claim);
-                });
+        return claim;
     }
 
     private boolean updateClaimDate(Claim claim, List<FakturaResource> fakturaList) {
