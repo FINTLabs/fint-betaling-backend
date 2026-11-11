@@ -91,12 +91,17 @@ public class RestUtil {
     }
 
     public Mono<ResponseEntity<Void>> bodyless(String uri) {
+        return bodyless(uri, HttpHeaders.EMPTY);
+    }
+
+    public Mono<ResponseEntity<Void>> bodyless(String uri, HttpHeaders headers) {
         uri = checkUrl(uri);
         log.info("GET {}", uri);
 
         return webClient
                 .get()
                 .uri(uri)
+                .headers(requestHeaders -> requestHeaders.addAll(headers))
                 .header("x-org-id", orgId)
                 .header("x-client", "betaling")
                 .retrieve()
