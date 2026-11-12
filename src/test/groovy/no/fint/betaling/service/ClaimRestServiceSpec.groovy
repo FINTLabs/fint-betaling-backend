@@ -4,17 +4,11 @@ import no.fint.betaling.claim.*
 import no.fint.betaling.common.util.FintClient
 import no.fint.betaling.common.util.RestUtil
 import no.fint.betaling.model.ClaimStatus
-import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.util.BetalingObjectFactory
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
-import no.novari.fint.model.resource.okonomi.faktura.FakturaResource
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.test.util.ReflectionTestUtils
-import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -91,84 +85,7 @@ class ClaimRestServiceSpec extends Specification {
         claim.invoiceUri == 'https://link.to.Location'
     }
 
-    def "Update claims uses filter URL while preserving stored location #storedLocation"() {
-        given:
-        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.SENT)
-        claim.setInvoiceUri(storedLocation)
-        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', invoiceEndpoint)
-        def invoice = new FakturaResource(betalt: false, kreditert: false)
-        def headers = new HttpHeaders()
-        headers.location = URI.create('https://api.example.com/okonomi/faktura/faktura/systemid/12345')
-
-        when:
-        def result = claimRestService.updateClaimStatus(claim).block()
-
-        then:
-        1 * restUtil.bodyless(expectedFilterUrl, { it.getFirst('Prefer') == 'respond-async' }) >> Mono.just(new ResponseEntity<Void>(headers, HttpStatus.FOUND))
-        1 * restUtil.get(FakturaResource, headers.getLocation().toString()) >> Mono.just(invoice)
-        0 * claimRepository.get(_)
-        1 * fintClient.getFakturanummere([invoice]) >> (['12345'] as Set)
-        1 * fintClient.getInvoiceDate([invoice]) >> Optional.empty()
-        1 * fintClient.getPaymentDueDate([invoice]) >> Optional.empty()
-        1 * fintClient.getAmountDue([invoice]) >> Optional.empty()
-        1 * claimRepository.save(claim)
-        result.is(claim)
-        claim.claimStatus == ClaimStatus.ISSUED
-        claim.invoiceUri == storedLocation
-
-        where:
-        storedLocation                                                                   | invoiceEndpoint                                                   | expectedFilterUrl
-        'https://api.example.com/okonomi/faktura/fakturagrunnlag/status/12345'              | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
-        'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'              | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
-        "https://api.example.com/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"  | '/okonomi/faktura/fakturagrunnlag'                                  | "/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
-        'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'              | 'https://api.example.com/okonomi/faktura/fakturagrunnlag/'            | "https://api.example.com/okonomi/faktura/faktura?\$filter=fakturanummer eq '12345'"
-    }
-
-    def "Update failure persists UPDATE_ERROR for #failure"() {
-        given:
-        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
-        claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
-        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
-        restUtil.bodyless(_, _) >> Mono.error(failure)
-
-        when:
-        def result = claimRestService.updateClaimStatus(claim).block()
-
-        then:
-        result == null
-        1 * claimRepository.save({
-            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage == expectedMessage
-        })
-
-        where:
-        failure                                                                               | expectedMessage
-        new NullPointerException()                                                            | 'NullPointerException'
-        new IllegalStateException('Invalid invoice response')                                  | 'Invalid invoice response'
-        WebClientResponseException.create(500, 'Server Error', HttpHeaders.EMPTY, new byte[0], null) | '500 Server Error'
-    }
-
-    def "Invalid invoice response persists UPDATE_ERROR"() {
-        given:
-        def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
-        claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
-        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
-        def headers = new HttpHeaders()
-        headers.location = URI.create('/invoice/12345')
-        restUtil.bodyless(_, _) >> Mono.just(new ResponseEntity<Void>(headers, HttpStatus.FOUND))
-        restUtil.get(FakturaResource, _) >> Mono.just(new FakturaResource(betalt: false, kreditert: false))
-        fintClient.getFakturanummere(_) >> { throw new IllegalArgumentException('Missing invoice number') }
-
-        when:
-        def result = claimRestService.updateClaimStatus(claim).block()
-
-        then:
-        result == null
-        1 * claimRepository.save({
-            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage
-        })
-    }
-
-    def "Filter Location is followed to update the claim to #expectedStatus without ordrenummer"() {
+    def "Refresh follows all invoice links from the stored fakturagrunnlag and sets #expectedStatus"() {
         given:
         def server = new MockWebServer()
         server.start()
@@ -178,79 +95,72 @@ class ClaimRestServiceSpec extends Specification {
         def realFintClient = new FintClient(realRestUtil, null, null, null)
         def service = new ClaimRestService(realRestUtil, realFintClient, invoiceFactory,
                 claimRepository, claimDatabaseService, claimRestStatusService)
-        ReflectionTestUtils.setField(service, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
-        claim.invoiceUri = baseUrl + 'okonomi/faktura/fakturagrunnlag/systemid/abc'
-        def location = claim.invoiceUri
-        def invoicePath = '/okonomi/faktura/faktura/systemid/12345'
-        server.enqueue(new MockResponse().setResponseCode(lookupStatus)
-                .setHeader('Location', absoluteLocation ? baseUrl + invoicePath.substring(1) : invoicePath))
+        claim.invoiceUri = baseUrl + 'okonomi/faktura/fakturagrunnlag/ordrenummer/12345'
+        def invoicePaths = ['/okonomi/faktura/faktura/fakturanummer/90001',
+                            '/okonomi/faktura/faktura/fakturanummer/90002']
+        def links = invoicePaths.collect { '{"href":"' + baseUrl + it.substring(1) + '"}' }.join(',')
         server.enqueue(new MockResponse().setHeader('Content-Type', 'application/json').setBody("""
-            {
-                "fakturanummer":{"identifikatorverdi":"12345"},
-                "betalt":${paid},"kreditert":${credited},"restbelop":250,
-                "dato":"2026-11-01T00:00:00Z","forfallsdato":"2026-12-01T00:00:00Z"
-            }
+            {"ordrenummer":{"identifikatorverdi":"12345"},
+             "_links":{"self":[{"href":"${claim.invoiceUri}"}],"faktura":[${links}]}}
         """))
+        [firstPaid, secondPaid].eachWithIndex { paid, index ->
+            server.enqueue(new MockResponse().setHeader('Content-Type', 'application/json').setBody("""
+                {"fakturanummer":{"identifikatorverdi":"${90001 + index}"},
+                 "betalt":${paid},"kreditert":${credited},"restbelop":250,
+                 "dato":"2026-11-01T00:00:00Z","forfallsdato":"2026-12-01T00:00:00Z"}
+            """))
+        }
 
         when:
-        def result = service.updateClaimStatus(claim).block()
+        def result = service.updateClaimStatus(claim).block(java.time.Duration.ofSeconds(5))
 
         then:
         result.is(claim)
         claim.claimStatus == expectedStatus
-        claim.invoiceNumbers == ['12345'] as Set
-        claim.amountDue == 250L
+        claim.invoiceNumbers == ['90001', '90002'] as Set
+        claim.amountDue == 500L
         claim.invoiceDate != null
         claim.paymentDueDate != null
-        claim.invoiceUri == location
         1 * claimRepository.save(claim)
-        0 * claimRepository.get(_)
         def request = server.takeRequest()
-        request.requestUrl.encodedPath() == '/okonomi/faktura/faktura'
-        request.requestUrl.queryParameter('$filter') == "fakturanummer eq '12345'"
-        request.getHeader('Prefer') == 'respond-async'
-        server.takeRequest().path == invoicePath
-        server.requestCount == 2
+        request.path == '/okonomi/faktura/fakturagrunnlag/ordrenummer/12345'
+        request.getHeader('Prefer') == null
+        [server.takeRequest().path, server.takeRequest().path] as Set == invoicePaths as Set
+        server.requestCount == 3
 
         cleanup:
         server.shutdown()
 
         where:
-        paid  | credited | expectedStatus       | lookupStatus | absoluteLocation
-        false | false    | ClaimStatus.ISSUED   | 302          | false
-        true  | false    | ClaimStatus.PAID     | 202          | true
-        false | true     | ClaimStatus.CREDITED | 200          | false
+        firstPaid | secondPaid | credited | expectedStatus
+        true      | true       | false    | ClaimStatus.PAID
+        true      | false      | false    | ClaimStatus.ISSUED
+        false     | false      | true     | ClaimStatus.CREDITED
     }
 
-    def "Missing lookup Location persists UPDATE_ERROR without fetching an invoice"() {
+    def "Order without invoices remains accepted"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
-        claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
-        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
-        restUtil.bodyless(_, _) >> Mono.just(new ResponseEntity<Void>(HttpStatus.OK))
+        claim.invoiceUri = 'https://api.example.com/fakturagrunnlag/ordrenummer/12345'
+        def invoice = new FakturagrunnlagResource()
+        restUtil.get(FakturagrunnlagResource, claim.invoiceUri) >> Mono.just(invoice)
+        fintClient.getSelfLink(invoice) >> Optional.empty()
+        fintClient.getFaktura(invoice) >> Mono.just([])
+        fintClient.getFakturanummere([]) >> ([] as Set)
+        fintClient.getInvoiceDate([]) >> Optional.empty()
+        fintClient.getPaymentDueDate([]) >> Optional.empty()
+        fintClient.getAmountDue([]) >> Optional.empty()
 
-        when:
-        def result = claimRestService.updateClaimStatus(claim).block()
-
-        then:
-        result == null
-        0 * restUtil.get(_, _)
-        1 * claimRepository.save({
-            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage.contains('Location')
-        })
+        expect:
+        claimRestService.updateClaimStatus(claim).block().claimStatus == ClaimStatus.ACCEPTED
     }
 
-    def "Error fetching invoice from lookup Location persists UPDATE_ERROR"() {
+    def "Refresh failure persists UPDATE_ERROR"() {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
-        claim.invoiceUri = 'https://api.example.com/okonomi/faktura/fakturagrunnlag/systemid/abc'
-        ReflectionTestUtils.setField(claimRestService, 'invoiceEndpoint', '/okonomi/faktura/fakturagrunnlag')
-        def headers = new HttpHeaders()
-        headers.location = URI.create('/invoice/12345')
-        restUtil.bodyless(_, _) >> Mono.just(new ResponseEntity<Void>(headers, HttpStatus.FOUND))
-        restUtil.get(FakturaResource, '/invoice/12345') >> Mono.error(
-                WebClientResponseException.create(500, 'Server Error', HttpHeaders.EMPTY, new byte[0], null))
+        claim.invoiceUri = 'https://api.example.com/fakturagrunnlag/ordrenummer/12345'
+        restUtil.get(FakturagrunnlagResource, claim.invoiceUri) >> Mono.error(new IllegalStateException('Lookup failed'))
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
@@ -258,7 +168,7 @@ class ClaimRestServiceSpec extends Specification {
         then:
         result == null
         1 * claimRepository.save({
-            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage == '500 Server Error'
+            it.is(claim) && it.claimStatus == ClaimStatus.UPDATE_ERROR && it.statusMessage == 'Lookup failed'
         })
     }
 

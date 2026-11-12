@@ -90,12 +90,12 @@ public class FintClient {
     }
 
     public List<SkoleResource> getSkoler(SkoleressursResource skoleressurs) {
+        Map<Link, SkoleResource> schools = schoolRepository.getMap();
         return skoleressurs
                 .getSkole()
                 .stream()
-                .map(schoolRepository::getResourceByLink)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(schools::get)
+                .filter(Objects::nonNull)
                 .peek(it -> log.debug("Skole: {}", it))
                 .collect(Collectors.toList());
     }

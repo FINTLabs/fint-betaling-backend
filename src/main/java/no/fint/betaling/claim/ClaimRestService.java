@@ -9,11 +9,9 @@ import no.fint.betaling.model.ClaimsDatePeriod;
 import no.novari.fint.model.resource.okonomi.faktura.FakturaResource;
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -98,27 +96,6 @@ public class ClaimRestService {
                 .doOnComplete(() -> log.info("Completed updating claims - triggered by schedule"))
                 .subscribe();
     }
-
-    public void updateClaimsOlderThanOneHour(ClaimStatus currentStatus) {
-        LocalDateTime threshold = LocalDateTime.now().minusHours(1);
-        List<Claim> claims = claimDatabaseService.getClaimsByStatus(currentStatus)
-                .stream()
-                .filter(c -> c.getCreatedDate() != null && c.getCreatedDate().isBefore(threshold))
-                .toList();
-
-        log.info("Updating status for {} claims created before {} (older than 1h), from {} to {}",
-                claims.size(), threshold, currentStatus, ClaimStatus.SEND_ERROR);
-
-        Flux.fromIterable(claims)
-                .flatMap(claim -> {
-                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                    return updateClaimStatus(claim);
-                })
-                .doOnError(error -> log.error("Failed to update claim status", error))
-                .doOnComplete(() -> log.info("Completed updating claims - triggered by schedule"))
-                .subscribe();
-    }
-
     public Flux<Claim> updateClaimsForPeriodAndOrganisation(ClaimsDatePeriod period, String organisationNumber, ClaimStatus[] statuses) {
         List<Claim> claims = claimDatabaseService
                 .getClaimsByPeriodAndOrganisationnumberAndStatus(period, organisationNumber, statuses)
@@ -139,28 +116,18 @@ public class ClaimRestService {
 
     public Mono<Claim> updateClaimStatus(Claim claim) {
 
+        log.info("Start updating status for claim {}", claim.getOrderNumber());
         if (!StringUtils.hasText(claim.getInvoiceUri())) {
             log.warn("Claim {} has no invoice URI", claim.getOrderNumber());
             return Mono.empty();
         }
 
-        String filterUrl = invoiceEndpoint.replaceFirst("/fakturagrunnlag/?$", "/faktura")
-                + "?$filter=fakturanummer eq '%s'".formatted(claim.getOrderNumber());
-
-        HttpHeaders lookupHeaders = new HttpHeaders();
-        lookupHeaders.set("Prefer", "respond-async");
-
-        return restUtil.bodyless(filterUrl, lookupHeaders)
-                .flatMap(response -> {
-                    var location = response.getHeaders().getLocation();
-                    if (location == null || !StringUtils.hasText(location.toString())) {
-                        return Mono.<FakturaResource>error(new IllegalStateException("Invoice lookup returned no Location header"));
-                    }
-                    String invoiceUrl = UriComponentsBuilder.fromUriString(filterUrl)
-                            .build().encode().toUri().resolve(location).toString();
-                    return restUtil.get(FakturaResource.class, invoiceUrl);
+        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+                .flatMap(invoice -> {
+                    fintClient.getSelfLink(invoice).ifPresent(claim::setInvoiceUri);
+                    return fintClient.getFaktura(invoice)
+                            .map(invoices -> updateClaimStatusAndDates(claim, invoices));
                 })
-                .map(invoice -> updateClaimStatusAndDates(claim, List.of(invoice)))
                 .onErrorResume(e -> {
                     log.error("Error updating claim {} [{}]", claim.getOrderNumber(), claim.getClaimStatus(), e);
                     claim.setClaimStatus(ClaimStatus.UPDATE_ERROR);
