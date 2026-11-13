@@ -33,6 +33,54 @@ class RestUtilSpec extends Specification {
         mockWebServer.shutdown()
     }
 
+    def "Live read follows relative Location and keeps polling when subsequent 202 has no Location"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202).setHeader('Location', 'status/read-1'))
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202))
+        mockWebServer.enqueue(new MockResponse().setHeader('Content-Type', 'application/json')
+                .setBody('{"elevnummer":{"identifikatorverdi":"87651234"}}'))
+
+        when:
+        def result = restUtil.getLive(ElevResource, '/elev').block(java.time.Duration.ofSeconds(10))
+
+        then:
+        result.elevnummer.identifikatorverdi == '87651234'
+        mockWebServer.takeRequest().getHeader('Prefer') == 'respond-async'
+        mockWebServer.takeRequest().path == '/status/read-1'
+        mockWebServer.takeRequest().path == '/status/read-1'
+    }
+
+    def "Live read rejects initial 202 without Location"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202))
+
+        expect:
+        StepVerifier.create(restUtil.getLive(ElevResource, '/elev'))
+                .expectErrorMatches { it instanceof IllegalStateException && it.message.contains('Location') }
+                .verify(java.time.Duration.ofSeconds(5))
+    }
+
+    def "Live read preserves HTTP errors from status polling"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202).setHeader('Location', '/status/read-1'))
+        mockWebServer.enqueue(new MockResponse().setResponseCode(500))
+
+        expect:
+        StepVerifier.create(restUtil.getLive(ElevResource, '/elev'))
+                .expectErrorMatches { it instanceof WebClientResponseException && it.statusCode.value() == 500 }
+                .verify(java.time.Duration.ofSeconds(5))
+    }
+
+    def "Live read accepts an immediate response but rejects an empty body"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200))
+
+        expect:
+        StepVerifier.create(restUtil.getLive(ElevResource, '/elev'))
+                .expectErrorMatches { it instanceof IllegalStateException && it.message.contains('empty body') }
+                .verify(java.time.Duration.ofSeconds(5))
+    }
+
     def "Get resource given invalid response throws WebClientResponseException"() {
         given:
         mockWebServer.enqueue(new MockResponse().setResponseCode(400))

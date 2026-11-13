@@ -10,6 +10,7 @@ import no.novari.fint.model.resource.Link;
 import no.novari.fint.model.resource.administrasjon.personal.PersonalressursResource;
 import no.novari.fint.model.resource.felles.PersonResource;
 import no.novari.fint.model.resource.okonomi.faktura.FakturaResource;
+import no.novari.fint.model.resource.okonomi.faktura.FakturaResources;
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import no.novari.fint.model.resource.utdanning.elev.SkoleressursResource;
 import no.novari.fint.model.resource.utdanning.utdanningsprogram.SkoleResource;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -103,8 +105,27 @@ public class FintClient {
     public Mono<List<FakturaResource>> getFaktura(FakturagrunnlagResource invoice) {
         return Flux.fromIterable(invoice.getFaktura())
                 .map(Link::getHref)
-                .flatMap(uri -> restUtil.get(FakturaResource.class, uri))
+                .distinct()
+                .concatMap(uri -> restUtil.getLive(FakturaResources.class, invoiceFilterUrl(uri))
+                        .flatMapMany(resources -> Flux.fromIterable(resources.getContent())))
                 .collectList();
+    }
+
+    private String invoiceFilterUrl(String href) {
+        URI uri = URI.create(href);
+        String path = uri.getPath();
+        String marker = "/fakturanummer/";
+        int index = path.lastIndexOf(marker);
+        if (index < 0) {
+            throw new IllegalArgumentException("Invoice link has no fakturanummer: " + href);
+        }
+        String invoiceNumber = path.substring(index + marker.length());
+        return UriComponentsBuilder.fromUri(uri)
+                .replacePath(path.substring(0, index))
+                .replaceQuery(null)
+                .fragment(null)
+                .queryParam("$filter", "fakturanummer eq '" + invoiceNumber.replace("'", "''") + "'")
+                .build().encode().toUriString();
     }
 
     public Set<String> getFakturanummere(List<FakturaResource> fakturaList) {

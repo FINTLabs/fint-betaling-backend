@@ -85,7 +85,7 @@ class ClaimRestServiceSpec extends Specification {
         claim.invoiceUri == 'https://link.to.Location'
     }
 
-    def "Refresh follows all invoice links from the stored fakturagrunnlag and sets #expectedStatus"() {
+    def "Refresh polls live filtered invoice queries and persists #expectedStatus"() {
         given:
         def server = new MockWebServer()
         server.start()
@@ -97,23 +97,28 @@ class ClaimRestServiceSpec extends Specification {
                 claimRepository, claimDatabaseService, claimRestStatusService)
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
         claim.invoiceUri = baseUrl + 'okonomi/faktura/fakturagrunnlag/ordrenummer/12345'
-        def invoicePaths = ['/okonomi/faktura/faktura/fakturanummer/90001',
-                            '/okonomi/faktura/faktura/fakturanummer/90002']
-        def links = invoicePaths.collect { '{"href":"' + baseUrl + it.substring(1) + '"}' }.join(',')
+        server.enqueue(new MockResponse().setResponseCode(202)
+                .setHeader('Location', '/okonomi/faktura/fakturagrunnlag/status/order-12345'))
         server.enqueue(new MockResponse().setHeader('Content-Type', 'application/json').setBody("""
             {"ordrenummer":{"identifikatorverdi":"12345"},
-             "_links":{"self":[{"href":"${claim.invoiceUri}"}],"faktura":[${links}]}}
+             "_links":{"self":[{"href":"${claim.invoiceUri}"}],"faktura":[
+               {"href":"${baseUrl}okonomi/faktura/faktura/fakturanummer/90001"},
+               {"href":"${baseUrl}okonomi/faktura/faktura/fakturanummer/90002"}]}}
         """))
         [firstPaid, secondPaid].eachWithIndex { paid, index ->
+            def number = 90001 + index
+            server.enqueue(new MockResponse().setResponseCode(202)
+                    .setHeader('Location', "/okonomi/faktura/faktura/status/${number}"))
             server.enqueue(new MockResponse().setHeader('Content-Type', 'application/json').setBody("""
-                {"fakturanummer":{"identifikatorverdi":"${90001 + index}"},
+                {"_embedded":{"_entries":[{
+                 "fakturanummer":{"identifikatorverdi":"${number}"},
                  "betalt":${paid},"kreditert":${credited},"restbelop":250,
-                 "dato":"2026-11-01T00:00:00Z","forfallsdato":"2026-12-01T00:00:00Z"}
+                 "dato":"2026-11-01T00:00:00Z","forfallsdato":"2026-12-01T00:00:00Z"}]}}
             """))
         }
 
         when:
-        def result = service.updateClaimStatus(claim).block(java.time.Duration.ofSeconds(5))
+        def result = service.updateClaimStatus(claim).block(java.time.Duration.ofSeconds(15))
 
         then:
         result.is(claim)
@@ -123,11 +128,16 @@ class ClaimRestServiceSpec extends Specification {
         claim.invoiceDate != null
         claim.paymentDueDate != null
         1 * claimRepository.save(claim)
-        def request = server.takeRequest()
-        request.path == '/okonomi/faktura/fakturagrunnlag/ordrenummer/12345'
-        request.getHeader('Prefer') == null
-        [server.takeRequest().path, server.takeRequest().path] as Set == invoicePaths as Set
-        server.requestCount == 3
+        server.requestCount == 6
+        def requests = (1..6).collect { server.takeRequest() }
+        def reads = requests.findAll { !it.getRequestUrl().encodedPath().contains('/status/') }
+        reads.size() == 3
+        reads.every { it.getHeader('Prefer') == 'respond-async' }
+        def queries = reads.findAll { it.getRequestUrl().encodedPath() == '/okonomi/faktura/faktura' }
+        queries.collect { it.getRequestUrl().queryParameter('$filter') } as Set ==
+                ["fakturanummer eq '90001'", "fakturanummer eq '90002'"] as Set
+        requests.findAll { it.getRequestUrl().encodedPath().contains('/status/') }
+                .every { it.getHeader('Prefer') == null }
 
         cleanup:
         server.shutdown()
@@ -144,7 +154,7 @@ class ClaimRestServiceSpec extends Specification {
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
         claim.invoiceUri = 'https://api.example.com/fakturagrunnlag/ordrenummer/12345'
         def invoice = new FakturagrunnlagResource()
-        restUtil.get(FakturagrunnlagResource, claim.invoiceUri) >> Mono.just(invoice)
+        restUtil.getLive(FakturagrunnlagResource, claim.invoiceUri) >> Mono.just(invoice)
         fintClient.getSelfLink(invoice) >> Optional.empty()
         fintClient.getFaktura(invoice) >> Mono.just([])
         fintClient.getFakturanummere([]) >> ([] as Set)
@@ -160,7 +170,7 @@ class ClaimRestServiceSpec extends Specification {
         given:
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
         claim.invoiceUri = 'https://api.example.com/fakturagrunnlag/ordrenummer/12345'
-        restUtil.get(FakturagrunnlagResource, claim.invoiceUri) >> Mono.error(new IllegalStateException('Lookup failed'))
+        restUtil.getLive(FakturagrunnlagResource, claim.invoiceUri) >> Mono.error(new IllegalStateException('Lookup failed'))
 
         when:
         def result = claimRestService.updateClaimStatus(claim).block()
@@ -181,7 +191,7 @@ class ClaimRestServiceSpec extends Specification {
         def result = claimRestService.updateClaimStatus(claim)
 
         then:
-        0 * restUtil.get(_, _) // Ensure restUtil.get is never called
+        0 * restUtil.getLive(_, _) // Ensure restUtil.get is never called
         result.blockOptional().isEmpty() // Check that the result is Mono.empty()
     }
 }

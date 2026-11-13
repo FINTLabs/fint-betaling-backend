@@ -5,12 +5,14 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,6 +75,39 @@ public class RestUtil {
                 .header("x-client", "betaling")
                 .retrieve()
                 .bodyToMono(clazz);
+    }
+
+    public <T> Mono<T> getLive(Class<T> clazz, String uri) {
+        URI url = URI.create(baseUrl).resolve(checkUrl(uri));
+        return getLiveResponse(clazz, url, false).timeout(Duration.ofMinutes(2));
+    }
+
+    private <T> Mono<T> getLiveResponse(Class<T> clazz, URI url, boolean polling) {
+        return webClient.get()
+                .uri(url)
+                .header("x-org-id", orgId)
+                .header("x-client", "betaling")
+                .headers(headers -> {
+                    if (!polling) headers.set("Prefer", "respond-async");
+                })
+                .exchangeToMono(response -> {
+                    if (response.statusCode().equals(HttpStatus.ACCEPTED)) {
+                        URI location = response.headers().asHttpHeaders().getLocation();
+                        if (location == null && !polling) {
+                            return response.releaseBody().then(Mono.error(
+                                    new IllegalStateException("Live read returned 202 without a Location header")));
+                        }
+                        URI statusUrl = location == null ? url : url.resolve(location);
+                        return response.releaseBody()
+                                .then(Mono.delay(Duration.ofSeconds(2)))
+                                .then(Mono.defer(() -> getLiveResponse(clazz, statusUrl, true)));
+                    }
+                    if (!response.statusCode().is2xxSuccessful()) {
+                        return response.createException().flatMap(Mono::error);
+                    }
+                    return response.bodyToMono(clazz)
+                            .switchIfEmpty(Mono.error(new IllegalStateException("Live read returned an empty body")));
+                });
     }
 
     public Mono<HttpHeaders> head(String uri) {

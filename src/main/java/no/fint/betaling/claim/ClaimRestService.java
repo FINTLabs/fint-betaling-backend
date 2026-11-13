@@ -122,7 +122,7 @@ public class ClaimRestService {
             return Mono.empty();
         }
 
-        return restUtil.get(FakturagrunnlagResource.class, claim.getInvoiceUri())
+        return restUtil.getLive(FakturagrunnlagResource.class, claim.getInvoiceUri())
                 .flatMap(invoice -> {
                     fintClient.getSelfLink(invoice).ifPresent(claim::setInvoiceUri);
                     return fintClient.getFaktura(invoice)
