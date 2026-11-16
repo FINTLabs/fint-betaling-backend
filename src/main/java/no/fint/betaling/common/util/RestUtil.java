@@ -131,8 +131,6 @@ public class RestUtil {
 
     public Mono<ResponseEntity<Void>> bodyless(String uri, HttpHeaders headers) {
         uri = checkUrl(uri);
-        log.info("GET {}", uri);
-
         return webClient
                 .get()
                 .uri(uri)

@@ -58,7 +58,7 @@ class ClaimSendIntegrationSpec extends Specification {
             @Override
             MockResponse dispatch(RecordedRequest request) {
                 // Long enough for unconstrained fan-out to saturate the pool, but short enough
-                // for a concurrency limit of 20 to finish within the test client's timeout.
+                // for a concurrency limit of 50 to finish within the test client's timeout.
                 return new MockResponse()
                         .setResponseCode(201)
                         .setHeader("Location", "/invoice/status/created")

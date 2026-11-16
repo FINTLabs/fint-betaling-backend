@@ -98,7 +98,7 @@ class ClaimRestServiceSpec extends Specification {
         claim.invoiceUri == 'https://link.to.Location'
     }
 
-    def "only twenty of two hundred orders are sent until acceptance or failure releases a slot"() {
+    def "only fifty of two hundred orders are sent until acceptance or failure releases a slot"() {
         given:
         def claims = (1L..200L).collect { new Claim(orderNumber: it, claimStatus: ClaimStatus.STORED) }
         def gates = new ConcurrentHashMap<Long, Sinks.One<Claim>>()
@@ -119,17 +119,17 @@ class ClaimRestServiceSpec extends Specification {
         claimRestService.sendClaims(claims*.orderNumber).subscribe(completed::add, failures::add)
 
         then:
-        posted.size() == 20
-        gates.size() == 20
+        posted.size() == 50
+        gates.size() == 50
         completed.empty
 
         when:
         (1L..200L).each { orderNumber ->
-            assert gates.size() <= 20
+            assert gates.size() <= 50
             def claim = claims[(int) orderNumber - 1]
             claim.claimStatus = [ClaimStatus.ACCEPTED, ClaimStatus.SEND_ERROR, ClaimStatus.ACCEPT_ERROR][(int) orderNumber % 3]
             assert gates.remove(orderNumber).tryEmitValue(claim) == Sinks.EmitResult.OK
-            assert posted.size() == Math.min(200, orderNumber + 20)
+            assert posted.size() == Math.min(200, orderNumber + 50)
         }
 
         then:

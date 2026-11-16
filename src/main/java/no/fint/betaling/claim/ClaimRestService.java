@@ -35,8 +35,8 @@ public class ClaimRestService {
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    @Value("${fint.betaling.claim-send-max-concurrency:20}")
-    private int claimSendMaxConcurrency = 20;
+    @Value("${fint.betaling.claim-send-max-concurrency:50}")
+    private int claimSendMaxConcurrency = 50;
 
     @Value("${fint.betaling.claim-update-max-concurrency:20}")
     private int claimUpdateMaxConcurrency = 20;
