@@ -28,8 +28,10 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
     }
 
     public Collection<Principal> getInvoiceIssuers() {
-        if (invoiceIssuers.isEmpty()) {
+        if (resources.isEmpty()) {
             update();
+        } else {
+            onResourcesUpdated();
         }
         return Collections.unmodifiableCollection(invoiceIssuers);
     }
@@ -59,7 +61,14 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
         principal.setLineitems(fakturautsteder.getVare()
                 .stream()
                 .map(Link::getHref)
-                .map(lineitemRepository::getLineItemByUri)
+                .map(href -> {
+                    var item = lineitemRepository.getLineItemByUri(href);
+                    if (item == null) {
+                        log.warn("Cannot resolve vare link {} for fakturautsteder {}", href,
+                                fakturautsteder.getSystemId().getIdentifikatorverdi());
+                    }
+                    return item;
+                })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet()));
         fakturautsteder.getSelfLinks()

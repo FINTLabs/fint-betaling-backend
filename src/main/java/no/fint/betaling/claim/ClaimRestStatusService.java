@@ -12,7 +12,6 @@ import no.fint.betaling.model.dto.ClaimDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -26,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Service
 public class ClaimRestStatusService {
-    private static final Duration INITAL_DELAY = Duration.ofSeconds(3);
+    private static final Duration INITIAL_DELAY = Duration.ofSeconds(3);
     private static final Duration DELAY = Duration.ofSeconds(10);
     private static final int MAX_ATTEMPTS = 120;
     private static final Duration MAX_TOTAL_DURATION = Duration.ofMinutes(20);
@@ -39,36 +38,38 @@ public class ClaimRestStatusService {
         this.claimRepository = claimRepository;
     }
 
-    @Async
-    public void processRequest(Claim claim) {
+    public Mono<Claim> processRequest(Claim claim) {
+        return Mono.defer(() -> {
+            String url = claim.getInvoiceUri();
+            if (!StringUtils.hasText(url)) {
+                return Mono.error(new IllegalStateException("Missing invoice URI for claim " + claim.getOrderNumber()));
+            }
 
-        String url = claim.getInvoiceUri();
-        if (!StringUtils.hasText(url)) {
-            log.error("Missing invoice URI for claim {}", claim.getOrderNumber());
-            return;
-        }
-
-        wait(INITAL_DELAY);
-
-        getResponse(url, true)
-                .flatMap(response -> {
-                    String location = getLocation(response);
-                    if (!StringUtils.hasText(location)) {
-                        return Mono.error(new IllegalStateException("Successful return but Location is empty"));
-                    }
-                    String followUpUrl = URI.create(url).resolve(location).toString();
-                    return getResponse(followUpUrl, false)
-                            .map(followUpResponse -> {
-                                String finalLocation = getLocation(followUpResponse);
-                                return StringUtils.hasText(finalLocation)
-                                        ? URI.create(followUpUrl).resolve(finalLocation).toString()
-                                        : followUpUrl;
-                            });
-                })
-                .subscribe(
-                        location -> updateClaimOnSuccess(claim, location),
-                        error -> updateClaimOnFailure(claim, error)
-                );
+            return Mono.delay(INITIAL_DELAY)
+                    .then(getResponse(url, true))
+                    .flatMap(response -> {
+                        String location = getLocation(response);
+                        if (!StringUtils.hasText(location)) {
+                            return Mono.error(new IllegalStateException("Successful return but Location is empty"));
+                        }
+                        String followUpUrl = URI.create(url).resolve(location).toString();
+                        return getResponse(followUpUrl, false)
+                                .map(followUpResponse -> {
+                                    String finalLocation = getLocation(followUpResponse);
+                                    return StringUtils.hasText(finalLocation)
+                                            ? URI.create(followUpUrl).resolve(finalLocation).toString()
+                                            : followUpUrl;
+                                });
+                    })
+                    .switchIfEmpty(Mono.error(new IllegalStateException("Status polling completed without a result")))
+                    .doOnNext(location -> updateClaimOnSuccess(claim, location))
+                    .thenReturn(claim);
+        })
+                .timeout(MAX_TOTAL_DURATION)
+                .onErrorResume(error -> {
+                    updateClaimOnFailure(claim, error);
+                    return Mono.just(claim);
+                });
     }
 
     private Mono<ResponseEntity<Void>> getResponse(String url, boolean lookup) {
@@ -169,11 +170,4 @@ public class ClaimRestStatusService {
         return ex instanceof ServerErrorException;
     }
 
-    private void wait(Duration duration) {
-        try {
-            Thread.sleep(duration.toMillis());
-        } catch (InterruptedException e) {
-            log.error("Error waiting", e);
-        }
-    }
 }

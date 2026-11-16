@@ -19,6 +19,7 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.netty.http.client.HttpClient
 import reactor.netty.resources.ConnectionProvider
@@ -57,9 +58,10 @@ class ClaimSendIntegrationSpec extends Specification {
             @Override
             MockResponse dispatch(RecordedRequest request) {
                 // Long enough for unconstrained fan-out to saturate the pool, but short enough
-                // for a concurrency limit of 10 to finish within the test client's timeout.
+                // for a concurrency limit of 20 to finish within the test client's timeout.
                 return new MockResponse()
                         .setResponseCode(201)
+                        .setHeader("Location", "/invoice/status/created")
                         .setHeadersDelay(500, TimeUnit.MILLISECONDS)
             }
         }
@@ -196,6 +198,13 @@ class ClaimSendIntegrationSpec extends Specification {
         ClaimRepository claimRepository = Mock()
         ClaimRestStatusService claimRestStatusService = Mock()
         FintClient fintClient = Mock()
+        claimRestStatusService.processRequest(_ as Claim) >> { Claim claim ->
+            Mono.fromCallable {
+                claim.claimStatus = ClaimStatus.ACCEPTED
+                claim
+            }
+        }
+
 
         List<Claim> claims = (1L..(CLAIMS_PER_REQUEST * 2L)).collect { orderNumber ->
             new Claim(orderNumber: orderNumber, claimStatus: ClaimStatus.STORED)

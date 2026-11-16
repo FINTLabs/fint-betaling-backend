@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 import reactor.test.scheduler.VirtualTimeScheduler
 import spock.lang.Specification
 
@@ -38,7 +39,7 @@ class ClaimRestStatusServiceSpec extends Specification {
         }
 
         when:
-        claimRestStatusService.processRequest(claim)
+        claimRestStatusService.processRequest(claim).block(Duration.ofSeconds(5))
 
         then:
         1 * restUtil.bodyless("http://test.com/invoices?filter=12345") >> Mono.just(response)
@@ -70,7 +71,13 @@ class ClaimRestStatusServiceSpec extends Specification {
         }
 
         when:
-        claimRestStatusService.processRequest(claim)
+        claimRestStatusService.processRequest(claim).subscribe()
+
+        then:
+        attempts == 0
+
+        when:
+        scheduler.advanceTimeBy(Duration.ofSeconds(3))
 
         then:
         attempts == 1
@@ -96,7 +103,7 @@ class ClaimRestStatusServiceSpec extends Specification {
         def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/invoices")
 
         when:
-        claimRestStatusService.processRequest(claim)
+        claimRestStatusService.processRequest(claim).block(Duration.ofSeconds(5))
 
         then:
         1 * restUtil.bodyless(claim.invoiceUri) >> Mono.just(new ResponseEntity<Void>(new HttpHeaders(), HttpStatus.OK))
@@ -114,7 +121,7 @@ class ClaimRestStatusServiceSpec extends Specification {
         headers.setLocation(URI.create("http://test.com/status/123"))
 
         when:
-        claimRestStatusService.processRequest(claim)
+        claimRestStatusService.processRequest(claim).block(Duration.ofSeconds(5))
 
         then:
         1 * restUtil.bodyless("http://test.com/invoices") >> Mono.just(new ResponseEntity<Void>(headers, HttpStatus.ACCEPTED))
@@ -131,7 +138,7 @@ class ClaimRestStatusServiceSpec extends Specification {
         def response = new ResponseEntity<Void>(new HttpHeaders(), HttpStatus.BAD_REQUEST)
 
         when:
-        claimRestStatusService.processRequest(claim)
+        claimRestStatusService.processRequest(claim).block(Duration.ofSeconds(5))
 
         then:
         1 * restUtil.bodyless("http://test.com/status/123") >> Mono.error(new ClientErrorException(HttpStatus.BAD_REQUEST))
@@ -139,6 +146,21 @@ class ClaimRestStatusServiceSpec extends Specification {
             assert savedClaim.claimStatus == ClaimStatus.SEND_ERROR
             assert savedClaim.statusMessage.contains("400 BAD_REQUEST")
         }
+    }
+
+    def "polling that never completes saves SEND_ERROR and releases its slot after twenty minutes"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: "http://test.com/status/123", claimStatus: ClaimStatus.SENT)
+        restUtil.bodyless(_) >> Mono.never()
+
+        when:
+        StepVerifier.withVirtualTime { claimRestStatusService.processRequest(claim) }
+                .thenAwait(Duration.ofMinutes(20))
+                .assertNext { assert it.claimStatus == ClaimStatus.SEND_ERROR }
+                .verifyComplete()
+
+        then:
+        1 * claimRepository.save({ it.claimStatus == ClaimStatus.SEND_ERROR && it.statusMessage })
     }
 
     def "setStatusMessages should set correct messages for claims"() {

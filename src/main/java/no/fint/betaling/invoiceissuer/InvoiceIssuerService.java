@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @Service
@@ -32,7 +33,8 @@ public class InvoiceIssuerService {
     public Mono<Principal> getInvoiceIssuer(String organizationNumber) {
         return organisationService.getOrganisationByOrganisationNumber(organizationNumber)
                 .switchIfEmpty(Mono.error(new PrincipalNotFoundException(organizationNumber)))
-                .map(organisation -> getPrincipal(organizationNumber, organisation));
+                .flatMap(organisation -> Mono.fromCallable(() -> getPrincipal(organizationNumber, organisation))
+                        .subscribeOn(Schedulers.boundedElastic()));
     }
 
     private Principal getPrincipal(String organizationNumber, Organisation organisation) {

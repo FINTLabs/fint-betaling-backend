@@ -99,7 +99,8 @@ public class UserRepository {
     private Mono<List<SkoleResource>> getSchoolsBySkoleressurs(PersonalressursResource personalressurs) {
         return fintClient
                 .getSkoleressurs(personalressurs)
-                .map(skoleressurs -> fintClient.getSkoler(skoleressurs));
+                .flatMap(skoleressurs -> Mono.fromCallable(() -> fintClient.getSkoler(skoleressurs))
+                        .subscribeOn(Schedulers.boundedElastic()));
     }
 
     private List<SkoleResource> getAllSchools() {
