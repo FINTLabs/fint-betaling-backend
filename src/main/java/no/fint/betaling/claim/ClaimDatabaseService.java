@@ -1,7 +1,6 @@
 package no.fint.betaling.claim;
 
 import lombok.extern.slf4j.Slf4j;
-import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
@@ -10,7 +9,6 @@ import no.fint.betaling.model.dto.ClaimDto;
 import no.fint.betaling.user.UserRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
