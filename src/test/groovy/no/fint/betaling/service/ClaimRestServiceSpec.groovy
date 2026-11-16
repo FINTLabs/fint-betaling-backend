@@ -10,7 +10,11 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.springframework.http.HttpHeaders
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Sinks
 import reactor.core.publisher.Mono
+import no.fint.betaling.model.Claim
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import reactor.test.StepVerifier
 import spock.lang.Specification
 
@@ -49,6 +53,10 @@ class ClaimRestServiceSpec extends Specification {
 
         claimDatabaseService.getUnsentClaims() >> [claim]
         restUtil.post(*_) >> Mono.just(header)
+        claimRestStatusService.processRequest(claim) >> Mono.fromCallable {
+            claim.claimStatus = ClaimStatus.ACCEPTED
+            claim
+        }
 
         when:
         def claims = claimRestService.sendClaims([12345L])
@@ -57,7 +65,7 @@ class ClaimRestServiceSpec extends Specification {
         StepVerifier
                 .create(claims)
                 .assertNext { c ->
-                    assert c.claimStatus == ClaimStatus.SENT
+                    assert c.claimStatus == ClaimStatus.ACCEPTED
                     assert c.invoiceUri == 'https://beta.felleskomponent.no/okonomi/faktura/fakturagrunnlag/status/12345'
                 }
                 .expectComplete()
@@ -79,10 +87,93 @@ class ClaimRestServiceSpec extends Specification {
         1 * restUtil.post(*_) >> Mono.just(headers)
         1 * claimRestStatusService.processRequest({
             it.is(claim) && it.invoiceUri == 'https://link.to.Location'
-        })
+        }) >> Mono.fromCallable {
+            claim.claimStatus = ClaimStatus.ACCEPTED
+            claim
+        }
 
-        response.claimStatus == ClaimStatus.SENT
+        response.claimStatus == ClaimStatus.ACCEPTED
         claim.invoiceUri == 'https://link.to.Location'
+    }
+
+    def "only twenty of two hundred orders are sent until acceptance or failure releases a slot"() {
+        given:
+        def claims = (1L..200L).collect { new Claim(orderNumber: it, claimStatus: ClaimStatus.STORED) }
+        def gates = new ConcurrentHashMap<Long, Sinks.One<Claim>>()
+        def posted = new CopyOnWriteArrayList<Long>()
+        def completed = new CopyOnWriteArrayList<Claim>()
+        def failures = new CopyOnWriteArrayList<Throwable>()
+        claimDatabaseService.getUnsentClaims() >> claims
+        invoiceFactory.createInvoice(_) >> new FakturagrunnlagResource()
+        restUtil.post(*_) >> Mono.just(new HttpHeaders(location: URI.create('https://example.com/status/pending')))
+        claimRestStatusService.processRequest(_ as Claim) >> { Claim claim ->
+            posted.add(claim.orderNumber)
+            def gate = Sinks.one()
+            gates.put(claim.orderNumber, gate)
+            gate.asMono()
+        }
+
+        when:
+        claimRestService.sendClaims(claims*.orderNumber).subscribe(completed::add, failures::add)
+
+        then:
+        posted.size() == 20
+        gates.size() == 20
+        completed.empty
+
+        when:
+        (1L..200L).each { orderNumber ->
+            assert gates.size() <= 20
+            def claim = claims[(int) orderNumber - 1]
+            claim.claimStatus = [ClaimStatus.ACCEPTED, ClaimStatus.SEND_ERROR, ClaimStatus.ACCEPT_ERROR][(int) orderNumber % 3]
+            assert gates.remove(orderNumber).tryEmitValue(claim) == Sinks.EmitResult.OK
+            assert posted.size() == Math.min(200, orderNumber + 20)
+        }
+
+        then:
+        failures.empty
+        completed.size() == 200
+        gates.isEmpty()
+    }
+
+    def "disconnecting the sender does not cancel pending acceptance or resend completed work"() {
+        given:
+        def claim = new Claim(orderNumber: 1L, claimStatus: ClaimStatus.STORED)
+        def gate = Sinks.one()
+        claimDatabaseService.getUnsentClaims() >> [claim]
+        invoiceFactory.createInvoice(_) >> new FakturagrunnlagResource()
+        claimRestStatusService.processRequest(claim) >> gate.asMono()
+        def batch = claimRestService.sendClaims([1L])
+
+        when:
+        def subscription = batch.subscribe()
+        subscription.dispose()
+        claim.claimStatus = ClaimStatus.ACCEPTED
+        gate.tryEmitValue(claim)
+        def result = batch.collectList().block()
+
+        then:
+        result == [claim]
+        result[0].claimStatus == ClaimStatus.ACCEPTED
+        1 * restUtil.post(*_) >> Mono.just(new HttpHeaders(location: URI.create('https://example.com/status/1')))
+    }
+
+    def "a failed POST does not stop the remaining orders"() {
+        given:
+        def first = new Claim(orderNumber: 1L, claimStatus: ClaimStatus.STORED)
+        def second = new Claim(orderNumber: 2L, claimStatus: ClaimStatus.STORED)
+        claimDatabaseService.getUnsentClaims() >> [first, second]
+        invoiceFactory.createInvoice(_) >> new FakturagrunnlagResource()
+        restUtil.post(*_) >>> [Mono.error(new IllegalStateException('Connection failed')),
+                             Mono.just(new HttpHeaders(location: URI.create('https://example.com/status/2')))]
+        claimRestStatusService.processRequest(second) >> Mono.fromCallable {
+            second.claimStatus = ClaimStatus.ACCEPTED
+            second
+        }
+
+        expect:
+        claimRestService.sendClaims([1L, 2L]).collectList().block()*.claimStatus ==
+                [ClaimStatus.SEND_ERROR, ClaimStatus.ACCEPTED]
     }
 
     def "Refresh polls live filtered invoice queries and persists #expectedStatus"() {

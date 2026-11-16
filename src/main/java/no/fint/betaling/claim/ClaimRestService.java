@@ -11,7 +11,6 @@ import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -36,8 +35,8 @@ public class ClaimRestService {
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    @Value("${fint.betaling.claim-send-max-concurrency:10}")
-    private int claimSendMaxConcurrency = 10;
+    @Value("${fint.betaling.claim-send-max-concurrency:20}")
+    private int claimSendMaxConcurrency = 20;
 
     public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {
         this.restUtil = restUtil;
@@ -51,36 +50,39 @@ public class ClaimRestService {
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
         return Flux.fromIterable(claimDatabaseService.getUnsentClaims())
                 .filter(claim -> orderNumbers.contains(claim.getOrderNumber()))
+                // Keep each slot until status polling has saved acceptance or failure.
                 .flatMap(this::sendClaim, claimSendMaxConcurrency)
                 .onErrorResume(throwable -> {
                     log.error("Error occurred while sending claims", throwable);
                     return Flux.error(throwable);
-                });
+                })
+                // Keep an initiated send running if the HTTP client disconnects while waiting for acceptance.
+                .cache();
     }
 
     public Mono<Claim> sendClaim(Claim claim) {
-        FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
-
-        return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
-                .doOnNext(httpHeaders -> {
-                    if (httpHeaders.getLocation() != null) {
+        return Mono.defer(() -> {
+            FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
+            return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
+                    .switchIfEmpty(Mono.error(new IllegalStateException("POST returned no response headers")))
+                    .flatMap(httpHeaders -> {
+                        if (httpHeaders.getLocation() == null) {
+                            return Mono.error(new IllegalStateException("Successful POST to FINT without a Location header"));
+                        }
                         claim.setInvoiceUri(httpHeaders.getLocation().toString());
-                    } else {
-                        log.error("Successfull POST to FINT, but no location header in response");
-                    }
-
-                    claim.setClaimStatus(ClaimStatus.SENT);
-                    log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
-                    claimRepository.save(claim);
-                })
-                .doOnError(WebClientResponseException.class, ex -> {
-                    claim.setClaimStatus(ClaimStatus.SEND_ERROR);
-                    claim.setStatusMessage(ex.getMessage());
-                    log.error("Error sending claim {}: {}", claim.getOrderNumber(), ex.getStatusCode());
-                    claimRepository.save(claim);
-                })
-                .doOnSuccess(httpHeaders -> claimRestStatusService.processRequest(claim))
-                .thenReturn(claim);
+                        claim.setClaimStatus(ClaimStatus.SENT);
+                        claim.setStatusMessage(null);
+                        log.info("Claim {} sent, location: {}", claim.getOrderNumber(), claim.getInvoiceUri());
+                        claimRepository.save(claim);
+                        return claimRestStatusService.processRequest(claim);
+                    });
+        }).onErrorResume(ex -> {
+            claim.setClaimStatus(ClaimStatus.SEND_ERROR);
+            claim.setStatusMessage(StringUtils.hasText(ex.getMessage()) ? ex.getMessage() : ex.getClass().getSimpleName());
+            log.error("Error sending claim {}", claim.getOrderNumber(), ex);
+            claimRepository.save(claim);
+            return Mono.just(claim);
+        });
     }
 
     public void updateClaimsByStatusAndAge(ClaimStatus status, Duration maxAge) {
