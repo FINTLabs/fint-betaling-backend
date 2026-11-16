@@ -3,7 +3,9 @@ package no.fint.betaling.service
 import no.fint.betaling.claim.*
 import no.fint.betaling.common.util.FintClient
 import no.fint.betaling.common.util.RestUtil
+import no.fint.betaling.model.ClaimsDatePeriod
 import no.fint.betaling.model.ClaimStatus
+import no.novari.fint.model.felles.kompleksedatatyper.Identifikator
 import no.fint.betaling.util.BetalingObjectFactory
 import no.novari.fint.model.resource.okonomi.faktura.FakturagrunnlagResource
 import okhttp3.mockwebserver.MockResponse
@@ -174,6 +176,68 @@ class ClaimRestServiceSpec extends Specification {
         expect:
         claimRestService.sendClaims([1L, 2L]).collectList().block()*.claimStatus ==
                 [ClaimStatus.SEND_ERROR, ClaimStatus.ACCEPTED]
+    }
+
+    def "#trigger refresh holds at most twenty slots until invoice lookup finishes, and continues after a failure"() {
+        given:
+        def claims = (1L..200L).collect {
+            new Claim(orderNumber: it, claimStatus: ClaimStatus.ACCEPTED,
+                    createdDate: java.time.LocalDateTime.now(), invoiceUri: "https://example.com/order/${it}")
+        }
+        def gates = new ConcurrentHashMap<Long, Sinks.One<List>>()
+        def started = new CopyOnWriteArrayList<Long>()
+        claimDatabaseService.getClaimsByStatus(ClaimStatus.ACCEPTED) >> claims
+        claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(*_) >> claims
+        restUtil.getLive(FakturagrunnlagResource, _ as String) >> { clazz, uri ->
+            def number = uri.tokenize('/').last()
+            Mono.just(new FakturagrunnlagResource(ordrenummer: new Identifikator(identifikatorverdi: number)))
+        }
+        fintClient.getSelfLink(_) >> Optional.empty()
+        fintClient.getFaktura(_ as FakturagrunnlagResource) >> { FakturagrunnlagResource basis ->
+            long number = Long.parseLong(basis.ordrenummer.identifikatorverdi)
+            started.add(number)
+            def gate = Sinks.one()
+            gates.put(number, gate)
+            gate.asMono()
+        }
+        fintClient.getFakturanummere([]) >> ([] as Set)
+        fintClient.getInvoiceDate([]) >> Optional.empty()
+        fintClient.getPaymentDueDate([]) >> Optional.empty()
+        fintClient.getAmountDue([]) >> Optional.empty()
+
+        when:
+        if (trigger == 'scheduled') {
+            claimRestService.updateClaimsByStatusAndAge(ClaimStatus.ACCEPTED, java.time.Duration.ofDays(30))
+        } else {
+            claimRestService.updateClaimsForPeriodAndOrganisation(ClaimsDatePeriod.ALL, null, null).subscribe()
+        }
+
+        then:
+        started.size() == 20
+        gates.size() == 20
+
+        when:
+        assert gates.remove(1L).tryEmitError(new IllegalStateException('Invoice lookup failed')) == Sinks.EmitResult.OK
+
+        then:
+        claims[0].claimStatus == ClaimStatus.UPDATE_ERROR
+        started.size() == 21
+        gates.size() == 20
+
+        when:
+        (2L..200L).each { number ->
+            assert gates.size() <= 20
+            assert gates.remove(number).tryEmitValue([]) == Sinks.EmitResult.OK
+            assert started.size() == Math.min(200, number + 20)
+        }
+
+        then:
+        gates.isEmpty()
+        started.size() == 200
+        claims.drop(1).every { it.claimStatus == ClaimStatus.ACCEPTED }
+
+        where:
+        trigger << ['scheduled', 'manual']
     }
 
     def "Refresh polls live filtered invoice queries and persists #expectedStatus"() {

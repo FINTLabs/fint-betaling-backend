@@ -38,6 +38,9 @@ public class ClaimRestService {
     @Value("${fint.betaling.claim-send-max-concurrency:20}")
     private int claimSendMaxConcurrency = 20;
 
+    @Value("${fint.betaling.claim-update-max-concurrency:20}")
+    private int claimUpdateMaxConcurrency = 20;
+
     public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {
         this.restUtil = restUtil;
         this.fintClient = fintClient;
@@ -93,7 +96,7 @@ public class ClaimRestService {
 
         log.info("Updating status for {} claims with status {} and max age {} days", claims.size(), status, maxAge.toDays());
         Flux.fromIterable(claims)
-                .flatMap(this::updateClaimStatus)
+                .flatMap(this::updateClaimStatus, claimUpdateMaxConcurrency)
                 .doOnError(error -> log.error("Failed to update claim status", error))
                 .doOnComplete(() -> log.info("Completed updating claims - triggered by schedule"))
                 .subscribe();
@@ -111,7 +114,7 @@ public class ClaimRestService {
         log.info("Start updating status for {} claims", claims.size());
 
         return Flux.fromIterable(claims)
-                .flatMap(this::updateClaimStatus)
+                .flatMap(this::updateClaimStatus, claimUpdateMaxConcurrency)
                 .doOnError(error -> log.error("Failed to update claim status", error))
                 .doOnComplete(() -> log.info("Completed updating claims - triggered by user"));
     }
