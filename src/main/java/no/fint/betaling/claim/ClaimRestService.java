@@ -3,6 +3,7 @@ package no.fint.betaling.claim;
 import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.common.util.FintClient;
 import no.fint.betaling.common.util.RestUtil;
+import no.fint.betaling.common.util.ReactiveConcurrencyLimiter;
 import no.fint.betaling.model.Claim;
 import no.fint.betaling.model.ClaimStatus;
 import no.fint.betaling.model.ClaimsDatePeriod;
@@ -35,19 +36,24 @@ public class ClaimRestService {
     @Value("${fint.betaling.endpoints.invoice:/okonomi/faktura/fakturagrunnlag}")
     private String invoiceEndpoint;
 
-    @Value("${fint.betaling.claim-send-max-concurrency:50}")
-    private int claimSendMaxConcurrency = 50;
+    private final int claimSendMaxConcurrency;
+    private final int claimUpdateMaxConcurrency;
+    private final ReactiveConcurrencyLimiter sendLimiter;
+    private final ReactiveConcurrencyLimiter updateLimiter;
 
-    @Value("${fint.betaling.claim-update-max-concurrency:20}")
-    private int claimUpdateMaxConcurrency = 20;
-
-    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService) {
+    public ClaimRestService(RestUtil restUtil, FintClient fintClient, InvoiceFactory invoiceFactory, ClaimRepository claimRepository, ClaimDatabaseService claimDatabaseService, ClaimRestStatusService claimRestStatusService,
+                            @Value("${fint.betaling.claim-send-max-concurrency:50}") int claimSendMaxConcurrency,
+                            @Value("${fint.betaling.claim-update-max-concurrency:20}") int claimUpdateMaxConcurrency) {
         this.restUtil = restUtil;
         this.fintClient = fintClient;
         this.invoiceFactory = invoiceFactory;
         this.claimRepository = claimRepository;
         this.claimDatabaseService = claimDatabaseService;
         this.claimRestStatusService = claimRestStatusService;
+        this.claimSendMaxConcurrency = claimSendMaxConcurrency;
+        this.claimUpdateMaxConcurrency = claimUpdateMaxConcurrency;
+        this.sendLimiter = new ReactiveConcurrencyLimiter(claimSendMaxConcurrency);
+        this.updateLimiter = new ReactiveConcurrencyLimiter(claimUpdateMaxConcurrency);
     }
 
     public Flux<Claim> sendClaims(List<Long> orderNumbers) {
@@ -64,6 +70,10 @@ public class ClaimRestService {
     }
 
     public Mono<Claim> sendClaim(Claim claim) {
+        return sendLimiter.limit(() -> doSendClaim(claim));
+    }
+
+    private Mono<Claim> doSendClaim(Claim claim) {
         return Mono.defer(() -> {
             FakturagrunnlagResource invoice = invoiceFactory.createInvoice(claim);
             return restUtil.post(invoiceEndpoint, invoice, FakturagrunnlagResource.class)
@@ -120,6 +130,10 @@ public class ClaimRestService {
     }
 
     public Mono<Claim> updateClaimStatus(Claim claim) {
+        return updateLimiter.limit(() -> doUpdateClaimStatus(claim));
+    }
+
+    private Mono<Claim> doUpdateClaimStatus(Claim claim) {
 
         log.info("Start updating status for claim {}", claim.getOrderNumber());
         if (!StringUtils.hasText(claim.getInvoiceUri())) {

@@ -8,6 +8,9 @@ import no.fint.betaling.model.Claim
 import no.fint.betaling.model.ClaimStatus
 import no.fint.betaling.model.OrderItem
 import no.fint.betaling.model.dto.ClaimDto
+import org.springframework.web.reactive.function.client.WebClientRequestException
+import org.springframework.web.reactive.function.client.WebClientResponseException
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -161,6 +164,47 @@ class ClaimRestStatusServiceSpec extends Specification {
 
         then:
         1 * claimRepository.save({ it.claimStatus == ClaimStatus.SEND_ERROR && it.statusMessage })
+    }
+
+    def "transient network failure retries the status GET and eventually accepts the order"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: 'http://test.com/status/123', claimStatus: ClaimStatus.SENT)
+        def headers = new HttpHeaders(location: URI.create('http://test.com/order/123'))
+        def attempts = 0
+        restUtil.bodyless('http://test.com/status/123') >> Mono.defer {
+            attempts++
+            attempts == 1 ? Mono.error(new WebClientRequestException(new java.io.IOException('Connection reset'),
+                    HttpMethod.GET, URI.create(claim.invoiceUri), HttpHeaders.EMPTY)) :
+                    Mono.just(new ResponseEntity<Void>(headers, HttpStatus.CREATED))
+        }
+        restUtil.bodyless('http://test.com/order/123') >> Mono.just(new ResponseEntity<Void>(HttpStatus.OK))
+
+        when:
+        StepVerifier.withVirtualTime { claimRestStatusService.processRequest(claim) }
+                .thenAwait(Duration.ofSeconds(30))
+                .assertNext { assert it.claimStatus == ClaimStatus.ACCEPTED }
+                .verifyComplete()
+
+        then:
+        attempts == 2
+        1 * claimRepository.save({ it.claimStatus == ClaimStatus.ACCEPTED })
+    }
+
+    def "a business rejection reported as HTTP 500 is not retried"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, invoiceUri: 'http://test.com/status/123', claimStatus: ClaimStatus.SENT)
+        def rejection = WebClientResponseException.create(500, 'Rejected', HttpHeaders.EMPTY,
+                '{"message":"Duplicate order line"}'.getBytes(java.nio.charset.StandardCharsets.UTF_8), null)
+
+        when:
+        StepVerifier.withVirtualTime { claimRestStatusService.processRequest(claim) }
+                .thenAwait(Duration.ofSeconds(3))
+                .assertNext { assert it.claimStatus == ClaimStatus.SEND_ERROR }
+                .verifyComplete()
+
+        then:
+        1 * restUtil.bodyless('http://test.com/status/123') >> Mono.error(rejection)
+        1 * claimRepository.save({ it.statusMessage == 'Duplicate order line' })
     }
 
     def "setStatusMessages should set correct messages for claims"() {

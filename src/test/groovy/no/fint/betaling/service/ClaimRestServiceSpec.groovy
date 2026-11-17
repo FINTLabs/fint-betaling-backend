@@ -40,7 +40,7 @@ class ClaimRestServiceSpec extends Specification {
         claimDatabaseService = Mock()
         claimRestStatusService = Mock()
 
-        claimRestService = new ClaimRestService(restUtil, fintClient, invoiceFactory, claimRepository, claimDatabaseService, claimRestStatusService)
+        claimRestService = new ClaimRestService(restUtil, fintClient, invoiceFactory, claimRepository, claimDatabaseService, claimRestStatusService, 50, 20)
         betalingObjectFactory = new BetalingObjectFactory()
     }
 
@@ -240,6 +240,49 @@ class ClaimRestServiceSpec extends Specification {
         trigger << ['scheduled', 'manual']
     }
 
+    def "overlapping schedules share twenty refresh slots across different statuses"() {
+        given:
+        def claims = (1L..40L).collect {
+            new Claim(orderNumber: it, claimStatus: it <= 20 ? ClaimStatus.ACCEPTED : ClaimStatus.ISSUED,
+                    createdDate: java.time.LocalDateTime.now(), invoiceUri: "https://example.com/order/${it}")
+        }
+        def started = []
+        def gates = [:]
+        claimDatabaseService.getClaimsByStatus(ClaimStatus.ACCEPTED) >> claims.take(20)
+        claimDatabaseService.getClaimsByStatus(ClaimStatus.ISSUED) >> claims.drop(20)
+        restUtil.getLive(FakturagrunnlagResource, _ as String) >> { clazz, uri ->
+            long number = Long.parseLong(uri.tokenize('/').last())
+            started.add(number)
+            def gate = Sinks.one()
+            gates[number] = gate
+            gate.asMono()
+        }
+        fintClient.getSelfLink(_) >> Optional.empty()
+        fintClient.getFaktura(_) >> Mono.just([])
+        fintClient.getFakturanummere([]) >> ([] as Set)
+        fintClient.getInvoiceDate([]) >> Optional.empty()
+        fintClient.getPaymentDueDate([]) >> Optional.empty()
+        fintClient.getAmountDue([]) >> Optional.empty()
+
+        when:
+        claimRestService.updateClaimsByStatusAndAge(ClaimStatus.ACCEPTED, java.time.Duration.ofDays(30))
+        claimRestService.updateClaimsByStatusAndAge(ClaimStatus.ISSUED, java.time.Duration.ofDays(30))
+
+        then:
+        started.size() == 20
+        gates.size() == 20
+
+        when:
+        (1L..40L).each { number ->
+            assert gates.size() <= 20
+            gates.remove(number).tryEmitValue(new FakturagrunnlagResource())
+        }
+
+        then:
+        started.size() == 40
+        gates.isEmpty()
+    }
+
     def "Refresh polls live filtered invoice queries and persists #expectedStatus"() {
         given:
         def server = new MockWebServer()
@@ -249,7 +292,7 @@ class ClaimRestServiceSpec extends Specification {
         realRestUtil.baseUrl = baseUrl
         def realFintClient = new FintClient(realRestUtil, null, null, null)
         def service = new ClaimRestService(realRestUtil, realFintClient, invoiceFactory,
-                claimRepository, claimDatabaseService, claimRestStatusService)
+                claimRepository, claimDatabaseService, claimRestStatusService, 50, 20)
         def claim = betalingObjectFactory.newClaim(12345L, ClaimStatus.ACCEPTED)
         claim.invoiceUri = baseUrl + 'okonomi/faktura/fakturagrunnlag/ordrenummer/12345'
         server.enqueue(new MockResponse().setResponseCode(202)

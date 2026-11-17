@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.betaling.model.CustomerGroup;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
@@ -28,22 +30,26 @@ public class GroupController {
     }
 
     @GetMapping("/school")
-    public ResponseEntity<CustomerGroup> getFromSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(schoolGroupService.getFromSchool(schoolId));
+    public Mono<ResponseEntity<CustomerGroup>> getFromSchool(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return Mono.fromCallable(() -> ResponseEntity.ok(schoolGroupService.getFromSchool(schoolId)))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @GetMapping("/basis-group")
-    public ResponseEntity<List<CustomerGroup>> getFromBasisGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(klasseService.getFromKlasse(schoolId));
+    public Mono<ResponseEntity<List<CustomerGroup>>> getFromBasisGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return Mono.fromCallable(() -> ResponseEntity.ok(klasseService.getFromKlasse(schoolId)))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @GetMapping("/teaching-group")
-    public ResponseEntity<List<CustomerGroup>> getFromTeachingGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(teachingGroupService.getFromTeachingGroups(schoolId));
+    public Mono<ResponseEntity<List<CustomerGroup>>> getFromTeachingGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return Mono.fromCallable(() -> ResponseEntity.ok(teachingGroupService.getFromTeachingGroups(schoolId)))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @GetMapping("/contact-teacher-group")
-    public ResponseEntity<List<CustomerGroup>> getFromContactTeacherGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
-        return ResponseEntity.ok(contactTeacherGroupService.getFromContactTeacherGroups(schoolId));
+    public Mono<ResponseEntity<List<CustomerGroup>>> getFromContactTeacherGroups(@RequestHeader(name = "x-school-org-id") String schoolId) {
+        return Mono.fromCallable(() -> ResponseEntity.ok(contactTeacherGroupService.getFromContactTeacherGroups(schoolId)))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 }

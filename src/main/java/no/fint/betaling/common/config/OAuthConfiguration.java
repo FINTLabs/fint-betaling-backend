@@ -36,6 +36,12 @@ public class OAuthConfiguration {
     private String password;
     private String registrationId;
     private String enabled;
+    private Duration connectTimeout = Duration.ofSeconds(10);
+    private Duration responseTimeout = NETWORK_TIMEOUT;
+    private Duration pendingAcquireTimeout = Duration.ofSeconds(15);
+    private Duration maxIdleTime = Duration.ofSeconds(20);
+    private int maxConnections = 100;
+    private int pendingAcquireMaxCount = 200;
 
     @Bean
     @ConditionalOnProperty(value = "fint.client.enabled", havingValue = "true", matchIfMissing = true)
@@ -70,12 +76,16 @@ public class OAuthConfiguration {
         return new ReactorClientHttpConnector(HttpClient.create(
                         ConnectionProvider
                                 .builder("laidback")
-                                .maxConnections(100)
+                                .maxConnections(maxConnections)
+                                .pendingAcquireMaxCount(pendingAcquireMaxCount)
+                                .pendingAcquireTimeout(pendingAcquireTimeout)
+                                .metrics(true)
                                 .maxLifeTime(Duration.ofMinutes(30))
-                                .maxIdleTime(Duration.ofMinutes(5))
+                                .maxIdleTime(maxIdleTime)
+                                .evictInBackground(Duration.ofSeconds(15))
                                 .build())
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.toIntExact(NETWORK_TIMEOUT.toMillis()))
-                .responseTimeout(NETWORK_TIMEOUT)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.toIntExact(connectTimeout.toMillis()))
+                .responseTimeout(responseTimeout)
         );
     }
 

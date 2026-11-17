@@ -156,6 +156,23 @@ class ClaimSendIntegrationSpec extends Specification {
         outcome.error == null && outcome.status?.is2xxSuccessful()
     }
 
+    def 'POST and acceptance polling release HTTP connections even with a one-connection pool'() {
+        given:
+        def provider = ConnectionProvider.builder('single-connection-acceptance')
+                .maxConnections(1).pendingAcquireTimeout(Duration.ofMillis(250)).build()
+        connectionProviders.add(provider)
+        def client = createWebTestClient(provider, true)
+
+        when:
+        def outcome = invokeSendEndpoint(client, [1L])
+
+        then:
+        outcome.error == null
+        outcome.status?.is2xxSuccessful()
+        fintServer.requestCount == 3
+        new com.fasterxml.jackson.databind.ObjectMapper().readTree(outcome.body)[0].get('claimStatus').asText() == 'ACCEPTED'
+    }
+
     private Map invokeSendEndpoint(List<Long> orderNumbers, CountDownLatch ready, CountDownLatch start) {
         ready.countDown()
         assert start.await(5, TimeUnit.SECONDS)
@@ -173,7 +190,7 @@ class ClaimSendIntegrationSpec extends Specification {
                     .exchange()
                     .expectBody(byte[].class)
                     .returnResult()
-            return [status: result.status]
+            return [status: result.status, body: result.responseBody]
         } catch (Throwable error) {
             // A response-body failure can surface as a client exception if the 201 headers were
             // committed before the controller's Flux failed.
@@ -181,7 +198,7 @@ class ClaimSendIntegrationSpec extends Specification {
         }
     }
 
-    private WebTestClient createWebTestClient(ConnectionProvider provider) {
+    private WebTestClient createWebTestClient(ConnectionProvider provider, boolean realPolling = false) {
         String baseUrl = fintServer.url("/").toString()
         def webClient = WebClient.builder()
                 .baseUrl(baseUrl)
@@ -196,15 +213,17 @@ class ClaimSendIntegrationSpec extends Specification {
         ClaimDatabaseService claimDatabaseService = Mock()
         InvoiceFactory invoiceFactory = Mock()
         ClaimRepository claimRepository = Mock()
-        ClaimRestStatusService claimRestStatusService = Mock()
+        ClaimRestStatusService claimRestStatusService = realPolling
+                ? new ClaimRestStatusService(restUtil, claimRepository) : Mock(ClaimRestStatusService)
         FintClient fintClient = Mock()
-        claimRestStatusService.processRequest(_ as Claim) >> { Claim claim ->
-            Mono.fromCallable {
-                claim.claimStatus = ClaimStatus.ACCEPTED
-                claim
+        if (!realPolling) {
+            claimRestStatusService.processRequest(_ as Claim) >> { Claim claim ->
+                Mono.fromCallable {
+                    claim.claimStatus = ClaimStatus.ACCEPTED
+                    claim
+                }
             }
         }
-
 
         List<Claim> claims = (1L..(CLAIMS_PER_REQUEST * 2L)).collect { orderNumber ->
             new Claim(orderNumber: orderNumber, claimStatus: ClaimStatus.STORED)
@@ -218,7 +237,7 @@ class ClaimSendIntegrationSpec extends Specification {
                 invoiceFactory,
                 claimRepository,
                 claimDatabaseService,
-                claimRestStatusService)
+                claimRestStatusService, 50, 20)
         ReflectionTestUtils.setField(claimRestService, "invoiceEndpoint", "/invoice")
         def controller = new ClaimController(
                 claimDatabaseService,

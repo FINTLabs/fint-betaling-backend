@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -86,7 +87,9 @@ public class ClaimRestStatusService {
                 .retryWhen(Retry
                         .backoff(MAX_ATTEMPTS, DELAY)
                         .maxBackoff(MAX_TOTAL_DURATION)
-                        .filter(this::isRetryableException));
+                        .filter(this::isRetryableException)
+                        .doBeforeRetry(retry -> log.warn("Retrying status GET {} after transient failure (attempt {}): {}",
+                                url, retry.totalRetries() + 1, retry.failure().getMessage())));
     }
 
     public void setStatusMessages(List<ClaimDto> claims) {
@@ -167,7 +170,12 @@ public class ClaimRestStatusService {
     }
 
     private boolean isRetryableException(Throwable ex) {
-        return ex instanceof ServerErrorException;
+        if (ex instanceof ServerErrorException || ex instanceof WebClientRequestException) return true;
+        if (ex instanceof WebClientResponseException response) {
+            int status = response.getStatusCode().value();
+            return status == 429 || status == 502 || status == 503 || status == 504;
+        }
+        return false;
     }
 
 }

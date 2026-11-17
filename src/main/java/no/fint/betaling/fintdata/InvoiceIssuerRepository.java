@@ -28,11 +28,9 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
     }
 
     public Collection<Principal> getInvoiceIssuers() {
-        if (resources.isEmpty()) {
-            update();
-        } else {
-            onResourcesUpdated();
-        }
+        boolean alreadyLoaded = !resources.isEmpty();
+        get();
+        if (alreadyLoaded) onResourcesUpdated();
         return Collections.unmodifiableCollection(invoiceIssuers);
     }
 
@@ -46,9 +44,7 @@ public class InvoiceIssuerRepository extends FintResourceRepository<Fakturautste
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
-        if (!updatedList.isEmpty()) {
-            invoiceIssuers = updatedList;
-        }
+        invoiceIssuers = updatedList;
     }
 
     private Optional<Principal> createPrincipal(FakturautstederResource fakturautsteder) {
