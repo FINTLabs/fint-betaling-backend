@@ -6,7 +6,14 @@ import no.novari.fint.model.resource.administrasjon.personal.PersonalressursReso
 import no.novari.fint.model.resource.utdanning.elev.ElevResource
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import org.springframework.http.HttpMethod
+import org.springframework.web.reactive.function.client.WebClientRequestException
+import java.util.concurrent.atomic.AtomicInteger
 import org.springframework.http.HttpHeaders
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import reactor.netty.http.client.HttpClient
+import reactor.netty.resources.ConnectionProvider
+import java.time.Duration
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -79,6 +86,118 @@ class RestUtilSpec extends Specification {
         StepVerifier.create(restUtil.getLive(ElevResource, '/elev'))
                 .expectErrorMatches { it instanceof IllegalStateException && it.message.contains('empty body') }
                 .verify(java.time.Duration.ofSeconds(5))
+    }
+
+    def "live status polling releases its connection before waiting and polling again"() {
+        given:
+        def pool = ConnectionProvider.builder('live-read-single-connection')
+                .maxConnections(1).pendingAcquireTimeout(Duration.ofMillis(250)).build()
+        def baseUrl = mockWebServer.url('/').toString()
+        def client = WebClient.builder().baseUrl(baseUrl)
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.create(pool))).build()
+        def rest = new RestUtil(client)
+        rest.baseUrl = baseUrl
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202).setHeader('Location', '/status/read-1'))
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202))
+        mockWebServer.enqueue(new MockResponse().setHeader('Content-Type', 'application/json')
+                .setBody('{"elevnummer":{"identifikatorverdi":"87651234"}}'))
+
+        when:
+        def result = rest.getLive(ElevResource, '/elev').block(Duration.ofSeconds(10))
+
+        then:
+        result.elevnummer.identifikatorverdi == '87651234'
+        mockWebServer.requestCount == 3
+
+        cleanup:
+        pool.disposeLater().block(Duration.ofSeconds(5))
+    }
+
+    def "live read succeeds after two temporary HTTP #status failures"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(status))
+        mockWebServer.enqueue(new MockResponse().setResponseCode(status))
+        mockWebServer.enqueue(new MockResponse().setHeader('Content-Type', 'application/json')
+                .setBody('{"elevnummer":{"identifikatorverdi":"87651234"}}'))
+
+        when:
+        def result = restUtil.getLive(ElevResource, '/elev').block(Duration.ofSeconds(10))
+
+        then:
+        result.elevnummer.identifikatorverdi == '87651234'
+        mockWebServer.requestCount == 3
+        (1..3).collect { mockWebServer.takeRequest() }.every {
+            it.method == 'GET' && it.path == '/elev' && it.getHeader('Prefer') == 'respond-async'
+        }
+
+        where:
+        status << [429, 502, 503, 504]
+    }
+
+    def "retrying a failed status GET keeps its URL and does not start another live read"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(202).setHeader('Location', '/status/read-1'))
+        mockWebServer.enqueue(new MockResponse().setResponseCode(503))
+        mockWebServer.enqueue(new MockResponse().setHeader('Content-Type', 'application/json')
+                .setBody('{"elevnummer":{"identifikatorverdi":"87651234"}}'))
+
+        when:
+        def result = restUtil.getLive(ElevResource, '/elev').block(Duration.ofSeconds(10))
+
+        then:
+        result.elevnummer.identifikatorverdi == '87651234'
+        mockWebServer.requestCount == 3
+        mockWebServer.takeRequest().path == '/elev'
+        def polls = [mockWebServer.takeRequest(), mockWebServer.takeRequest()]
+        polls.every { it.path == '/status/read-1' && it.getHeader('Prefer') == null }
+    }
+
+    def "network failures stop after three attempts with one and two second retry delays"() {
+        given:
+        def attempts = new AtomicInteger()
+        def failure = new WebClientRequestException(new java.net.ConnectException('Connection timed out'),
+                HttpMethod.GET, URI.create('https://example.com/elev'), HttpHeaders.EMPTY)
+        def client = WebClient.builder().exchangeFunction { request ->
+            attempts.incrementAndGet()
+            Mono.error(failure)
+        }.build()
+        def rest = new RestUtil(client)
+        rest.baseUrl = 'https://example.com'
+
+        expect:
+        StepVerifier.withVirtualTime { rest.getLive(ElevResource, '/elev') }
+                .then { assert attempts.get() == 1 }
+                .thenAwait(Duration.ofSeconds(1))
+                .then { assert attempts.get() == 2 }
+                .thenAwait(Duration.ofSeconds(2))
+                .expectErrorMatches { it.is(failure) }
+                .verify()
+        attempts.get() == 3
+    }
+
+    def "permanent HTTP #status failures are not retried"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(status))
+
+        expect:
+        StepVerifier.create(restUtil.getLive(ElevResource, '/elev'))
+                .expectErrorMatches { it instanceof WebClientResponseException && it.statusCode.value() == status }
+                .verify(Duration.ofSeconds(5))
+        mockWebServer.requestCount == 1
+
+        where:
+        status << [400, 401, 403, 404, 500]
+    }
+
+    def "an order POST with a transient HTTP failure is not retried"() {
+        given:
+        mockWebServer.enqueue(new MockResponse().setResponseCode(503))
+
+        expect:
+        StepVerifier.create(restUtil.post('/order', 'order', String))
+                .expectErrorMatches { it instanceof WebClientResponseException && it.statusCode.value() == 503 }
+                .verify(Duration.ofSeconds(5))
+        mockWebServer.requestCount == 1
     }
 
     def "Get resource given invalid response throws WebClientResponseException"() {
