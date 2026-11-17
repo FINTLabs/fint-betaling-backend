@@ -3,7 +3,7 @@ USER root
 COPY . .
 RUN gradle --no-daemon build
 
-FROM gcr.io/distroless/java17
+FROM eclipse-temurin:17-jre
 ENV JAVA_TOOL_OPTIONS -XX:+ExitOnOutOfMemoryError
 COPY --from=builder /home/gradle/build/libs/fint-betaling-backend-*.jar /data/app.jar
-CMD ["/data/app.jar"]
+ENTRYPOINT ["java", "-jar", "/data/app.jar"]
