@@ -99,6 +99,8 @@ public class ClaimRestService {
     }
 
     public void updateClaimsByStatusAndAge(ClaimStatus status, Duration maxAge) {
+        if (status == ClaimStatus.PAID) return;
+
         List<Claim> claims = claimDatabaseService.getClaimsByStatus(status)
                 .stream()
                 .filter(claim -> maxAge == null || isNewerThan(claim, maxAge))
@@ -117,7 +119,6 @@ public class ClaimRestService {
                 .stream()
                 .filter(claim -> claim.getClaimStatus() == ClaimStatus.ACCEPTED ||
                         claim.getClaimStatus() == ClaimStatus.ISSUED ||
-                        claim.getClaimStatus() == ClaimStatus.PAID ||
                         claim.getClaimStatus() == ClaimStatus.CREDITED ||
                         claim.getClaimStatus() == ClaimStatus.UPDATE_ERROR)
                 .toList();
@@ -134,6 +135,8 @@ public class ClaimRestService {
     }
 
     private Mono<Claim> doUpdateClaimStatus(Claim claim) {
+        // Check after acquiring a slot too: a queued claim may have become paid while waiting.
+        if (claim.getClaimStatus() == ClaimStatus.PAID) return Mono.empty();
 
         log.info("Start updating status for claim {}", claim.getOrderNumber());
         if (!StringUtils.hasText(claim.getInvoiceUri())) {

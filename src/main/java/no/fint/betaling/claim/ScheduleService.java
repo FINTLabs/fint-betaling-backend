@@ -28,11 +28,6 @@ public class ScheduleService {
         updateClaims(ClaimStatus.ACCEPTED, Duration.ofDays(30));
     }
 
-    @Scheduled(cron = "0 52 6-16 * * MON-FRI")
-    public void updatePaidClaims() {
-        updateClaims(ClaimStatus.PAID, Duration.ofDays(1));
-    }
-
     @Scheduled(cron = "0 30 16 ? * MON-FRI")
     public void updateIssuedClaims() {
         updateClaims(ClaimStatus.ISSUED, Duration.ofDays(100));

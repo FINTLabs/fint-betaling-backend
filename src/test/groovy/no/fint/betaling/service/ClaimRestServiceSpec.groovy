@@ -178,6 +178,35 @@ class ClaimRestServiceSpec extends Specification {
                 [ClaimStatus.SEND_ERROR, ClaimStatus.ACCEPTED]
     }
 
+    def "paid orders are unchanged by #trigger refresh and do not call FINT"() {
+        given:
+        def claim = new Claim(orderNumber: 12345L, claimStatus: ClaimStatus.PAID,
+                invoiceUri: 'https://example.com/order/12345', amountDue: 0L,
+                statusMessage: null, createdDate: java.time.LocalDateTime.now())
+        claimDatabaseService.getClaimsByPeriodAndOrganisationnumberAndStatus(*_) >> [claim]
+
+        when:
+        if (trigger == 'scheduled') {
+            claimRestService.updateClaimsByStatusAndAge(ClaimStatus.PAID, java.time.Duration.ofDays(30))
+        } else if (trigger == 'manual') {
+            claimRestService.updateClaimsForPeriodAndOrganisation(ClaimsDatePeriod.ALL, null, null).collectList().block()
+        } else {
+            claimRestService.updateClaimStatus(claim).block()
+        }
+
+        then:
+        claim.claimStatus == ClaimStatus.PAID
+        claim.amountDue == 0L
+        claim.statusMessage == null
+        0 * claimDatabaseService.getClaimsByStatus(_)
+        0 * restUtil._
+        0 * fintClient._
+        0 * claimRepository._
+
+        where:
+        trigger << ['scheduled', 'manual', 'direct']
+    }
+
     def "#trigger refresh holds at most twenty slots until invoice lookup finishes, and continues after a failure"() {
         given:
         def claims = (1L..200L).collect {
