@@ -4,15 +4,16 @@ metadata:
   name: fint-betaling-backend
   namespace: novari-no
 spec:
+  replicas: 1
   port: 8080
   orgId: novari.no
   image: ghcr.io/fintlabs/fint-betaling-backend:sha-df2ec10
   imagePullPolicy: Always
   env:
     - name: fint.betaling.org-id
-      value: novari.no
+      value: vigo.no
     - name: fint.betaling.default-org-id
-      value: novari.no
+      value: vigo.no
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M'
     - name: fint.betaling.invoice-update-rate
@@ -26,7 +27,7 @@ spec:
     - name: fint.betaling.client-name
       value: 'FINT-Betaling'
     - name: fint.betaling.default-org-id
-      value: 'novari.no'
+      value: 'vigo.no'
     - name: fint.betaling.default-school-org-id
       value: novari.no
     - name: fint.betaling.date-range
