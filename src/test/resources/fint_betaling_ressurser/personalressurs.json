@@ -1,0 +1,28 @@
+{
+  "ansattnummer": {
+    "identifikatorverdi": "132323232323"
+  },
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/personalressurs/systemid/047e9142-f759-53af-8a6d-deaca5f4b54b"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/personalressurs/ansattnummer/132323232323"
+      }
+    ],
+    "person": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/person/fodselsnummer/14120119306"
+      }
+    ],
+    "skoleressurs": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/skoleressurs/systemid/SR-001"
+      }
+    ]
+  },
+  "systemId": {
+    "identifikatorverdi": "047e9142-f759-53af-8a6d-deaca5f4b54b"
+  }
+}

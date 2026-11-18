@@ -1,0 +1,25 @@
+{
+  "systemId": {
+    "identifikatorverdi": 1
+  },
+  "navn": "Skolemateriell test",
+  "kode": 1,
+  "pris": 250,
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/1"
+      }
+    ],
+    "merverdiavgift": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/merverdiavgift/systemid/MVA-0"
+      }
+    ],
+    "fakturautsteder": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/faktura/fakturautsteder/systemid/20"
+      }
+    ]
+  }
+}

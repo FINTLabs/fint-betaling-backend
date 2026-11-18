@@ -52,7 +52,8 @@ fint:
     request-url: https://idp.felleskomponent.no/nidp/oauth/nam/userinfo
 
   betaling:
-    claim-send-max-concurrency: 10
+    claim-send-max-concurrency: 50
+    claim-update-max-concurrency: 20
     authorized-role: https://role-catalog.vigoiks.no/vigo/elevfakturering/user
     authorized-role-admin: https://role-catalog.vigoiks.no/vigo/elevfakturering/admin
     date-range: "7, 14, 30"

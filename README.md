@@ -40,6 +40,36 @@
 | fint.betaling.dnd.VIS-ID                      |                                                        | VIS-ID                                                                                     | 
 | ~~fint.betaling.date-range~~                  |                                                        |                                                                                            |
 
+### Request limits and timeouts
+
+Concurrency limits are shared across simultaneous jobs in each backend instance.
+Paid claims are excluded from scheduled, manual, and direct status refreshes.
+Sending holds its slot until acceptance or failure has been saved; refreshing holds
+its slot through the invoice lookups and polling. Waiting for a slot does not block a thread.
+
+| Property | Default | Purpose |
+|----------|---------|---------|
+| `fint.betaling.claim-send-max-concurrency` | `50` | Total sends awaiting acceptance per instance. |
+| `fint.betaling.claim-update-max-concurrency` | `20` | Total scheduled and manual status refreshes per instance. |
+| `fint.client.max-connections` | `100` | HTTP connections per remote host. |
+| `fint.client.pending-acquire-max-count` | `200` | Maximum requests waiting for a connection. |
+| `fint.client.connect-timeout` | `10s` | Time allowed to establish a connection. |
+| `fint.client.response-timeout` | `55s` | HTTP response timeout, below the gateway cutoff. |
+| `fint.client.pending-acquire-timeout` | `15s` | Time allowed to wait for an HTTP connection. |
+| `fint.client.max-idle-time` | `20s` | Idle connection lifetime; idle connections are periodically evicted. |
+
+HTTP pool metrics are exposed through the existing Actuator/Micrometer setup.
+Transient network failures and HTTP 429/502/503/504 responses are retried during
+acceptance polling. Live invoice lookups also retry each failed GET at most twice,
+with 1- and 2-second backoffs, while retaining the same status URL. The existing
+2-minute live-read deadline includes retries and polling. After retry exhaustion,
+the original error is saved as `UPDATE_ERROR`. Order POSTs and business rejections
+are not automatically retried.
+Cold resource caches load once across concurrent readers, remember successful empty
+results, and retain existing data on a failed refresh. Failed cold loads wait at
+least 30 seconds before another request triggers a retry; scheduled refreshes can
+retry immediately.
+
 ### Invoice status
 
 | Status       | Icon                     | Description                                                      |

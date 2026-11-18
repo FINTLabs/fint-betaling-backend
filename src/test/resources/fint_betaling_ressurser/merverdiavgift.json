@@ -1,0 +1,15 @@
+{
+  "systemId": {
+    "identifikatorverdi": "MVA-0"
+  },
+  "navn": "Fritatt / eksempel",
+  "kode": "0",
+  "sats": 0,
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/merverdiavgift/systemid/MVA-0"
+      }
+    ]
+  }
+}

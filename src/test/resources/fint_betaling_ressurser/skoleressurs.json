@@ -1,0 +1,27 @@
+{
+  "systemId": {
+    "identifikatorverdi": "SR-001"
+  },
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/skoleressurs/systemid/SR-001"
+      }
+    ],
+    "skole": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/utdanningsprogram/skole/organisasjonsnummer/20"
+      }
+    ],
+    "personalressurs": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/personalressurs/systemid/047e9142-f759-53af-8a6d-deaca5f4b54b"
+      }
+    ],
+    "person": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/person/fodselsnummer/14120119306"
+      }
+    ]
+  }
+}

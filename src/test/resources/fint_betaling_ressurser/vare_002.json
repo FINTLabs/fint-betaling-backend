@@ -1,0 +1,25 @@
+{
+  "systemId": {
+    "identifikatorverdi": 2
+  },
+  "navn": "Arbeidsbok test",
+  "kode": 2,
+  "pris": 150,
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/2"
+      }
+    ],
+    "merverdiavgift": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/merverdiavgift/systemid/MVA-0"
+      }
+    ],
+    "fakturautsteder": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/faktura/fakturautsteder/systemid/20"
+      }
+    ]
+  }
+}

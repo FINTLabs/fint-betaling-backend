@@ -1,0 +1,37 @@
+{
+  "systemId": {
+    "identifikatorverdi": 20
+  },
+  "navn": "Test videregående skole",
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/faktura/fakturautsteder/systemid/20"
+      }
+    ],
+    "organisasjonselement": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsnummer/20"
+      }
+    ],
+    "vare": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/1"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/2"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/3"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/4"
+      }
+    ],
+    "fakturagrunnlag": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/faktura/fakturagrunnlag/ordrenummer/ORDER-001"
+      }
+    ]
+  }
+}

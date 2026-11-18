@@ -1,0 +1,64 @@
+{
+  "navn": "Test videregående skole",
+  "organisasjonsnummer": {
+    "identifikatorverdi": "20"
+  },
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/utdanningsprogram/skole/organisasjonsnummer/20"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/utdanningsprogram/skole/systemid/7c957fcf-f740-564e-a9f9-1571f3515e7e"
+      }
+    ],
+    "organisasjon": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsnummer/20"
+      }
+    ],
+    "elevforhold": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/elevforhold/systemid/EF-001"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/elevforhold/systemid/EF-002"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/elevforhold/systemid/EF-003"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/elevforhold/systemid/EF-004"
+      }
+    ],
+    "klasse": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/klasse/systemid/KL-001"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/klasse/systemid/KL-002"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/klasse/systemid/KL-003"
+      }
+    ],
+    "undervisningsgruppe": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/timeplan/undervisningsgruppe/systemid/UG-001"
+      }
+    ],
+    "kontaktlarergruppe": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/kontaktlarergruppe/systemid/KG-001"
+      }
+    ],
+    "skoleressurs": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/elev/skoleressurs/systemid/SR-001"
+      }
+    ]
+  },
+  "systemId": {
+    "identifikatorverdi": "7c957fcf-f740-564e-a9f9-1571f3515e7e"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "navn": {
+    "fornavn": "Sander",
+    "etternavn": "Testansatt"
+  },
+  "fodselsnummer": {
+    "identifikatorverdi": "14120119306"
+  },
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/person/fodselsnummer/14120119306"
+      }
+    ],
+    "personalressurs": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/personal/personalressurs/systemid/047e9142-f759-53af-8a6d-deaca5f4b54b"
+      }
+    ]
+  }
+}

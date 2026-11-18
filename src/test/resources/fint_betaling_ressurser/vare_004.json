@@ -1,0 +1,25 @@
+{
+  "systemId": {
+    "identifikatorverdi": 4
+  },
+  "navn": "Ekskursjon test",
+  "kode": 4,
+  "pris": 300,
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/4"
+      }
+    ],
+    "merverdiavgift": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/merverdiavgift/systemid/MVA-0"
+      }
+    ],
+    "fakturautsteder": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/faktura/fakturautsteder/systemid/20"
+      }
+    ]
+  }
+}

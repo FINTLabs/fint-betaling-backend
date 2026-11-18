@@ -1,0 +1,25 @@
+{
+  "systemId": {
+    "identifikatorverdi": 3
+  },
+  "navn": "Kalkulator test",
+  "kode": 3,
+  "pris": 500,
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/vare/systemid/3"
+      }
+    ],
+    "merverdiavgift": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/kodeverk/merverdiavgift/systemid/MVA-0"
+      }
+    ],
+    "fakturautsteder": [
+      {
+        "href": "https://beta.felleskomponent.no/okonomi/faktura/fakturautsteder/systemid/20"
+      }
+    ]
+  }
+}

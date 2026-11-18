@@ -1,0 +1,30 @@
+{
+  "navn": "Test fylkeskommune",
+  "organisasjonsnummer": {
+    "identifikatorverdi": "999999999"
+  },
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsnummer/999999999"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsid/41da4972-ede2-5ae3-9c3c-5cd89b99c0f2"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonskode/999999999"
+      }
+    ],
+    "underordnet": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsnummer/20"
+      }
+    ]
+  },
+  "organisasjonsId": {
+    "identifikatorverdi": "41da4972-ede2-5ae3-9c3c-5cd89b99c0f2"
+  },
+  "organisasjonsKode": {
+    "identifikatorverdi": "999999999"
+  }
+}

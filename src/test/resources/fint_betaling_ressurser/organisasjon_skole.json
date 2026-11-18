@@ -1,0 +1,35 @@
+{
+  "navn": "Test videregående skole",
+  "organisasjonsnummer": {
+    "identifikatorverdi": "20"
+  },
+  "_links": {
+    "self": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsnummer/20"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsid/1f06fac4-cfa7-57b1-9abd-9146593894de"
+      },
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonskode/20"
+      }
+    ],
+    "overordnet": [
+      {
+        "href": "https://beta.felleskomponent.no/administrasjon/organisasjon/organisasjonselement/organisasjonsnummer/999999999"
+      }
+    ],
+    "skole": [
+      {
+        "href": "https://beta.felleskomponent.no/utdanning/utdanningsprogram/skole/organisasjonsnummer/20"
+      }
+    ]
+  },
+  "organisasjonsId": {
+    "identifikatorverdi": "1f06fac4-cfa7-57b1-9abd-9146593894de"
+  },
+  "organisasjonsKode": {
+    "identifikatorverdi": "20"
+  }
+}
