@@ -10,6 +10,8 @@ spec:
   image: ghcr.io/fintlabs/fint-betaling-backend:sha-df2ec10
   imagePullPolicy: Always
   env:
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:-UseBASE64Intrinsics
     - name: fint.betaling.org-id
       value: vigo.no
     - name: fint.betaling.default-org-id
