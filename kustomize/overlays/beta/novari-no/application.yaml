@@ -6,7 +6,7 @@ metadata:
 spec:
   port: 8080
   orgId: novari.no
-  image: ghcr.io/fintlabs/fint-betaling-backend:latest
+  image: ghcr.io/fintlabs/fint-betaling-backend:sha-df2ec10
   imagePullPolicy: Always
   env:
     - name: fint.betaling.org-id
@@ -44,7 +44,7 @@ spec:
     database: fint-core
   url:
     hostname: betaling-demo.felleskomponent.no
-    basePath: /
+    basePath: /novari/api
   ingress:
     enabled: true
     middlewares:
