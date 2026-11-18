@@ -15,6 +15,9 @@ spec:
       value: vlfk.no
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx4250M'
+    # Java4Shell (CVE-2026-114938): turn off the Base64 intrinsic until the JDK has a fix.
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:-UseBASE64Intrinsics
     - name: fint.betaling.invoice-update-rate
       value: '300000'
     - name: fint.betaling.principal-matching-strategy
