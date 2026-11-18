@@ -1,0 +1,16 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: FintClient
+metadata:
+  name: fint-betaling-backend
+  namespace: novari-no
+spec:
+  orgId: novari.no
+  note: Client til fint-betaling-backend for novari
+  components:
+    - okonomi_faktura
+    - okonomi_kodeverk
+    - utdanning_elev
+    - administrasjon_personal
+    - utdanning_timeplan
+    - utdanning_utdanningsprogram
+    - administrasjon_organisasjon
