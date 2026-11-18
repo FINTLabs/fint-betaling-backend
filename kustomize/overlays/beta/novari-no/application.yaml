@@ -38,6 +38,10 @@ spec:
       value: 'beta'
     - name: logging.level.root
       value: 'INFO'
+    - name: fint.betaling.demo
+      value: "true"
+    - name: fint.betaling.demo-user-employee-id
+      value: "132323232323"
   envFrom:
     - secretRef:
         name: fint-betaling-backend
