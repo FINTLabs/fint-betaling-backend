@@ -135,10 +135,8 @@ public class ClaimRestService {
     }
 
     private Mono<Claim> doUpdateClaimStatus(Claim claim) {
-        // Check after acquiring a slot too: a queued claim may have become paid while waiting.
         if (claim.getClaimStatus() == ClaimStatus.PAID) return Mono.empty();
 
-        log.info("Start updating status for claim {}", claim.getOrderNumber());
         if (!StringUtils.hasText(claim.getInvoiceUri())) {
             log.warn("Claim {} has no invoice URI", claim.getOrderNumber());
             return Mono.empty();
